@@ -829,6 +829,37 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
 .icon-pick button{width:40px; height:40px; border-radius:11px; font-size:19px; background:#f6f9ff; transition:background .16s}
 .icon-pick button:hover{background:#eaf2ff}
 .icon-pick button.on{background:#fff0c4; box-shadow:inset 0 0 0 2px rgba(240,168,0,.55)}
+.icon-pick.mini{padding:7px; gap:5px; background:#fbfcff}
+.icon-pick.mini button{width:34px; height:34px; font-size:16px}
+
+/* ============ carbot character palette (cb:<id> icons) ============ */
+.cb-wrap{display:flex; flex-direction:column; gap:6px; padding:9px; border-radius:14px;
+  background:linear-gradient(180deg,#f5faff 0%,#fdf7ff 100%); border:1px dashed var(--line2)}
+.cb-head{display:flex; align-items:center; gap:7px; flex-wrap:wrap}
+.cb-head b{font-size:11.5px; font-weight:900; color:#2f4770}
+.cb-head span{font-size:10.5px; font-weight:800; color:var(--muted)}
+.cb-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(58px,1fr)); gap:6px}
+.cb-cell{display:flex; flex-direction:column; align-items:center; gap:1px; min-width:0;
+  padding:5px 2px 3px; border-radius:12px; background:#fff; box-shadow:inset 0 0 0 1px var(--line);
+  transition:transform .14s, box-shadow .16s, background .16s}
+.cb-cell:hover{transform:translateY(-2px); box-shadow:0 9px 16px -11px rgba(34,48,76,.55), inset 0 0 0 1px var(--line)}
+.cb-cell:active{transform:scale(.96)}
+.cb-cell.on{background:linear-gradient(180deg,#fff7dc,#ffe9a6); box-shadow:inset 0 0 0 2px rgba(240,168,0,.62)}
+.cb-cell svg{width:100%; height:auto; max-width:48px; display:block}
+.cb-name{font-size:9px; font-weight:850; color:var(--muted); line-height:1.15; max-width:100%;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:0 1px}
+.cb-cell.on .cb-name{color:#7a4b00}
+.cb-emo-lbl{font-size:10px; font-weight:900; color:var(--muted); margin-top:1px}
+/* carbot thumbnails that replace emoji / letter badges */
+.ev-ic.cb, .p-ic.cb, .alarm-emo.cb{background:transparent!important; box-shadow:none!important; padding:0; overflow:visible}
+.ev-ic.cb svg{width:100%; height:100%; display:block}
+.p-ic.cb svg{width:100%; height:100%; display:block}
+.ev-nx-ic{flex:0 0 auto; display:grid; place-items:center; width:22px; height:22px}
+.ev-nx-ic svg{width:22px; height:22px; display:block}
+.ev-nx .em{font-size:14px; line-height:1}
+.icon-btn.cb-btn{padding:3px; overflow:hidden; width:42px; height:42px}
+.icon-btn.cb-btn svg{width:100%; height:100%; display:block}
+.play-card .p-ic.cb svg, .prow .p-ic.cb svg{width:100%; height:100%}
 .day-pick{display:flex; gap:5px; flex-wrap:wrap}
 .day-pick button{
   min-width:40px; height:38px; padding:0 8px; border-radius:11px; font-size:12px; font-weight:900;
@@ -1030,6 +1061,10 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
       </button>
       <button class="tab" role="tab" id="tabBtn-watch" data-tab="watch" aria-selected="false" aria-controls="panel-watch">
         <span class="ti" aria-hidden="true">⌚</span><span class="tl" data-i18n="tabWatch">카봇 시계·도감</span>
+      </button>
+      <button class="tab" role="tab" id="tabBtn-timer" data-tab="timer" aria-selected="false" aria-controls="panel-timer">
+        <span class="ti" aria-hidden="true">⏱️</span><span class="tl" data-i18n="tabTimer">타이머</span>
+        <span class="tm-badge hide" id="tmTabBadge">00:00</span>
       </button>
     </nav>
 
@@ -1285,6 +1320,91 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
       </div>
     </div>
   </section>
+
+  <!-- ================= CARBOT TIMER ================= -->
+  <section class="tab-panel" id="panel-timer" role="tabpanel" aria-labelledby="tabBtn-timer" hidden>
+    <div class="page-head">
+      <h2 class="page-title"><span aria-hidden="true">⏱️</span><span data-i18n="tmTitle">카봇 타이머</span></h2>
+      <span class="page-sub" data-i18n="tmSub">시간을 정하고 카봇과 함께 도전해요</span>
+      <span class="chip-count" style="margin-left:auto"><span aria-hidden="true">🧊</span><span data-i18n="myChips">내 카봇칩</span> <b id="tmChips">0</b></span>
+    </div>
+
+    <div class="tm-layout">
+      <div class="card panel tm-card">
+        <div class="tm-botrow">
+          <div class="tm-bot" id="tmBot" aria-hidden="true"></div>
+          <div class="tm-botinfo">
+            <span class="tm-kicker" data-i18n="tmPartner">함께 달려 줄 카봇</span>
+            <b class="tm-botname" id="tmBotName">에이스</b>
+            <button type="button" class="mini-btn" id="tmBotPick"><span aria-hidden="true">🤖</span> <span data-i18n="tmBotPick">카봇 바꾸기</span></button>
+          </div>
+        </div>
+        <div class="cb-wrap" id="tmBotWrap" hidden>
+          <div class="cb-head"><b data-i18n="tmBotPick">카봇 바꾸기</b><span data-i18n="tmBotPickHint">누르면 파트너가 바뀌어요</span></div>
+          <div class="cb-grid" id="tmBotGrid"></div>
+        </div>
+
+        <div class="tm-sec">
+          <div class="tm-sec-lbl"><span aria-hidden="true">🎯</span><span data-i18n="tmMission">미션</span></div>
+          <div class="tm-missions" id="tmMissions"></div>
+          <div class="tm-free hide" id="tmFreeWrap">
+            <input class="ed-input" id="tmFreeIn" maxlength="20" placeholder="미션을 적어 보세요">
+            <button type="button" class="mini-btn go" id="tmFreeGo" data-i18n="tmFreeGo">적용</button>
+          </div>
+        </div>
+
+        <div class="tm-ringwrap" id="tmRingWrap">
+          <svg class="tm-ring" viewBox="0 0 200 200" role="img" aria-label="timer">
+            <defs>
+              <linearGradient id="tmRingG" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#5fd0ff"/><stop offset=".55" stop-color="#3a7bff"/><stop offset="1" stop-color="#8b5cf6"/>
+              </linearGradient>
+              <linearGradient id="tmRingWarm" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#ffd964"/><stop offset=".55" stop-color="#ff9d3a"/><stop offset="1" stop-color="#ff5f4d"/>
+              </linearGradient>
+            </defs>
+            <circle class="tm-track" cx="100" cy="100" r="88"/>
+            <circle class="tm-fill" id="tmRing" cx="100" cy="100" r="88"/>
+          </svg>
+          <div class="tm-center">
+            <span class="tm-mis" id="tmRingMission"></span>
+            <span class="tm-time" id="tmTime">05:00</span>
+            <span class="tm-state idle" id="tmStateBadge">준비</span>
+          </div>
+        </div>
+        <div class="tm-bar"><i id="tmBar"></i></div>
+
+        <div class="tm-sec">
+          <div class="tm-sec-lbl"><span aria-hidden="true">⏲️</span><span data-i18n="tmTimeSet">시간 설정</span></div>
+          <div class="tm-presets" id="tmPresets"></div>
+          <div class="tm-custom">
+            <label class="tm-num"><input type="number" id="tmMin" min="0" max="60" value="5" inputmode="numeric"><span data-i18n="tmMin">분</span></label>
+            <label class="tm-num"><input type="number" id="tmSec" min="0" max="59" value="0" inputmode="numeric"><span data-i18n="tmSec">초</span></label>
+            <button type="button" class="mini-btn go" id="tmApply" data-i18n="tmApply">적용</button>
+          </div>
+        </div>
+
+        <div class="tm-actions">
+          <button type="button" class="btn primary tm-go" id="tmStart"><span aria-hidden="true">▶</span><span data-i18n="tmStart">시작</span></button>
+          <button type="button" class="btn tm-pause" id="tmPause"><span aria-hidden="true">⏸</span><span data-i18n="tmPause">일시정지</span></button>
+          <button type="button" class="btn tm-reset" id="tmReset"><span aria-hidden="true">↺</span><span data-i18n="tmReset">초기화</span></button>
+        </div>
+        <p class="fs-hint" id="tmHint"></p>
+      </div>
+
+      <aside class="tm-side">
+        <div class="card panel tm-side-card">
+          <div class="tm-sec-lbl"><span aria-hidden="true">💬</span><span data-i18n="tmPraiseTitle">끝나면 카봇이 이렇게 말해요</span></div>
+          <div class="tm-praise-list" id="tmPraiseList"></div>
+          <p class="fs-hint" data-i18n="tmPraiseHint">시간이 다 되면 카봇이 와서 물어봐요. 아이가 고른 대답에 맞춰 칭찬하거나 한 번 더 도전해요.</p>
+        </div>
+        <div class="card panel tm-side-card">
+          <div class="tm-sec-lbl"><span aria-hidden="true">🎒</span><span data-i18n="tmIdeaTitle">이런 미션은 어때요?</span></div>
+          <div class="tm-ideas" id="tmIdeas"></div>
+        </div>
+      </aside>
+    </div>
+  </section>
 </div>
 
 <!-- ================= SUMMON OVERLAY ================= -->
@@ -1318,6 +1438,27 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
     <div class="alarm-actions">
       <button class="btn primary" id="alarmDone">출동 완료!<span class="plus" id="alarmPlus">카봇칩 +1</span></button>
       <button class="btn" id="alarmLater">잠시 후 확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= CARBOT TIMER · TIME UP ================= -->
+<div class="alarm-ov tm-ov" id="timerOverlay" hidden>
+  <div class="alarm-card tm-done-card" role="dialog" aria-modal="true" aria-labelledby="tmDoneTitle">
+    <div class="alarm-badge tm-badge-big" id="tmBadge"></div>
+    <div class="alarm-kicker" data-i18n="tmDoneKicker">⏱️ 카봇 타이머</div>
+    <h2 class="tm-done-title" id="tmDoneTitle"></h2>
+    <div class="tm-bubble" id="tmBubble"><span class="tm-bubble-ic" aria-hidden="true">💬</span><span id="tmBubbleTxt"></span></div>
+    <div class="tm-picks" role="group" aria-label="timer result">
+      <button type="button" class="tm-pick p1" id="tmBtnEarly"><span class="em" aria-hidden="true">🎉</span><span data-i18n="tmPickEarly">시간 안에 해냈어!</span></button>
+      <button type="button" class="tm-pick p2" id="tmBtnAgain"><span class="em" aria-hidden="true">💪</span><span data-i18n="tmPickAgain">아직이야, 한 번 더!</span></button>
+      <button type="button" class="tm-pick p3" id="tmBtnKept"><span class="em" aria-hidden="true">⭐</span><span data-i18n="tmPickKept">약속한 시간 지켰어!</span></button>
+    </div>
+    <p class="tm-done-hint" data-i18n="tmDoneHint">카봇에게 알려 주면 카봇이 대답해 줘요</p>
+    <div class="alarm-actions tm-done-actions">
+      <button type="button" class="btn" id="tmReplay"><span aria-hidden="true">🔊</span><span data-i18n="tmReplay">다시 듣기</span></button>
+      <button type="button" class="btn" id="tmAgainGo"><span aria-hidden="true">🔁</span><span data-i18n="tmAgainGo">한 번 더 도전!</span></button>
+      <button type="button" class="btn primary" id="tmClose" data-i18n="tmClose">확인</button>
     </div>
   </div>
 </div>
@@ -1450,6 +1591,123 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
   .alarm-card{padding:20px 15px 16px; border-radius:24px}
   .alarm-item{font-size:11px}
   .alarm-actions .btn{padding:13px 14px; font-size:14px}
+}
+
+/* ============ carbot timer ============ */
+.cb-wrap[hidden]{display:none !important}
+.tm-badge{font-size:10.5px; font-weight:900; color:#1f4fb8; background:#eaf2ff; padding:2px 6px;
+  border-radius:999px; font-variant-numeric:tabular-nums; letter-spacing:.02em}
+.tm-badge.run{color:#0c6b48; background:#dff7ea}
+.tm-badge.warn{color:#fff; background:#e8402f}
+.tab[aria-selected="true"] .tm-badge{background:rgba(255,255,255,.75); color:#8a5200}
+.tab[aria-selected="true"] .tm-badge.warn{background:#e8402f; color:#fff}
+.tm-layout{display:grid; grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr); gap:clamp(12px,1.6vw,18px); align-items:start}
+.tm-card{padding:clamp(14px,1.8vw,22px); display:flex; flex-direction:column; gap:12px}
+.tm-botrow{display:flex; align-items:center; gap:13px; padding:10px 12px; border-radius:16px;
+  background:linear-gradient(180deg,#f4faff,#fdf7ff); box-shadow:inset 0 0 0 1px var(--line)}
+.tm-bot{width:clamp(64px,9vw,86px); height:clamp(64px,9vw,86px); flex:0 0 auto}
+.tm-bot svg{width:100%; height:auto; display:block; filter:drop-shadow(0 8px 14px -8px rgba(34,58,110,.55))}
+.tm-botinfo{display:flex; flex-direction:column; align-items:flex-start; gap:3px; min-width:0}
+.tm-kicker{font-size:10.5px; font-weight:900; color:var(--muted); letter-spacing:.02em}
+.tm-botname{font-size:clamp(15px,1.7vw,18px); font-weight:900; color:var(--ink)}
+.tm-botinfo .mini-btn{margin-top:3px; background:#fff; box-shadow:inset 0 0 0 1.5px var(--line2); color:#2f4770; font-weight:900; padding:7px 11px; border-radius:10px; font-size:11.5px}
+.tm-sec{display:flex; flex-direction:column; gap:7px}
+.tm-sec-lbl{display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:900; color:var(--muted)}
+.tm-missions{display:flex; flex-wrap:wrap; gap:6px}
+.tm-chip{min-height:38px; padding:8px 13px; border-radius:999px; font-size:12.5px; font-weight:850;
+  color:var(--ink2); background:#f1f6ff; box-shadow:inset 0 0 0 1px var(--line); transition:background .16s, box-shadow .16s, transform .12s}
+.tm-chip:hover{background:#e9f1ff}
+.tm-chip:active{transform:scale(.96)}
+.tm-chip.on{background:linear-gradient(180deg,#fff3cf,#ffdf87); color:#7a4b00; box-shadow:inset 0 0 0 1.5px rgba(240,168,0,.5)}
+.tm-free{display:flex; gap:7px; align-items:center}
+.tm-free .ed-input{flex:1 1 auto; min-width:0}
+.tm-ringwrap{position:relative; width:min(320px,74vw); aspect-ratio:1; margin:4px auto 0; display:grid; place-items:center}
+.tm-ring{position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg)}
+.tm-ring .tm-track{fill:none; stroke:#e6eefb; stroke-width:13}
+.tm-ring .tm-fill{fill:none; stroke:url(#tmRingG); stroke-width:13; stroke-linecap:round;
+  stroke-dasharray:552.92; stroke-dashoffset:0; transition:stroke-dashoffset .3s linear, stroke .3s}
+.tm-ringwrap.warn .tm-ring .tm-fill{stroke:url(#tmRingWarm)}
+.tm-ringwrap.done .tm-ring .tm-fill{stroke:#26c281}
+.tm-center{position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:2px; text-align:center; padding:0 12px}
+.tm-mis{font-size:11.5px; font-weight:900; color:var(--muted); max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.tm-time{font-size:clamp(46px,7.4vw,66px); font-weight:900; letter-spacing:-.04em; color:var(--navy);
+  font-variant-numeric:tabular-nums; line-height:1.02}
+.tm-state{font-size:11px; font-weight:900; padding:3px 10px; border-radius:999px; margin-top:3px;
+  color:#5b6b8c; background:#eef3fb; box-shadow:inset 0 0 0 1px var(--line)}
+.tm-state.run{color:#0c6b48; background:#dff7ea; box-shadow:inset 0 0 0 1px rgba(46,201,138,.4)}
+.tm-state.pause{color:#8a5200; background:#fff1c9; box-shadow:inset 0 0 0 1px rgba(240,168,0,.4)}
+.tm-state.done{color:#fff; background:var(--green)}
+.tm-bar{height:9px; border-radius:999px; background:#e9eff9; overflow:hidden; box-shadow:inset 0 1px 2px rgba(34,48,76,.08)}
+.tm-bar i{display:block; height:100%; width:100%; border-radius:999px; background:linear-gradient(90deg,#5fd0ff,#3a7bff,#8b5cf6); transition:width .3s linear}
+.tm-ringwrap.warn ~ .tm-bar i, .tm-card.warn .tm-bar i{background:linear-gradient(90deg,#ffd964,#ff9d3a,#ff5f4d)}
+.tm-presets{display:grid; grid-template-columns:repeat(auto-fill,minmax(64px,1fr)); gap:6px}
+.tm-preset{min-height:40px; border-radius:11px; font-size:12.5px; font-weight:900; color:#2f4770;
+  background:#f7faff; box-shadow:inset 0 0 0 1px var(--line); transition:background .16s, transform .12s}
+.tm-preset:hover{background:#eef5ff}
+.tm-preset:active{transform:scale(.96)}
+.tm-preset.on{background:linear-gradient(180deg,#fff3cf,#ffdf87); color:#7a4b00; box-shadow:inset 0 0 0 1.5px rgba(240,168,0,.5)}
+.tm-custom{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:2px}
+.tm-num{display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:900; color:var(--muted)}
+.tm-num input{width:74px; padding:9px 10px; border-radius:10px; border:1.5px solid var(--line2);
+  font-size:13.5px; font-weight:900; text-align:center; font-variant-numeric:tabular-nums; background:#fff}
+.tm-num input:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(47,108,230,.12)}
+.tm-actions{display:grid; grid-template-columns:1.15fr 1fr .9fr; gap:7px}
+.tm-actions .btn{min-height:48px; font-size:13.5px}
+.tm-actions .btn:disabled{opacity:.45; cursor:default}
+.tm-side{display:flex; flex-direction:column; gap:14px}
+.tm-side-card{display:flex; flex-direction:column; gap:9px}
+.tm-praise-list{display:flex; flex-direction:column; gap:7px}
+.tm-praise{display:flex; align-items:flex-start; gap:9px; padding:9px 11px; border-radius:13px;
+  background:#f8fbff; box-shadow:inset 0 0 0 1px var(--line); font-size:12.5px; font-weight:800; color:var(--ink2); line-height:1.35}
+.tm-praise b{display:block; font-size:10.5px; font-weight:900; color:var(--muted); margin-bottom:2px}
+.tm-praise i{font-style:normal; font-size:17px; line-height:1.15; flex:0 0 auto}
+.tm-ideas{display:flex; flex-wrap:wrap; gap:6px}
+.tm-idea{font-size:12px; font-weight:850; color:#2f4770; background:#eef5ff; border-radius:999px; padding:7px 11px}
+/* done modal */
+.tm-ov{background:radial-gradient(circle at 50% 26%, rgba(70,150,255,.38), rgba(8,14,28,.95) 62%), rgba(6,10,20,.92)}
+.tm-done-card{width:min(540px,100%)}
+.tm-done-card .alarm-badge{margin-bottom:12px}
+.tm-done-card .alarm-kicker{margin-top:0; color:#d9482f; letter-spacing:.12em; position:relative; z-index:3}
+.tm-badge-big{width:clamp(84px,12vw,104px); height:clamp(84px,12vw,104px)}
+.tm-done-title{font-size:clamp(19px,2.4vw,24px); font-weight:900; color:var(--navy); margin:2px 0 10px; line-height:1.25}
+.tm-bubble{display:flex; align-items:flex-start; gap:8px; text-align:left; padding:11px 13px; border-radius:15px;
+  background:#fff7e0; box-shadow:inset 0 0 0 1.5px rgba(240,168,0,.35); font-size:13.5px; font-weight:850; color:#6b4400; line-height:1.4; min-height:46px}
+.tm-bubble-ic{flex:0 0 auto; font-size:16px; line-height:1.2}
+.tm-bubble.pop{animation:tmPop .42s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes tmPop{0%{transform:scale(.9); opacity:.4}60%{transform:scale(1.03)}100%{transform:scale(1); opacity:1}}
+.tm-picks{display:flex; flex-direction:column; gap:7px; margin:12px 0 6px}
+.tm-pick{display:flex; align-items:center; gap:10px; width:100%; padding:13px 15px; border-radius:15px;
+  font-size:14px; font-weight:900; text-align:left; color:#243b63; background:#fff;
+  box-shadow:inset 0 0 0 1.5px var(--line2); transition:transform .13s, box-shadow .16s, background .16s}
+.tm-pick .em{font-size:20px; line-height:1}
+.tm-pick:hover{transform:translateY(-1px); background:#f8fbff}
+.tm-pick:active{transform:scale(.985)}
+.tm-pick.p1[aria-pressed="true"]{background:#eefaf3; box-shadow:inset 0 0 0 2px rgba(46,201,138,.6)}
+.tm-pick.p2[aria-pressed="true"]{background:#fff7e6; box-shadow:inset 0 0 0 2px rgba(240,168,0,.6)}
+.tm-pick.p3[aria-pressed="true"]{background:#f4f0ff; box-shadow:inset 0 0 0 2px rgba(124,92,224,.55)}
+.tm-done-hint{font-size:11px; font-weight:800; color:var(--muted); margin:2px 0 8px}
+.tm-done-actions{display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px}
+.tm-done-actions .btn{padding:12px 8px; font-size:12.5px; gap:5px}
+@media (max-width:900px){
+  .tm-layout{grid-template-columns:1fr}
+  .tm-side{flex-direction:row; flex-wrap:wrap}
+  .tm-side-card{flex:1 1 260px}
+}
+@media (max-width:560px){
+  /* 4 tabs: clean 2x2 grid instead of a scrolling strip */
+  .tabs{order:4; width:100%; margin:2px 0 0; display:grid; grid-template-columns:1fr 1fr;
+    gap:5px; padding:5px; border-radius:18px; overflow:visible}
+  .tab{width:100%; justify-content:center; border-radius:13px; padding:8px 8px; min-height:40px; gap:6px}
+  .tab .tl{font-size:12px}
+  .tm-actions{grid-template-columns:1fr 1fr 1fr; gap:5px}
+  .tm-actions .btn{font-size:12px; padding:12px 4px; gap:3px; min-height:46px}
+  .tm-actions .tm-pause{grid-column:auto; order:0}
+  .tm-done-actions{grid-template-columns:1fr 1fr; }
+  .tm-done-actions #tmClose{grid-column:1 / -1; order:3}
+  .tm-ringwrap{width:min(280px,80vw)}
+}
+@media (max-width:400px){
+  .tm-presets{grid-template-columns:repeat(3,1fr)}
 }
 </style>
 
@@ -2043,6 +2301,32 @@ const STR = {
   tabDash:{ko:'대시보드',en:'Dashboard'},
   tabPlay:{ko:'놀이·준비',en:'Play & Prep'},
   tabWatch:{ko:'카봇 시계·도감',en:'Watch & Dex'},
+  tabTimer:{ko:'타이머',en:'Timer'},
+  tmTitle:{ko:'카봇 타이머',en:'Carbot Timer'},
+  tmSub:{ko:'시간을 정하고 카봇과 함께 도전해요',en:'Set a time and take on the challenge with a Carbot'},
+  tmPartner:{ko:'함께 달려 줄 카봇',en:'Your Carbot partner'},
+  tmBotPick:{ko:'카봇 바꾸기',en:'Change Carbot'},
+  tmBotPickHint:{ko:'누르면 파트너가 바뀌어요',en:'Tap one to change partners'},
+  tmMission:{ko:'미션',en:'Mission'},
+  tmFreeGo:{ko:'적용',en:'Set'},
+  tmTimeSet:{ko:'시간 설정',en:'Set the time'},
+  tmMin:{ko:'분',en:'min'},
+  tmSec:{ko:'초',en:'sec'},
+  tmApply:{ko:'적용',en:'Set'},
+  tmStart:{ko:'시작',en:'Start'},
+  tmPause:{ko:'일시정지',en:'Pause'},
+  tmReset:{ko:'초기화',en:'Reset'},
+  tmPraiseTitle:{ko:'끝나면 카봇이 이렇게 말해요',en:'What your Carbot says at the end'},
+  tmPraiseHint:{ko:'시간이 다 되면 카봇이 와서 물어봐요. 아이가 고른 대답에 맞춰 칭찬하거나 한 번 더 도전해요.',en:'When time is up the Carbot comes and asks. Pick an answer and it cheers, or you try once more.'},
+  tmIdeaTitle:{ko:'이런 미션은 어때요?',en:'Mission ideas'},
+  tmDoneKicker:{ko:'⏱️ 카봇 타이머',en:'⏱️ Carbot Timer'},
+  tmPickEarly:{ko:'시간 안에 해냈어!',en:'Done in time!'},
+  tmPickAgain:{ko:'아직이야, 한 번 더!',en:'Not yet — one more!'},
+  tmPickKept:{ko:'약속한 시간 지켰어!',en:'Kept the promise!'},
+  tmDoneHint:{ko:'카봇에게 알려 주면 카봇이 대답해 줘요',en:'Tell your Carbot and it will answer'},
+  tmReplay:{ko:'다시 듣기',en:'Hear it again'},
+  tmAgainGo:{ko:'한 번 더 도전!',en:'Try once more!'},
+  tmClose:{ko:'확인',en:'OK'},
   place:{ko:'용호동',en:'Yongho-dong'},
   eventsTitle:{ko:'오늘의 일정·이벤트',en:"Today's events"},
   addBtn:{ko:'추가',en:'Add'},
@@ -2192,7 +2476,8 @@ function defaults(){
     dayKey:'', done:{}, play:{}, ev:{}, prep:{}, awarded:{r:[],p:[],e:[]},
     chips:0, chipDay:'', dex:{}, summons:0, streak:0, lastFull:'',
     supplies:clone(DEFAULT_SUPPLIES), routines:clone(DEFAULT_ROUTINES),
-    plays:clone(DEFAULT_PLAYS), affirms:clone(DEFAULT_AFFIRM), events:[]
+    plays:clone(DEFAULT_PLAYS), affirms:clone(DEFAULT_AFFIRM), events:[],
+    timer:tmDefault()
   };
 }
 const state = defaults();
@@ -2273,6 +2558,7 @@ function sanitize(o){
   if(Array.isArray(o.affirms) && o.affirms.length) state.affirms=sanitizeAffirms(o.affirms);
   if(Array.isArray(o.events)) state.events=sanitizeEvents(o.events);
   if(o.supplies && typeof o.supplies==='object') state.supplies=supplyFrom(o.supplies);
+  if(o.timer && typeof o.timer==='object') state.timer=sanitizeTimer(o.timer);
   return true;
 }
 
@@ -2291,6 +2577,14 @@ function supplyFrom(src){
     else out[d]=clone(DEFAULT_SUPPLIES[d]||[]);
   }
   return out;
+}
+/* icon fields hold either an emoji/letter badge or "cb:"+carbot id */
+function sanitizeIcon(v, fb){
+  const fb2 = fb || '📌';
+  const s = (typeof v==='string') ? v.trim() : '';
+  const id = cbIconId(s);
+  if(id) return CB_BY_ID[id] ? cbIconVal(id) : fb2;
+  return s ? s.slice(0,4) : fb2;
 }
 function sanitizeArt(a){
   a = (a && typeof a==='object') ? a : {type:'img', v:'1'};
@@ -2325,7 +2619,7 @@ function sanitizePlays(arr){
     seen[id]=1;
     const ko = txt(p.ko, '놀이 '+(i+1), 40);
     const pi = Number.isInteger(p.pi) ? clamp(p.pi,0,PALETTE.length-1) : (i%PALETTE.length);
-    return {id:id, ic:txt(p.ic,'✨',4), pi:pi, ko:ko, en:txt(p.en, '', 60),
+    return {id:id, ic:sanitizeIcon(p.ic,'✨'), pi:pi, ko:ko, en:txt(p.en, '', 60),
             ko2:txt(p.ko2,'',50), en2:txt(p.en2,'',70),
             alarm:sanitizeAlarm(p.alarm, {on:false, time:'09:00', ko:'', en:''})};
   });
@@ -2353,7 +2647,7 @@ function sanitizeEvents(arr){
     return {
       id:id, time:hhmm(e.time,'16:00'),
       ko:ko, en:txt(e.en, '', 40),
-      icon:txt(e.icon,'📌',4), cat:txt(e.cat,'etc',10),
+      icon:sanitizeIcon(e.icon,'📌'), cat:txt(e.cat,'etc',10),
       rep:{type:type, days:days.length?days:[1], date:date},
       reward:e.reward!==false, on:e.on!==false,
       alarm:sanitizeAlarm(e.alarm, {on:false, time:hhmm(e.time,'16:00'), lead:0, ko:'', en:''})
@@ -2869,6 +3163,61 @@ function carbotSVG(c, size, extraClass){
     + '<circle cx="97" cy="86" r="1.5"/><circle cx="23" cy="94" r="1.8"/></g>';
   return out + '</svg>';
 }
+/* ---------- carbot character icons (stored as "cb:"+id in icon fields) ---------- */
+const CB_PREFIX = 'cb:';
+function cbIconVal(id){ return CB_PREFIX + id; }
+function cbIconId(v){
+  return (typeof v==='string' && v.slice(0, CB_PREFIX.length)===CB_PREFIX) ? v.slice(CB_PREFIX.length) : '';
+}
+function cbIconBot(v){
+  const id = cbIconId(v);
+  return id ? (CB_BY_ID[id] || null) : null;
+}
+/* the 24 headline characters used by the editors (falls back to the roster head) */
+function cbPickBots(){
+  const f = CARBOTS.filter(c=>c.featured);
+  return f.length ? f : CARBOTS.slice(0, 24);
+}
+function cbRandomIcon(){
+  const list = cbPickBots();
+  return cbIconVal(list[(Math.random()*list.length)|0].id);
+}
+function cbRandomId(){
+  const list = cbPickBots();
+  return list[(Math.random()*list.length)|0].id;
+}
+/* any icon value -> markup: carbot SVG for cb:<id>, otherwise the emoji/text */
+function iconHTML(v, size, fb){
+  const b = cbIconBot(v);
+  if(b) return carbotSVG(b, size || 40, 'cb-svg');
+  return esc((typeof v==='string' && v.trim()) ? v : (fb || '📌'));
+}
+/* the picker grid: 24 carbots, then a short emoji strip at the end */
+function cbPickHTML(key, path, emojis, fmt){
+  const cur = getPath(draft, path);
+  const curId = cbIconId(cur) || (CB_BY_ID[cur] ? cur : '');
+  const bare = fmt==='bare';            /* routines keep art.v as a bare id */
+  let h = '<div class="cb-wrap">'
+    + '<div class="cb-head"><b>'+L({ko:'카봇 캐릭터',en:'Carbot characters'})+'</b>'
+    +   '<span>'+L({ko:'누르면 바로 바뀌어요',en:'Tap to change'})+'</span></div>'
+    + '<div class="cb-grid">';
+  h += cbPickBots().map(c=>{
+    const on = c.id===curId;
+    const nm = L({ko:c.ko, en:c.en});
+    return '<button type="button" class="cb-cell'+(on?' on':'')+'" data-pick="'+key+'" data-v="'
+      + escapeAttr(bare ? c.id : cbIconVal(c.id))+'" aria-pressed="'+on+'" title="'+escapeAttr(nm)+'" aria-label="'+escapeAttr(nm)+'">'
+      + carbotSVG(c, 50, 'cb-svg') + '<span class="cb-name">'+esc(nm)+'</span></button>';
+  }).join('');
+  h += '</div>';
+  if(emojis && emojis.length){
+    h += '<div class="cb-emo-lbl">'+L({ko:'이모지',en:'Emoji'})+'</div>'
+      + '<div class="icon-pick mini">'+emojis.map(v=>
+          '<button type="button" class="'+(v===cur?'on':'')+'" data-pick="'+key+'" data-v="'+escapeAttr(v)+'" aria-label="'+escapeAttr(v)+'">'+v+'</button>'
+        ).join('')+'</div>';
+  }
+  return h + '</div>';
+}
+
 function chipSVG(uid){
   const u = 'ch'+(uid||'x');
   return '<svg viewBox="0 0 64 64" role="img" aria-label="Carbot chip">'
@@ -3418,8 +3767,11 @@ function adoptChipDay(){
 function renderPlays(){
   const rowHTML = (p, big)=>{
     const done = !!state.play[p.id];
+    const pcb = cbIconBot(p.ic);
     return '<div class="'+(big?'play-card':'prow')+(done?' sel':'')+'" data-id="'+esc(p.id)+'" role="button" tabindex="0" aria-pressed="'+done+'">'
-      + '<span class="p-ic" style="background:'+palG(p.pi)+'">'+esc(p.ic)+'</span>'
+      + (pcb
+          ? '<span class="p-ic cb" aria-hidden="true">'+carbotSVG(pcb, big?44:38)+'</span>'
+          : '<span class="p-ic" style="background:'+palG(p.pi)+'">'+esc(p.ic)+'</span>')
       + '<div class="p-txt"><div class="p-title">'+esc(pick(p.ko, p.en))+'</div>'
       + '<div class="p-sub">'+esc(pick(p.ko2, p.en2))+'</div></div>'
       + (p.alarm && p.alarm.on ? alarmChipHTML(alarmWhen('p', p)) : '')
@@ -3544,7 +3896,7 @@ function nextHTML(list){
           ? (diff===1?'내일':WEEK_KO[d.getDay()]+'요일')
           : (diff===1?'Tomorrow':WEEK_EN_LONG[d.getDay()]);
         return '<div class="ev-nx"><span class="d">'+esc(dayLbl)+'</span><span class="t">'+esc(fmtTimeStr(x.e.time))+'</span>'
-          + '<span>'+esc(x.e.icon)+'</span><b>'+esc(pick(x.e.ko, x.e.en))+'</b></div>';
+          + '<span class="ev-nx-ic" aria-hidden="true">'+iconHTML(x.e.icon, 22, '📌')+'</span><b>'+esc(pick(x.e.ko, x.e.en))+'</b></div>';
       }).join('')
     + '</div>';
 }
@@ -3570,7 +3922,7 @@ function renderEvents(){
     const done = !!state.ev[evKey(e,now)];
     return '<div class="ev'+(done?' sel':'')+'" data-ev="'+esc(e.id)+'" role="button" tabindex="0" aria-pressed="'+done+'">'
       + '<span class="ev-time">'+esc(fmtTimeStr(e.time))+'</span>'
-      + '<span class="ev-ic" aria-hidden="true">'+esc(e.icon)+'</span>'
+      + '<span class="ev-ic'+(cbIconBot(e.icon)?' cb':'')+'" aria-hidden="true">'+iconHTML(e.icon, 34, '📌')+'</span>'
       + '<div class="ev-t"><div class="ev-title">'+esc(pick(e.ko, e.en))+'</div>'
       +   '<div class="ev-sub">'+esc(catLabel(e.cat))+' · '+esc(repLabel(e))+'</div></div>'
       + (e.alarm && e.alarm.on ? alarmChipHTML(alarmWhen('e', e), e.alarm.lead) : '')
@@ -3662,7 +4014,10 @@ function swReady(ms){
     if(!('serviceWorker' in navigator)) return resolve(null);
     let done = false;
     const t = setTimeout(()=>{ if(!done){ done = true; resolve(null); } }, ms || 1500);
-    navigator.serviceWorker.ready.then(reg=>{ if(!done){ done=true; clearTimeout(t); resolve(reg); } })
+    let ready = null;
+    try{ ready = navigator.serviceWorker.ready; }catch(e){ /* file:// 등 등록 불가 */ }
+    if(!ready || typeof ready.then !== 'function'){ clearTimeout(t); return resolve(null); }
+    ready.then(reg=>{ if(!done){ done=true; clearTimeout(t); resolve(reg); } })
       .catch(()=>{ if(!done){ done=true; clearTimeout(t); resolve(null); } });
   });
 }
@@ -3793,11 +4148,15 @@ function alarmBadgeHTML(d){
     return '<span class="alarm-emo">'+esc(art.v || '⭐')+'</span>';
   }
   if(d.kind === 'p'){
+    const pcb = cbIconBot(it.ic);
+    if(pcb) return carbotSVG(pcb, 112);
     let h = 0;
     String(it.id||'').split('').forEach(ch=>{ h = (h*31 + ch.charCodeAt(0)) % 9973; });
     return carbotSVG(CARBOTS[h % CARBOTS.length], 112);
   }
-  return '<span class="alarm-emo">'+esc(it.icon || '📌')+'</span>';
+  return cbIconBot(it.icon)
+    ? carbotSVG(cbIconBot(it.icon), 112)
+    : '<span class="alarm-emo">'+esc(it.icon || '📌')+'</span>';
 }
 
 function showAlarm(d, isTest){
@@ -3816,7 +4175,9 @@ function showAlarm(d, isTest){
   $('#alarmKind').textContent = d.kind==='r' ? L({ko:'루틴',en:'Routine'})
     : d.kind==='p' ? L({ko:'놀이·학습',en:'Play'})
     : d.kind==='e' ? L({ko:'일정',en:'Event'}) : L({ko:'테스트',en:'Test'});
-  $('#alarmDone').textContent = isTest ? L({ko:'좋아요!',en:'Got it!'}) : L({ko:'출동 완료!',en:'Rolled out!'});
+  $('#alarmDone').innerHTML = isTest
+    ? L({ko:'좋아요!',en:'Got it!'})
+    : L({ko:'출동 완료!',en:'Rolled out!'}) + '<span class="plus" id="alarmPlus">'+L({ko:'카봇칩 +1',en:'+1 Carbot chip'})+'</span>';
   $('#alarmLater').hidden = !!isTest;
   ov.hidden = false;
   ov.classList.remove('show');
@@ -3888,6 +4249,345 @@ function testAlarm(){
   showAlarm({kind:'r', id:it.id, item:it}, true);
 }
 
+/* =====================================================================
+   11e. carbot timer (⏱️ tab)
+   ===================================================================== */
+const TM_PRESETS = [60, 180, 300, 600, 900, 1200, 1800];
+const TM_MISSIONS = [
+  {id:'brush', ko:'양치하기',    en:'Brushing teeth'},
+  {id:'dress', ko:'옷 입기',     en:'Getting dressed'},
+  {id:'meal',  ko:'밥 먹기',     en:'Eating a meal'},
+  {id:'tidy',  ko:'장난감 정리', en:'Tidying toys'},
+  {id:'book',  ko:'책 읽기',     en:'Reading a book'},
+  {id:'free',  ko:'자유 미션',   en:'Free mission'}
+];
+const TM_IDEAS = [
+  {ko:'손 씻기 30초', en:'Wash hands · 30 sec'},
+  {ko:'신발 신기 1분', en:'Put shoes on · 1 min'},
+  {ko:'가방 싸기 3분', en:'Pack the bag · 3 min'},
+  {ko:'정리 정돈 5분', en:'Tidy up · 5 min'},
+  {ko:'책 한 권 10분', en:'One book · 10 min'},
+  {ko:'그림 그리기 15분', en:'Draw a picture · 15 min'}
+];
+const TM_PRAISE = {
+  early:{ko:'와! 시간 안에 해냈어? 대단해!', en:'Whoa! You did it in time! Amazing!'},
+  again:{ko:'앗, 아직이야? 그럼 한 번 더 도전하자!', en:'Oh, not yet? Let’s try one more time!'},
+  kept:{ko:'우와, 약속한 시간을 지켰구나! 멋져!', en:'Awesome! You kept your promise on time! So cool!'}
+};
+const TM_PROMPT = {ko:'시간이 다 됐어! 카봇에게 알려 줘!', en:'Time is up! Tell your Carbot how it went!'};
+const TM_RING_C = 2 * Math.PI * 88;   /* r = 88 in the 200x200 ring */
+let tmGridOpen = false, tmDoneOpen = false, tmLastMsg = '', tmShownSec = -1;
+
+function tmDefault(){
+  return {bot:'ace', missionId:'brush', freeKo:'', freeEn:'', total:300, remain:300,
+          running:false, endAt:0, finished:false, praise:''};
+}
+function sanitizeTimer(o){
+  const d = tmDefault();
+  o = (o && typeof o==='object') ? o : {};
+  const t = tmDefault();
+  t.bot = (typeof o.bot==='string' && CB_BY_ID[o.bot]) ? o.bot : d.bot;
+  t.missionId = TM_MISSIONS.some(m=>m.id===o.missionId) ? o.missionId : d.missionId;
+  t.freeKo = txt(o.freeKo, '', 20);
+  t.freeEn = txt(o.freeEn, '', 20);
+  t.total = clamp(Math.round(Number(o.total)||d.total), 1, 3600);
+  t.remain = clamp(Number.isFinite(Number(o.remain)) ? Math.round(Number(o.remain)) : t.total, 0, t.total);
+  t.running = !!o.running && Number(o.endAt) > 0;
+  t.endAt = t.running ? Number(o.endAt) : 0;
+  t.finished = !!o.finished;
+  t.praise = ['early','again','kept'].indexOf(o.praise)>=0 ? o.praise : '';
+  /* a timer that ran out while the app was closed lands as finished, not running */
+  if(t.running && t.endAt <= Date.now()){
+    t.running = false; t.endAt = 0; t.remain = 0; t.finished = true;
+  }
+  if(t.finished) t.remain = 0;
+  return t;
+}
+function tmMissionLabel(){
+  const t = state.timer;
+  if(t.missionId==='free'){
+    const fk = t.freeKo || t.freeEn || TM_MISSIONS[5].ko;
+    const fe = t.freeEn || t.freeKo || TM_MISSIONS[5].en;
+    return L({ko:fk, en:fe});
+  }
+  const m = TM_MISSIONS.find(x=>x.id===t.missionId) || TM_MISSIONS[0];
+  return L(m);
+}
+function tmFmt(sec){
+  sec = Math.max(0, Math.round(Number(sec)||0));
+  return pad2(Math.floor(sec/60)) + ':' + pad2(sec%60);
+}
+function tmPresetLabel(sec){
+  return sec%60===0 ? L({ko:(sec/60)+'분', en:(sec/60)+' min'}) : L({ko:sec+'초', en:sec+' sec'});
+}
+function timerRemain(){
+  const t = state.timer;
+  if(t.running && t.endAt) return Math.max(0, Math.ceil((t.endAt - Date.now())/1000));
+  return Math.max(0, Math.min(t.total, t.remain|0));
+}
+
+function renderTimerBots(){
+  const host = $('#tmBotGrid');
+  if(!host) return;
+  const cur = state.timer.bot;
+  host.innerHTML = cbPickBots().map(c=>{
+    const on = c.id===cur, nm = L({ko:c.ko, en:c.en});
+    return '<button type="button" class="cb-cell'+(on?' on':'')+'" data-tbot="'+escapeAttr(c.id)+'"'
+      + ' title="'+escapeAttr(nm)+'" aria-label="'+escapeAttr(nm)+'" aria-pressed="'+on+'">'
+      + carbotSVG(c, 50, 'cb-svg') + '<span class="cb-name">'+esc(nm)+'</span></button>';
+  }).join('');
+}
+function renderTimerTime(r){
+  const t = state.timer;
+  const timeEl = $('#tmTime');
+  if(!timeEl) return;
+  timeEl.textContent = tmFmt(r);
+  const ratio = t.total>0 ? Math.max(0, Math.min(1, r/t.total)) : 0;
+  const ring = $('#tmRing');
+  if(ring) ring.style.strokeDashoffset = String(TM_RING_C * (1 - ratio));
+  const bar = $('#tmBar');
+  if(bar) bar.style.width = (ratio*100).toFixed(1)+'%';
+  const wrap = $('#tmRingWrap');
+  if(wrap){
+    wrap.classList.toggle('warn', !t.finished && r>0 && ratio<=0.2);
+    wrap.classList.toggle('done', !!t.finished);
+  }
+  const badge = $('#tmStateBadge');
+  if(badge){
+    const st = t.finished ? 'done' : (t.running ? 'run' : (r>0 && r<t.total ? 'pause' : 'idle'));
+    badge.className = 'tm-state '+st;
+    badge.textContent = st==='done' ? L({ko:'다 됐어요!', en:'Time’s up!'})
+      : st==='run' ? L({ko:'진행 중', en:'Running'})
+      : st==='pause' ? L({ko:'잠깐 멈춤', en:'Paused'})
+      : L({ko:'준비', en:'Ready'});
+  }
+  if($('#tmRingMission')) $('#tmRingMission').textContent = tmMissionLabel();
+  const tabBadge = $('#tmTabBadge');
+  if(tabBadge){
+    const show = !t.finished && (t.running || (r>0 && r<t.total));
+    tabBadge.classList.toggle('hide', !show);
+    if(show){
+      tabBadge.textContent = tmFmt(r);
+      tabBadge.classList.toggle('warn', r<=10);
+      tabBadge.classList.toggle('run', r>10);
+    }else{
+      tabBadge.textContent = '00:00';
+      tabBadge.classList.remove('warn','run');
+    }
+  }
+  const start = $('#tmStart'), pause = $('#tmPause'), reset = $('#tmReset');
+  if(start) start.disabled = !!t.running;
+  if(pause) pause.disabled = !t.running;
+  if(reset) reset.disabled = !t.running && !t.finished && r===t.total;
+  const hint = $('#tmHint');
+  if(hint) hint.textContent = t.running
+    ? L({ko:'카봇이 같이 세고 있어요. 다른 탭을 봐도 시간은 계속 흘러가요.', en:'Your Carbot is counting with you — the timer keeps running on other tabs.'})
+    : t.finished
+      ? L({ko:'시간이 다 됐어요. 카봇에게 알려 줘!', en:'Time is up — tell your Carbot how it went!'})
+      : L({ko:'시작을 누르면 카봇이 함께 달려요. 1분부터 30분까지 고를 수 있어요.', en:'Press Start and your Carbot runs with you. Pick 1 to 30 minutes.'});
+}
+function renderTimer(){
+  const host = $('#tmBot');
+  if(!host) return;
+  const t = state.timer;
+  const bot = CB_BY_ID[t.bot] || CARBOTS[0];
+  host.innerHTML = carbotSVG(bot, 132);
+  if($('#tmBotName')) $('#tmBotName').textContent = L({ko:bot.ko, en:bot.en});
+  if($('#tmBotWrap')) $('#tmBotWrap').hidden = !tmGridOpen;
+  if($('#tmBotPick')){
+    $('#tmBotPick').setAttribute('aria-expanded', String(tmGridOpen));
+    $('#tmBotPick').classList.toggle('go', tmGridOpen);
+  }
+  if(tmGridOpen) renderTimerBots();
+  if($('#tmMissions')) $('#tmMissions').innerHTML = TM_MISSIONS.map(m=>{
+    const on = m.id===t.missionId;
+    return '<button type="button" class="tm-chip'+(on?' on':'')+'" data-tm-mission="'+m.id+'" aria-pressed="'+on+'">'+esc(L(m))+'</button>';
+  }).join('');
+  if($('#tmFreeWrap')) $('#tmFreeWrap').classList.toggle('hide', t.missionId!=='free');
+  const freeIn = $('#tmFreeIn');
+  if(freeIn && document.activeElement!==freeIn) freeIn.value = t.freeKo || '';
+  if(freeIn) freeIn.placeholder = L({ko:'미션을 적어 보세요', en:'Type your mission'});
+  if($('#tmPresets')) $('#tmPresets').innerHTML = TM_PRESETS.map(sec=>
+    '<button type="button" class="tm-preset'+(sec===t.total?' on':'')+'" data-tm-preset="'+sec+'" aria-pressed="'+(sec===t.total)+'">'+tmPresetLabel(sec)+'</button>').join('');
+  const minIn = $('#tmMin'), secIn = $('#tmSec');
+  if(minIn && document.activeElement!==minIn) minIn.value = String(Math.floor(t.total/60));
+  if(secIn && document.activeElement!==secIn) secIn.value = String(t.total%60);
+  if($('#tmPraiseList')) $('#tmPraiseList').innerHTML = [
+      {k:'early', em:'🎉', lbl:'tmPickEarly'},
+      {k:'again', em:'💪', lbl:'tmPickAgain'},
+      {k:'kept',  em:'⭐', lbl:'tmPickKept'}
+    ].map(x=> '<div class="tm-praise"><i aria-hidden="true">'+x.em+'</i><span><b>'+esc(STR[x.lbl][state.lang])+'</b>'+esc(L(TM_PRAISE[x.k]))+'</span></div>').join('');
+  if($('#tmIdeas')) $('#tmIdeas').innerHTML = TM_IDEAS.map(x=>'<span class="tm-idea">'+esc(L(x))+'</span>').join('');
+  if($('#tmChips')) $('#tmChips').textContent = String(state.chips);
+  renderTimerTime(timerRemain());
+}
+
+function timerStart(){
+  const t = state.timer;
+  if(!t.total) return;
+  if(t.finished || timerRemain()<=0){ t.remain = t.total; t.finished = false; t.praise = ''; }
+  else t.remain = timerRemain();
+  t.running = true;
+  t.endAt = Date.now() + t.remain*1000;
+  tmShownSec = t.remain;
+  if(tmDoneOpen) closeTimerModal();
+  save(); renderTimer();
+  sfxDing();
+  toast(L({ko:'카봇 타이머 시작! '+tmFmt(t.remain), en:'Carbot timer started! '+tmFmt(t.remain)}), '⏱️');
+}
+function timerPause(){
+  const t = state.timer;
+  if(!t.running) return;
+  t.remain = timerRemain();
+  t.running = false; t.endAt = 0;
+  save(); renderTimer(); sfxClick();
+}
+function timerReset(){
+  const t = state.timer;
+  t.running = false; t.endAt = 0; t.remain = t.total; t.finished = false; t.praise = '';
+  save(); renderTimer(); sfxClick();
+}
+function setTimerTotal(sec){
+  const t = state.timer;
+  sec = clamp(Math.round(Number(sec)||0), 1, 3600);
+  t.total = sec; t.remain = sec; t.running = false; t.endAt = 0; t.finished = false; t.praise = '';
+  save(); renderTimer();
+}
+function applyTimerCustom(){
+  const mi = $('#tmMin'), se = $('#tmSec');
+  const m = clamp(Math.round(Number(mi && mi.value)||0), 0, 60);
+  const s = clamp(Math.round(Number(se && se.value)||0), 0, 59);
+  let sec = m*60 + s;
+  if(sec < 1) sec = 60;
+  setTimerTotal(sec);
+  if(se) se.value = String(sec%60);
+  if(mi) mi.value = String(Math.floor(sec/60));
+  sfxClick();
+  toast(L({ko:'시간을 '+tmFmt(sec)+'로 맞췄어요', en:'Timer set to '+tmFmt(sec)}), '⏱️');
+}
+function applyTimerFree(){
+  const el = $('#tmFreeIn');
+  const v = ((el && el.value) || '').trim().slice(0,20);
+  if(!v){
+    toast(L({ko:'미션을 먼저 적어 주세요', en:'Type a mission first'}), '✏️');
+    return;
+  }
+  state.timer.freeKo = v;
+  state.timer.freeEn = v;
+  state.timer.missionId = 'free';
+  save(); renderTimer(); sfxClick();
+}
+function timerSetMission(id){
+  const t = state.timer;
+  if(!TM_MISSIONS.some(m=>m.id===id)) return;
+  t.missionId = id;
+  save(); renderTimer(); sfxClick();
+}
+function timerSetBot(id){
+  const t = state.timer;
+  if(!CB_BY_ID[id]) return;
+  t.bot = id;
+  save(); renderTimer(); sfxClick();
+}
+function timerTick(){
+  const t = state.timer;
+  if(!t.running || !t.endAt) return;
+  const r = Math.max(0, Math.ceil((t.endAt - Date.now())/1000));
+  if(r <= 0){ timerFinish(); return; }
+  const prev = tmShownSec;
+  tmShownSec = r;
+  renderTimerTime(r);
+  if(state.sound && r<=10 && prev>r) sfxTick();
+}
+function timerFinish(){
+  const t = state.timer;
+  t.running = false; t.endAt = 0; t.remain = 0; t.finished = true;
+  save(); renderTimer();
+  sfxAlarm();
+  openTimerModal();
+  notifyTimer();
+}
+async function notifyTimer(){
+  try{
+    if(!('Notification' in window) || Notification.permission !== 'granted') return false;
+    const title = '⏱️ ' + (state.lang==='ko' ? '카봇 타이머 · ' : 'Carbot Timer · ') + tmMissionLabel();
+    const body = L({ko:'시간이 다 됐어요! 카봇이 기다리고 있어요.', en:'Time is up! Your Carbot is waiting.'});
+    const icon = notifyIconURL();
+    const opts = {body:body, tag:'carbot-timer', renotify:true, vibrate:[200,80,200,80,200], data:{url:location.href}};
+    if(icon){ opts.icon = icon; opts.badge = icon; }
+    if('serviceWorker' in navigator){
+      const reg = swReg || await swReady(1500);
+      if(reg && typeof reg.showNotification === 'function'){
+        try{ await reg.showNotification(title, opts); return true; }catch(e){ /* fall back */ }
+      }
+    }
+    const n = new Notification(title, {body:body, tag:'carbot-timer', icon:icon || undefined});
+    setTimeout(()=>{ try{ n.close(); }catch(e){} }, 25000);
+    return true;
+  }catch(e){ return false; }
+}
+function openTimerModal(){
+  const ov = $('#timerOverlay');
+  if(!ov) return;
+  const t = state.timer;
+  const bot = CB_BY_ID[t.bot] || CARBOTS[0];
+  const mission = tmMissionLabel();
+  $('#tmBadge').innerHTML = carbotSVG(bot, 112);
+  $('#tmDoneTitle').textContent = L({ko:mission+' 시간이 다 됐어!', en:'Time’s up · '+mission});
+  ['Early','Again','Kept'].forEach((k,i)=>{
+    const b = $('#tmBtn'+k);
+    if(b) b.setAttribute('aria-pressed', 'false');
+  });
+  $('#tmBubble').classList.remove('pop');
+  $('#tmBubbleTxt').textContent = L(TM_PROMPT);
+  tmLastMsg = L(TM_PROMPT);
+  tmDoneOpen = true;
+  ov.hidden = false;
+  ov.classList.remove('show');
+  requestAnimationFrame(()=> ov.classList.add('show'));
+  setTimeout(()=> speakAlarm(tmLastMsg, state.lang), 380);
+}
+function closeTimerModal(){
+  const ov = $('#timerOverlay');
+  if(!ov) return;
+  tmDoneOpen = false;
+  ov.classList.remove('show');
+  setTimeout(()=>{ if(!tmDoneOpen) ov.hidden = true; }, 240);
+}
+function timerPraise(kind){
+  if(!TM_PRAISE[kind]) return;
+  const msg = L(TM_PRAISE[kind]);
+  state.timer.praise = kind; save();
+  tmLastMsg = msg;
+  const bub = $('#tmBubble');
+  const txt = $('#tmBubbleTxt');
+  if(txt) txt.textContent = msg;
+  if(bub){
+    bub.classList.remove('pop');
+    void bub.offsetWidth;
+    bub.classList.add('pop');
+  }
+  [['early','Early'],['again','Again'],['kept','Kept']].forEach(p=>{
+    const el = $('#tmBtn'+p[1]);
+    if(el) el.setAttribute('aria-pressed', String(p[0]===kind));
+  });
+  speakAlarm(msg, state.lang);
+  if(kind==='again') sfxDing();
+  else { sfxChip(); burstAt(bub || $('#tmBadge'), 40); }
+}
+function timerReplay(){
+  const msg = tmLastMsg || L(TM_PROMPT);
+  const txt = $('#tmBubbleTxt');
+  if(txt) txt.textContent = msg;
+  speakAlarm(msg, state.lang);
+  sfxClick();
+}
+function timerAgain(){
+  closeTimerModal();
+  const t = state.timer;
+  t.finished = false; t.praise = ''; t.remain = t.total;
+  timerStart();
+}
 /* =====================================================================
    12. watch / dex / summon
    ===================================================================== */
@@ -4175,6 +4875,7 @@ function applyStatic(){
   $('#btnFull').setAttribute('aria-label', L({ko:'전체화면',en:'Full screen'}));
   $('#btnSettings').setAttribute('aria-label', L({ko:'설정',en:'Settings'}));
   $('#wxRefresh').setAttribute('aria-label', L({ko:'날씨 새로고침',en:'Refresh weather'}));
+  if($('#tmBot')) renderTimer();
   $$('select, input, textarea').forEach(el=>{});
 }
 
@@ -4384,14 +5085,14 @@ function eventEditor(e,i){
   const t = e.rep.type;
   let h = '<div class="ed-item">'
     + '<div class="ed-top">'
-    +   '<button type="button" class="icon-btn big" data-icon="ev'+i+'" aria-label="'+L({ko:'아이콘 고르기',en:'Pick icon'})+'">'+esc(e.icon)+'</button>'
+    +   '<button type="button" class="icon-btn big'+(cbIconBot(e.icon)?' cb-btn':'')+'" data-icon="ev'+i+'" aria-label="'+L({ko:'아이콘 고르기',en:'Pick icon'})+'">'+iconHTML(e.icon, 34)+'</button>'
     +   '<input type="time" class="ed-input ed-time" data-f="events.'+i+'.time" value="'+escapeAttr(e.time)+'" aria-label="'+L({ko:'시간',en:'Time'})+'">'
     +   '<span class="ed-ord">'+L({ko:'일정 '+(i+1),en:'Event '+(i+1)})+'</span>'
     +   '<button type="button" class="icon-btn" data-kind="events" data-move="up" data-i="'+i+'" aria-label="↑">↑</button>'
     +   '<button type="button" class="icon-btn" data-kind="events" data-move="down" data-i="'+i+'" aria-label="↓">↓</button>'
     +   '<button type="button" class="icon-btn del" data-del="events" data-i="'+i+'" aria-label="'+L({ko:'삭제',en:'Delete'})+'">🗑</button>'
     + '</div>';
-  if(uiPick==='ev'+i) h += iconPickHTML('ev'+i, EV_ICONS, 'events.'+i+'.icon');
+  if(uiPick==='ev'+i) h += cbPickHTML('ev'+i, 'events.'+i+'.icon', EV_ICONS);
   h += '<div class="ed-grid2">'
     +   '<input class="ed-input" data-f="events.'+i+'.ko" value="'+escapeAttr(e.ko)+'" placeholder="'+L({ko:'제목 (한국어)',en:'Title (Korean)'})+'">'
     +   '<input class="ed-input" data-f="events.'+i+'.en" value="'+escapeAttr(e.en)+'" placeholder="'+L({ko:'제목 (English)',en:'Title (English)'})+'">'
@@ -4456,11 +5157,11 @@ function routineEditor(r,i){
     h += '<select class="ed-input ed-select" data-f="routines.'+i+'.art.v">'+['1','2','3','4'].map(v=>
       '<option value="'+v+'"'+(v===art.v?' selected':'')+'>'+L({ko:'일러스트 ',en:'Illustration '})+v+'</option>').join('')+'</select>';
   else if(art.type==='carbot')
-    h += '<select class="ed-input ed-select" data-f="routines.'+i+'.art.v">'+CARBOTS.filter(c=>c.featured).map(c=>
-      '<option value="'+c.id+'"'+(c.id===art.v?' selected':'')+'>'+L({ko:c.ko,en:c.en})+'</option>').join('')+'</select>';
+    h += '<span class="fs-hint" style="align-self:center;margin:0;line-height:1.3">'+L({ko:'아래 카봇 캐릭터에서 고르세요',en:'Pick a Carbot below'})+'</span>';
   else
     h += '<button type="button" class="mini-btn" data-icon="r'+i+'">'+esc(art.v)+' '+L({ko:'이모지 고르기',en:'Pick emoji'})+'</button>';
   h += '</div>';
+  if(art.type==='carbot') h += cbPickHTML('r'+i, 'routines.'+i+'.art.v', null, 'bare');
   if(uiPick==='r'+i && art.type==='emoji') h += iconPickHTML('r'+i, EMOJIS, 'routines.'+i+'.art.v');
   h += alarmBoxHTML('routines', i, r.alarm, 'r', r);
   if(custom)
@@ -4479,10 +5180,14 @@ function bodyPlays(){
   return h;
 }
 function playEditor(p,i){
+  const pcb = cbIconBot(p.ic);
   let h = '<div class="ed-item">'
     + '<div class="ed-top">'
-    +   '<span class="p-ic" style="background:'+palG(p.pi)+';width:44px;height:44px;font-size:15px">'+esc(p.ic)+'</span>'
-    +   '<input class="ed-input" style="width:74px;flex:0 0 auto" maxlength="4" data-f="plays.'+i+'.ic" value="'+escapeAttr(p.ic)+'" placeholder="'+L({ko:'배지',en:'Badge'})+'">'
+    +   (pcb
+          ? '<span class="p-ic cb" style="width:44px;height:44px">'+carbotSVG(pcb, 44)+'</span>'
+          : '<span class="p-ic" style="background:'+palG(p.pi)+';width:44px;height:44px;font-size:15px">'+esc(p.ic)+'</span>')
+    +   '<input class="ed-input" style="width:74px;flex:0 0 auto" maxlength="4" data-f="plays.'+i+'.ic" value="'+escapeAttr(pcb?'':p.ic)+'" placeholder="'+(pcb?L({ko:'카봇',en:'Carbot'}):L({ko:'배지',en:'Badge'}))+'">'
+    +   '<button type="button" class="mini-btn'+(pcb?' go':'')+'" data-icon="pb'+i+'" style="flex:0 0 auto">'+L({ko:'🤖 카봇',en:'🤖 Carbot'})+'</button>'
     +   '<div class="day-pick" style="margin-left:auto">'+PALETTE.map((c,ci)=>
            '<button type="button" class="'+(ci===p.pi?'on':'')+'" style="min-width:26px;height:26px;border-radius:50%;background:'+c.g+'" data-pal="'+i+'" data-v="'+ci+'" aria-label="color '+ci+'"></button>'
          ).join('')+'</div>'
@@ -4500,6 +5205,7 @@ function playEditor(p,i){
     +   '<input class="ed-input" data-f="plays.'+i+'.ko2" value="'+escapeAttr(p.ko2)+'" placeholder="'+L({ko:'설명 (한국어)',en:'Note (Korean)'})+'">'
     +   '<input class="ed-input" data-f="plays.'+i+'.en2" value="'+escapeAttr(p.en2)+'" placeholder="'+L({ko:'설명 (English)',en:'Note (English)'})+'">'
     + '</div>'
+    + (uiPick==='pb'+i ? cbPickHTML('pb'+i, 'plays.'+i+'.ic', null) : '')
     + alarmBoxHTML('plays', i, p.alarm, 'p', p)
     + '</div>';
   return h;
@@ -4601,11 +5307,11 @@ function updateBackupSize(){
 function addNew(kind){
   if(!draft) return;
   if(kind==='event'){
-    draft.events.push({id:uid('e'), time:'16:00', ko:'새 일정', en:'', icon:'📌', cat:'etc',
+    draft.events.push({id:uid('e'), time:'16:00', ko:'새 일정', en:'', icon:cbRandomIcon(), cat:'etc',
       rep:{type:'daily', days:[1], date:''}, reward:true, on:true, alarm:{on:false, lead:0, time:'16:00', ko:'', en:''}});
     setTabId='events';
   }else if(kind==='routine'){
-    draft.routines.push({id:uid('r'), ko:'새 루틴', en:'', art:{type:'emoji', v:'⭐'},
+    draft.routines.push({id:uid('r'), ko:'새 루틴', en:'', art:{type:'carbot', v:cbRandomId()},
       alarm:{on:false, time:alarmTimeFor(draft.routines.length), ko:'', en:''}});
     setTabId='routines';
   }else if(kind==='play'){
@@ -4616,7 +5322,9 @@ function addNew(kind){
     draft.affirms.push({ko:'새 문구', en:''});
     setTabId='affirms';
   }
-  uiPick = null;
+  uiPick = kind==='event' ? 'ev'+(draft.events.length-1)
+         : kind==='play'  ? 'pb'+(draft.plays.length-1)
+         : null;
   renderSetTabs(); renderSetBody();
   scrollLastIntoView();
 }
@@ -4820,9 +5528,18 @@ function bindSettings(){
           if(!Array.isArray(days) || !days.length) setPath(draft, ep, [new Date().getDay()]);
         }
       }
+      if(/\.art\.type$/.test(f)){
+        /* keep art.v valid for the newly chosen art type */
+        const vp = f.replace(/\.type$/, '.v');
+        const cur = getPath(draft, vp);
+        if(t.value==='img')      setPath(draft, vp, ART_IMG[cur] ? cur : '1');
+        else if(t.value==='carbot') setPath(draft, vp, (CB_BY_ID[cur] || cbIconBot(cur)) ? (cbIconBot(cur)||cur) : cbRandomId());
+        else if(t.value==='emoji')  setPath(draft, vp, (typeof cur==='string' && cur.length<=4 && !CB_BY_ID[cur]) ? cur : '⭐');
+      }
       renderSetBody();
       return;
     }
+    if(f && /^plays\.\d+\.ic$/.test(f)){ renderSetBody(); return; }
     if(t.type==='file' && t.getAttribute('data-img')) handleImagePick(t);
   });
 
@@ -4946,6 +5663,7 @@ function bindSettings(){
 }
 function getPickPath(key){
   if(/^ev(\d+)$/.test(key)) return 'events.'+key.slice(2)+'.icon';
+  if(/^pb(\d+)$/.test(key)) return 'plays.'+key.slice(2)+'.ic';
   if(/^r(\d+)$/.test(key)) return 'routines.'+key.slice(1)+'.art.v';
   return '';
 }
@@ -4978,6 +5696,7 @@ function switchTab(name){
   $$('.tab').forEach(t=> t.setAttribute('aria-selected', String(t.dataset.tab===name)));
   $$('.tab-panel').forEach(p=> p.hidden = (p.id !== 'panel-'+name));
   if(name==='watch'){ renderWatch(); }
+  if(name==='timer'){ renderTimer(); }
   if(name==='play'){ renderPrep(); renderPlays(); updateCounts(); }
   if(name==='dash'){ renderRoutines(); renderPrep(); renderPlays(); }
   sfxClick();
@@ -5015,6 +5734,7 @@ function renderAll(){
   renderEvents();
   renderWeather();
   renderWatch();
+  renderTimer();
   updateCounts();
 }
 
@@ -5039,6 +5759,49 @@ function wire(){
   });
   $('#btnFull').addEventListener('click', ()=>{ toggleFullscreen(); sfxClick(); });
   $('#btnSettings').addEventListener('click', ()=>{ openSettings(); sfxClick(); });
+
+  /* ---------- carbot timer ---------- */
+  const tmPanel = $('#panel-timer');
+  if(tmPanel){
+    tmPanel.addEventListener('click', e=>{
+      const b = e.target.closest('button');
+      if(!b) return;
+      if(b.id==='tmBotPick'){ tmGridOpen = !tmGridOpen; renderTimer(); sfxClick(); return; }
+      const tbot = b.getAttribute('data-tbot');
+      if(tbot){ timerSetBot(tbot); return; }
+      const mis = b.getAttribute('data-tm-mission');
+      if(mis){ timerSetMission(mis); return; }
+      const pre = b.getAttribute('data-tm-preset');
+      if(pre){ setTimerTotal(Number(pre)); sfxClick(); return; }
+      if(b.id==='tmApply'){ applyTimerCustom(); return; }
+      if(b.id==='tmFreeGo'){ applyTimerFree(); return; }
+      if(b.id==='tmStart'){ timerStart(); return; }
+      if(b.id==='tmPause'){ timerPause(); return; }
+      if(b.id==='tmReset'){ timerReset(); return; }
+    });
+    const freeIn = $('#tmFreeIn');
+    if(freeIn){
+      freeIn.addEventListener('input', ()=>{
+        state.timer.freeKo = freeIn.value.slice(0,20);
+        state.timer.freeEn = freeIn.value.slice(0,20);
+        save();
+        if($('#tmRingMission')) $('#tmRingMission').textContent = tmMissionLabel();
+      });
+      freeIn.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); applyTimerFree(); } });
+    }
+    ['tmMin','tmSec'].forEach(id=>{
+      const el = $('#'+id);
+      if(!el) return;
+      el.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); applyTimerCustom(); } });
+    });
+  }
+  if($('#tmBtnEarly')) $('#tmBtnEarly').addEventListener('click', ()=> timerPraise('early'));
+  if($('#tmBtnAgain')) $('#tmBtnAgain').addEventListener('click', ()=> timerPraise('again'));
+  if($('#tmBtnKept')) $('#tmBtnKept').addEventListener('click', ()=> timerPraise('kept'));
+  if($('#tmReplay')) $('#tmReplay').addEventListener('click', timerReplay);
+  if($('#tmAgainGo')) $('#tmAgainGo').addEventListener('click', timerAgain);
+  if($('#tmClose')) $('#tmClose').addEventListener('click', ()=>{ closeTimerModal(); sfxClick(); });
+  if($('#timerOverlay')) $('#timerOverlay').addEventListener('click', e=>{ if(e.target===$('#timerOverlay')) closeTimerModal(); });
 
   /* routine grid */
   const grid = $('#routines');
@@ -5168,6 +5931,7 @@ function wire(){
   document.addEventListener('keydown', e=>{
     if(e.key!=='Escape') return;
     if(!$('#alarmOverlay').hidden) closeAlarm();
+    else if(!$('#timerOverlay').hidden) closeTimerModal();
     else if(!$('#summonOverlay').hidden) closeSummon();
     else if(!$('#settingsModal').hidden) closeSettings();
   });
@@ -5196,6 +5960,7 @@ function tick(){
   if(ensureDay()){ renderAll(); }
   renderClock();
   checkAlarms();
+  timerTick();
 }
 function brandMark(){
   return '<svg viewBox="0 0 64 64" aria-hidden="true">'
