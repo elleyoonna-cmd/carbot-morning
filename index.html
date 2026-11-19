@@ -1261,7 +1261,7 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
           <span class="chip-count" id="dexCount" style="margin-left:auto">0 / 0</span>
         </div>
         <div class="dex-progress"><i id="dexBar" style="width:0%"></i></div>
-        <p class="fs-hint" style="margin:-4px 0 10px">실제 헬로카봇 등장 카봇과 공식 변형 폼(X·골드·크리스탈·리파인·미니 등)을 모은 도감이에요.</p>
+        <p class="fs-hint" style="margin:-4px 0 10px" data-i18n="dexHint">실제 헬로카봇 등장 카봇과 공식 변형 폼(X·골드·크리스탈·리파인·미니 등)을 모은 도감이에요.</p>
         <div class="dex-tools">
           <div class="dex-filters" id="dexFilters">
             <button type="button" class="dex-chip on" data-dex-filter="all">전체</button>
@@ -2083,6 +2083,7 @@ const STR = {
   watchPageSub:{ko:'카봇칩을 시계에 끼우면 카봇이 소환돼요!',en:'Slide a chip into the watch to summon a Carbot!'},
   trayTitle:{ko:'내 카봇칩(큐브팩)',en:'My Carbot chips (cube packs)'},
   dexTitle:{ko:'카봇 도감',en:'Carbot Dex'},
+  dexHint:{ko:'실제 헬로카봇 등장 카봇과 공식 변형 폼(X·골드·크리스탈·리파인·미니 등)을 모은 도감이에요.',en:'Every Carbot from the show plus its official forms — X, Gold, Crystal, Refined, Mini and more.'},
   streakLbl:{ko:'연속 달성',en:'Streak'},
   dayUnit:{ko:'일',en:' days'},
   streakSub:{ko:'루틴 4단계를 모두 끝낸 날이 이어져요',en:'Days in a row with all 4 steps done'},
@@ -3899,6 +3900,7 @@ function renderWatch(){
   if(ovHost) ovHost.innerHTML = watchSVG();
 
   renderChips();
+  renderDexFilters();
   renderDex();
   renderWatchStatusOnly();
   updateCounts();
@@ -3921,7 +3923,8 @@ function renderChips(){
   const tray = $('#chipTray');
   if(n<=0){
     host.innerHTML = '';
-    if(tray && !$('#chipEmpty')){
+    const old = $('#chipEmpty'); if(old) old.remove();
+    if(tray){
       const box = document.createElement('div');
       box.className='stage-empty'; box.id='chipEmpty';
       box.innerHTML = '<p>'+L({ko:'아직 카봇칩이 없어요.<br>오늘 루틴을 모두 끝내면 카봇칩을 받아요!',en:'No chips yet.<br>Finish all of today’s routines to get a Carbot chip!'})+'</p>'
@@ -4004,9 +4007,18 @@ function renderDexFilters(){
   sel.innerHTML = ['<option value="">'+L({ko:'모든 시리즈',en:'All series'})+'</option>']
     .concat(SERIES_ORDER.filter(k=>SERIES[k]).map(k=>'<option value="'+k+'"'+(cur===k?' selected':'')+'>'+esc(L(SERIES[k]))+'</option>'))
     .join('');
+  sel.setAttribute('aria-label', L({ko:'시리즈',en:'Series'}));
+  const labels = {all:{ko:'전체',en:'All'}, own:{ko:'보유함',en:'Owned'}, missing:{ko:'미보유',en:'Missing'}};
   $$('#dexFilters .dex-chip').forEach(b=>{
-    b.classList.toggle('on', b.getAttribute('data-dex-filter')===dexFilter);
+    const k = b.getAttribute('data-dex-filter');
+    b.textContent = L(labels[k] || labels.all);
+    b.classList.toggle('on', k===dexFilter);
   });
+  const s = $('#dexSearch');
+  if(s){
+    s.placeholder = L({ko:'이름 검색',en:'Search name'});
+    s.setAttribute('aria-label', L({ko:'이름 검색',en:'Search name'}));
+  }
 }
 
 /* --- summon --- */
