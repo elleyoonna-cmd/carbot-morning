@@ -917,6 +917,103 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
 .img-cell .nm{font-size:10.5px; font-weight:850; color:var(--ink2); text-align:center; line-height:1.2; word-break:keep-all}
 .img-cell .mini-btn{width:100%; padding:6px 7px; font-size:10.5px}
 
+/* ============ rewards: master badge & energy cores ============ */
+.mini-energy{
+  display:flex; align-items:center; gap:7px; flex-wrap:wrap; margin-top:12px;
+  padding:9px 11px; border-radius:14px; background:linear-gradient(180deg,#fffaf0,#fff4d9);
+  box-shadow:inset 0 0 0 1px rgba(240,168,0,.28);
+}
+.me-lbl{font-size:12px; font-weight:900; color:#8a5200}
+.me-val{font-size:12.5px; font-weight:900; color:#8a5200}
+.me-tk{margin-left:auto; font-size:12px; font-weight:900; color:#7a4b00}
+.core-pips{display:inline-flex; gap:3px; align-items:center}
+.core-pips .cp{
+  width:20px; height:20px; border-radius:7px; display:grid; place-items:center;
+  font-size:11px; font-style:normal; line-height:1; background:#eef2fa; color:#c3ccdd;
+  box-shadow:inset 0 0 0 1px rgba(34,48,76,.08); transition:transform .25s, background .25s;
+}
+.core-pips .cp.on{
+  background:linear-gradient(180deg,#fff3bf,#ffd15c); color:#8a5200;
+  box-shadow:inset 0 0 0 1px rgba(240,168,0,.5), 0 4px 10px -6px rgba(240,168,0,.9);
+  animation:cpPop .4s cubic-bezier(.3,1.6,.5,1) both;
+}
+.core-pips.sm .cp{width:16px; height:16px; font-size:9px; border-radius:6px}
+@keyframes cpPop{from{transform:scale(.5)}to{transform:none}}
+
+.station{padding:clamp(14px,1.7vw,20px)}
+.energy-station{
+  border-radius:18px; padding:12px 14px; margin-bottom:14px;
+  background:radial-gradient(320px 120px at 8% 0%, #fff7dd 0%, #fffdf5 62%), linear-gradient(180deg,#fffdf7,#fff8e8);
+  box-shadow:inset 0 0 0 1px rgba(240,168,0,.3);
+}
+.es-top{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.es-title{font-size:13.5px; font-weight:900; color:#8a5200; display:inline-flex; align-items:center; gap:6px}
+.es-tk{margin-left:auto; font-size:12px; font-weight:900; color:#7a4b00; background:#fff; padding:4px 9px; border-radius:999px; box-shadow:inset 0 0 0 1px rgba(240,168,0,.3)}
+.es-row{display:flex; align-items:center; gap:9px; margin-top:9px}
+.es-val{font-size:14px; font-weight:900; color:#8a5200}
+.es-bar{height:7px; border-radius:999px; background:#f1e7cf; overflow:hidden; margin-top:8px}
+.es-bar i{display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,#ffd15c,#ff9d3a); transition:width .45s}
+.es-hint{font-size:11.5px; font-weight:750; color:#8a6a2a; margin-top:7px; line-height:1.4}
+
+.master-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px}
+.mb-row{
+  display:flex; align-items:center; gap:10px; padding:10px 11px; border-radius:15px;
+  background:#f8fbff; border:1px solid var(--line);
+}
+.mb-row.on{background:linear-gradient(180deg,#fffdf5,#fff8e6); border-color:rgba(240,168,0,.3)}
+.mb-em{font-size:24px; line-height:1; flex:0 0 auto; filter:grayscale(.55); opacity:.85}
+.mb-row.on .mb-em{filter:none; opacity:1}
+.mb-b{min-width:0; flex:1 1 auto}
+.mb-t{display:flex; align-items:baseline; gap:6px; flex-wrap:wrap}
+.mb-t b{font-size:13px; font-weight:900; letter-spacing:-.02em}
+.mb-c{margin-left:auto; font-size:11px; font-weight:850; color:var(--muted)}
+.mb-bar{height:6px; border-radius:999px; background:#e9eef8; overflow:hidden; margin:6px 0 5px}
+.mb-bar i{display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,#8ec5ff,#2f6ce6); transition:width .45s}
+.mb-row.on .mb-bar i{background:linear-gradient(90deg,#ffd15c,#ffa726)}
+.mb-f{display:flex; align-items:center; gap:6px; font-size:10.5px; font-weight:850; color:var(--ink2)}
+.mb-next{margin-left:auto; color:var(--muted); font-weight:800}
+
+.special-box{
+  width:100%; margin-top:14px; padding:12px 13px; border-radius:18px;
+  background:radial-gradient(280px 120px at 90% 0%, #fff2cc 0%, #fffdf7 65%), linear-gradient(180deg,#fffdf7,#fff6e2);
+  box-shadow:inset 0 0 0 1.5px rgba(240,168,0,.35);
+}
+.sb-head{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.sb-title{font-size:12.5px; font-weight:900; color:#8a5200; display:inline-flex; align-items:center; gap:5px}
+.sb-tk{margin-left:auto; font-size:11.5px; font-weight:900; color:#7a4b00; background:#fff; padding:3px 8px; border-radius:999px; box-shadow:inset 0 0 0 1px rgba(240,168,0,.3)}
+.sb-row{display:flex; align-items:center; gap:8px; margin:8px 0 10px}
+.sb-val{font-size:12.5px; font-weight:900; color:#8a5200}
+.btn.special-summon{
+  width:100%; min-height:46px; padding:11px 14px; border-radius:15px; gap:7px;
+  font-size:13.5px; font-weight:900; color:#7a4b00;
+  background:linear-gradient(180deg,#fff3bf,#ffd15c);
+  box-shadow:inset 0 0 0 1px rgba(240,168,0,.45), 0 10px 22px -16px rgba(240,168,0,.95);
+}
+.btn.special-summon.ready{
+  color:#5c3300; animation:sparkle 1.8s ease-in-out infinite;
+  box-shadow:inset 0 0 0 1.5px rgba(240,168,0,.65), 0 12px 26px -14px rgba(240,168,0,1);
+}
+.btn.special-summon:disabled{cursor:not-allowed; filter:grayscale(.45); opacity:.6; animation:none}
+@keyframes sparkle{0%,100%{filter:brightness(1)}50%{filter:brightness(1.14)}}
+.sb-hint{font-size:11px; font-weight:800; color:#8a6a2a; margin-top:7px; text-align:center}
+
+/* special (golden) summon overlay */
+.overlay.special{background:radial-gradient(circle at 50% 45%, rgba(74,48,0,.9), rgba(26,16,0,.97))}
+.overlay.special .tunnel i{border-color:rgba(255,209,92,.9); box-shadow:0 0 34px rgba(255,190,60,.6), inset 0 0 30px rgba(255,190,60,.4)}
+.overlay.special .ov-flash{background:radial-gradient(circle,#fff8e1 0%,rgba(255,214,110,.7) 32%,rgba(255,180,40,0) 72%)}
+.overlay.special .ov-watch svg{filter:drop-shadow(0 18px 38px rgba(255,180,40,.55))}
+.overlay.special .ov-badge{box-shadow:0 18px 34px -16px rgba(0,0,0,.6), inset 0 0 0 3px rgba(255,209,92,.95), 0 0 34px rgba(255,190,60,.5)}
+.overlay.special .ov-name{color:#7a4b00}
+.overlay.special .ov-call{background:#fffaf0; border-color:rgba(240,168,0,.35); color:#7a4b00}
+.ov-tag.special{background:linear-gradient(180deg,#fff3bf,#ffd15c); color:#7a4b00; box-shadow:inset 0 0 0 1px rgba(240,168,0,.45)}
+.overlay.special .ov-reveal{background:linear-gradient(180deg,#fffdf7,#fff8e8)}
+.overlay.special .ov-actions .primary{background:linear-gradient(180deg,#ffd15c,#f0a800); color:#5c3300; box-shadow:0 12px 24px -14px rgba(240,168,0,.95)}
+.overlay.special::after{
+  content:"⚡"; position:absolute; inset:0; display:grid; place-items:center; pointer-events:none;
+  font-size:min(60vw,420px); opacity:.12; z-index:1; animation:boltPulse 1.6s ease-in-out infinite;
+}
+@keyframes boltPulse{0%,100%{transform:scale(1); opacity:.1}50%{transform:scale(1.08); opacity:.2}}
+
 /* ============ responsive ============ */
 @media (max-width:1340px){
   .tabs{order:4; width:100%; margin:2px 0 0; overflow-x:auto; scrollbar-width:none; justify-content:center}
@@ -936,6 +1033,8 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
   .affirm-btn{margin-left:auto}
 }
 @media (max-width:760px){
+  .master-grid{grid-template-columns:1fr}
+  .core-pips .cp{width:18px; height:18px}
   .routines{gap:9px}
   .r-body{padding:10px 11px 11px}
   .r-title{font-size:14px}
@@ -1210,6 +1309,12 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
           </div>
         </div>
         <div class="play-list" id="todayPlay"></div>
+        <div class="mini-energy" id="dashEnergy">
+          <span class="me-lbl">⚡ <span data-i18n="coreLbl">에너지 코어</span></span>
+          <span class="core-pips sm" data-cores></span>
+          <b class="me-val" data-coretxt>0 / 5</b>
+          <span class="me-tk" data-tickettxt>🎟 ×0</span>
+        </div>
       </div>
     </div>
 
@@ -1224,6 +1329,27 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
       <h2 class="page-title"><span aria-hidden="true">📚</span><span data-i18n="playPageTitle">오늘의 놀이·준비</span></h2>
       <span class="page-sub" id="playPageDate">11월 19일 목요일</span>
       <span class="chip-count" style="margin-left:auto"><span aria-hidden="true">🧊</span><span data-i18n="myChips">내 카봇칩</span> <b id="playChips">0</b></span>
+    </div>
+
+    <!-- 🏅 마스터 뱃지함 & ⚡ 에너지 코어 충전소 -->
+    <div class="card panel station" id="rewardStation">
+      <div class="sec-head" style="margin-bottom:12px">
+        <h2 class="sec-title" style="font-size:17px"><span aria-hidden="true">🏅</span><span data-i18n="masterTitle">내 마스터 뱃지함</span></h2>
+        <span class="sec-sub" data-i18n="masterSub">놀이·학습을 끝낼 때마다 뱃지 등급이 자라요</span>
+      </div>
+      <div class="energy-station">
+        <div class="es-top">
+          <span class="es-title"><span aria-hidden="true">⚡</span><span data-i18n="coreTitle">에너지 코어 충전소</span></span>
+          <span class="es-tk" data-tickettxt>🎟 ×0</span>
+        </div>
+        <div class="es-row">
+          <span class="core-pips" data-cores></span>
+          <b class="es-val" data-coretxt>0 / 5</b>
+        </div>
+        <div class="es-bar"><i data-corebar style="width:0%"></i></div>
+        <p class="es-hint" data-i18n="coreHint">코어 5개를 모으면 ⚡ 스페셜 합체 소환권 +1! ⌚ 카봇 시계·도감 탭에서 써요.</p>
+      </div>
+      <div class="master-grid" id="masterBadges"></div>
     </div>
 
     <div class="card panel" style="margin-bottom:14px">
@@ -1287,6 +1413,21 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
             <span class="chip-count"><span aria-hidden="true">🧊</span><b id="chipTrayCount">0</b></span>
           </div>
           <div class="chips" id="chips"></div>
+        </div>
+
+        <div class="special-box" id="specialBox">
+          <div class="sb-head">
+            <span class="sb-title"><span aria-hidden="true">⚡</span><span data-i18n="specialBoxTitle">스페셜 합체 에너지</span></span>
+            <span class="sb-tk" data-tickettxt>🎟 ×0</span>
+          </div>
+          <div class="sb-row">
+            <span class="core-pips" data-cores></span>
+            <b class="sb-val" data-coretxt>0 / 5</b>
+          </div>
+          <button type="button" class="btn special-summon" id="btnSpecialSummon" disabled>
+            <span aria-hidden="true">⚡</span><span>스페셜 합체 소환 (0개)</span>
+          </button>
+          <p class="sb-hint" data-i18n="specialHint">소환권 1개로 대형 합체 레전드 카봇을 소환해요</p>
         </div>
       </div>
 
@@ -2412,6 +2553,13 @@ const STR = {
   midnightNote:{ko:'🌙 자정이 지나면 오늘의 루틴·놀이 체크만 새로 시작되고, 모은 카봇칩과 도감은 그대로 남아요.',en:'🌙 After midnight only today’s routine and play checks restart. Your chips, dex and streak stay.'},
   playPageTitle:{ko:'오늘의 놀이·준비',en:'Play & Prep'},
   myChips:{ko:'내 카봇칩',en:'My chips'},
+  coreLbl:{ko:'에너지 코어',en:'Energy cores'},
+  masterTitle:{ko:'내 마스터 뱃지함',en:'My master badges'},
+  masterSub:{ko:'놀이·학습을 끝낼 때마다 뱃지 등급이 자라요',en:'Every finished play & learn grows a badge'},
+  coreTitle:{ko:'에너지 코어 충전소',en:'Energy core station'},
+  coreHint:{ko:'코어 5개를 모으면 ⚡ 스페셜 합체 소환권 +1! ⌚ 카봇 시계·도감 탭에서 써요.',en:'Collect 5 cores for a ⚡ special combine ticket. Use it in the Watch & Dex tab.'},
+  specialBoxTitle:{ko:'스페셜 합체 에너지',en:'Special combine energy'},
+  specialHint:{ko:'소환권 1개로 대형 합체 레전드 카봇을 소환해요',en:'One ticket summons a legendary combined Carbot'},
   weekTitle:{ko:'요일별 준비물',en:'Supplies by day'},
   weekSub:{ko:'오늘 칸은 노란색으로 표시돼요',en:"Today's column is highlighted"},
   editBtn:{ko:'편집',en:'Edit'},
@@ -2539,6 +2687,7 @@ function defaults(){
     name:{ko:'건우', en:'Connor'}, place:{ko:'용호동', en:'Yongho-dong'},
     dayKey:'', done:{}, play:{}, ev:{}, prep:{}, awarded:{r:[],p:[],e:[]},
     chips:0, chipDay:'', dex:{}, summons:0, streak:0, lastFull:'',
+    energyCores:0, specialTickets:0, specialSummons:0, playMastery:{}, playAward:{},
     supplies:clone(DEFAULT_SUPPLIES), routines:clone(DEFAULT_ROUTINES),
     plays:clone(DEFAULT_PLAYS), affirms:clone(DEFAULT_AFFIRM), events:[],
     timer:tmDefault()
@@ -2615,6 +2764,25 @@ function sanitize(o){
     state.dex = dex;
   }
   if(Number.isFinite(o.summons)) state.summons=Math.max(0,Math.floor(o.summons));
+  if(Number.isFinite(o.energyCores)) state.energyCores=Math.max(0,Math.floor(o.energyCores));
+  if(Number.isFinite(o.specialTickets)) state.specialTickets=Math.max(0,Math.floor(o.specialTickets));
+  if(Number.isFinite(o.specialSummons)) state.specialSummons=Math.max(0,Math.floor(o.specialSummons));
+  if(o.playMastery && typeof o.playMastery==='object'){
+    const pm={};
+    Object.keys(o.playMastery).forEach(k=>{
+      const n=Number(o.playMastery[k]);
+      if(typeof k==='string' && k && Number.isFinite(n) && n>0) pm[k]=Math.floor(n);
+    });
+    state.playMastery = pm;
+  }
+  if(o.playAward && typeof o.playAward==='object'){
+    const pa={};
+    Object.keys(o.playAward).forEach(k=>{
+      const v=o.playAward[k];
+      if(typeof k==='string' && k && typeof v==='string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) pa[k]=v;
+    });
+    state.playAward = pa;
+  }
   if(Number.isFinite(o.streak)) state.streak=Math.max(0,Math.floor(o.streak));
   if(typeof o.lastFull==='string') state.lastFull=o.lastFull;
   if(Array.isArray(o.routines) && o.routines.length) state.routines=sanitizeRoutines(o.routines);
@@ -3845,6 +4013,125 @@ function adoptChipDay(){
   if(routinesAllDone() && state.chipDay !== today){ state.chipDay = today; save(); }
 }
 
+/* ---------- 놀이·학습 보상: ⚡ 에너지 코어 & 🏅 마스터 뱃지 ----------
+   하루 1항목 1회: state.playAward[id]에 지급한 날짜를 적어 두고
+   같은 날 다시 체크해도 코어/뱃지가 두 번 오르지 않는다.
+   
+   합계 불변식: (specialTickets × 5) + energyCores = 모은 코어 - 소환에 쓴 코어뭉치
+   에너지 코어가 5개 차면 자동으로 스페셜 합체 소환권 +1 (초과분은 이월). */
+const CORES_PER_TICKET = 5;
+const MASTER_GRADES = [
+  {em:'🚀', ko:'도전 전',      en:'Ready to start', min:0},
+  {em:'🥉', ko:'브론즈 대원',  en:'Bronze Ranger',  min:1},
+  {em:'🥈', ko:'실버 대원',    en:'Silver Ranger',  min:5},
+  {em:'🥇', ko:'골드 대원',    en:'Gold Ranger',    min:10},
+  {em:'💎', ko:'다이아 마스터',en:'Diamond Master', min:20}
+];
+function masterGrade(n){
+  n = Math.max(0, Math.floor(n||0));
+  let i = 0;
+  for(let k=0;k<MASTER_GRADES.length;k++) if(n >= MASTER_GRADES[k].min) i = k;
+  const cur = MASTER_GRADES[i], nx = MASTER_GRADES[i+1] || null;
+  const lo = cur.min, hi = nx ? nx.min : cur.min;
+  const pct = nx ? Math.max(0, Math.min(100, Math.round((n-lo)/Math.max(1,hi-lo)*100))) : 100;
+  return {i:i, em:cur.em, ko:cur.ko, en:cur.en, next:nx, left: nx ? Math.max(0, nx.min-n) : 0, pct:(nx?pct:100), count:n};
+}
+function convertCores(){
+  let conv = 0;
+  while(state.energyCores >= CORES_PER_TICKET){
+    state.energyCores -= CORES_PER_TICKET;
+    state.specialTickets += 1;
+    conv += 1;
+  }
+  return conv;
+}
+/* 체크 해제: 코어 1개 회수. 이미 소환권으로 바뀌었으면 소환권 1개를 코어 4개로 되돌린 뒤 1개를 뺀다. */
+function removeEnergyCore(n){
+  let left = Math.max(0, n||0);
+  while(left>0 && state.energyCores>0){ state.energyCores -= 1; left -= 1; }
+  while(left>0 && state.specialTickets>0){ state.specialTickets -= 1; state.energyCores += 4; left -= 1; }
+  return left; /* 0보다 크면 소환에 이미 써서 되돌릴 수 없는 코어 */
+}
+function grantPlayReward(id){
+  const t = dkey(new Date());
+  const n0 = state.playMastery[id]||0;
+  if(state.playAward[id] === t) return {awarded:false, up:false, conv:0, grade:masterGrade(n0)};
+  state.playAward[id] = t;
+  state.playMastery[id] = n0 + 1;
+  state.energyCores += 1;
+  const conv = convertCores();
+  const g0 = masterGrade(n0), g1 = masterGrade(state.playMastery[id]);
+  save();
+  return {awarded:true, up:g1.i>g0.i, conv:conv, grade:g1};
+}
+function revokePlayReward(id){
+  const t = dkey(new Date());
+  const n0 = state.playMastery[id]||0;
+  if(n0>0) state.playMastery[id] = n0 - 1;
+  if(!(state.playMastery[id]>0)) delete state.playMastery[id];
+  if(state.playAward[id] === t) delete state.playAward[id];
+  removeEnergyCore(1);
+  save();
+}
+function gradeUpToast(item, g){
+  const nm = pick(item.ko, item.en);
+  toast(L({ko:g.ko+' 승급! '+nm+' '+g.count+'회 달성!', en:'Promoted to '+g.en+'! '+nm+' · '+g.count+' times!'}), g.em);
+  sfxCheer(); boostBurst();
+  speakAlarm(L({ko:'우와! '+g.ko+'가 되었어! 정말 멋진데?', en:'Wow! You are now a '+g.en+'! Amazing!'}), state.lang);
+}
+function ticketToast(){
+  toast(L({ko:'에너지 코어 5개 충전 완료! 스페셜 합체 소환권 +1!', en:'5 energy cores full! Special combine ticket +1!'}), '⚡');
+  sfxSummon(); boostBurst();
+  speakAlarm(L({ko:'에너지 코어가 가득 찼어! 스페셜 합체 소환권을 받았어!', en:'Your energy cores are full! You earned a special combine ticket!'}), state.lang);
+}
+function corePipsHTML(){
+  let h = '';
+  for(let i=0;i<CORES_PER_TICKET;i++) h += '<i class="cp'+(i<state.energyCores?' on':'')+'">⚡</i>';
+  return h;
+}
+function renderMasterBadges(){
+  const host = $('#masterBadges');
+  if(!host) return;
+  if(!state.plays.length){
+    host.innerHTML = '<div class="empty-hint">'+L({ko:'아직 놀이·학습 항목이 없어요. ✏️ 편집에서 추가해 보세요.', en:'No play & learn items yet. Add them in ✏️ Edit.'})+'</div>';
+    return;
+  }
+  host.innerHTML = state.plays.map(p=>{
+    const n = state.playMastery[p.id]||0;
+    const g = masterGrade(n);
+    const nm = pick(p.ko, p.en);
+    const cntTxt = L({ko:n+'회 완료', en:n+(n===1?' time done':' times done')});
+    const nextTxt = g.next
+      ? L({ko:'다음 등급까지 '+g.left+'회', en:g.left+' more to '+g.next.en})
+      : L({ko:'최고 등급 달성!', en:'Top grade reached!'});
+    return '<div class="mb-row'+(g.i?' on':'')+'" data-mb="'+esc(p.id)+'">'
+      + '<span class="mb-em" aria-hidden="true">'+g.em+'</span>'
+      + '<div class="mb-b">'
+      +   '<div class="mb-t"><b>'+esc(nm)+'</b><span class="mb-c">'+esc(cntTxt)+'</span></div>'
+      +   '<div class="mb-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+g.pct+'"><i style="width:'+g.pct+'%"></i></div>'
+      +   '<div class="mb-f"><span class="mb-g">'+g.em+' '+esc(L({ko:g.ko, en:g.en}))+'</span><span class="mb-next">'+esc(nextTxt)+'</span></div>'
+      + '</div></div>';
+  }).join('');
+}
+function renderRewards(){
+  renderMasterBadges();
+  const pips = corePipsHTML();
+  $$('[data-cores]').forEach(h=>{ h.innerHTML = pips; });
+  const txt = state.energyCores+' / '+CORES_PER_TICKET;
+  $$('[data-coretxt]').forEach(h=>{ h.textContent = txt; });
+  $$('[data-corebar]').forEach(h=>{ h.style.width = Math.round(state.energyCores/CORES_PER_TICKET*100)+'%'; });
+  $$('[data-tickettxt]').forEach(h=>{ h.textContent = '🎟 ×'+state.specialTickets; });
+  const b = $('#btnSpecialSummon');
+  if(b){
+    b.innerHTML = '<span aria-hidden="true">⚡</span><span>'+esc(L({ko:'스페셜 합체 소환 ('+state.specialTickets+'개)', en:'Special combine summon ('+state.specialTickets+')'}))+'</span>';
+    b.disabled = state.specialTickets<=0;
+    b.classList.toggle('ready', state.specialTickets>0);
+    b.setAttribute('aria-disabled', String(state.specialTickets<=0));
+  }
+  const tot = $('#specialTotal');
+  if(tot) tot.textContent = String(state.specialSummons||0);
+}
+
 function renderPlays(){
   const rowHTML = (p, big)=>{
     const done = !!state.play[p.id];
@@ -3870,10 +4157,15 @@ function renderPlays(){
 
 function togglePlay(id, el){
   const was = !!state.play[id];
+  let up = null, conv = 0;
   if(was){
     delete state.play[id];
+    revokePlayReward(id);
   }else{
     state.play[id]=true;
+    const r = grantPlayReward(id);
+    if(r.up) up = r.grade;
+    conv = r.conv || 0;
     sfxStamp();
     burstAt(el, 30);
   }
@@ -3883,6 +4175,9 @@ function togglePlay(id, el){
   /* keep both lists in sync */
   $$('[data-id="'+id+'"]').forEach(n=>{ n.classList.toggle('sel', !was); n.setAttribute('aria-pressed', String(!was)); });
   updateCounts();
+  renderRewards();
+  if(up){ const item = state.plays.find(p=>p.id===id) || {ko:'', en:''}; setTimeout(()=>gradeUpToast(item, up), 220); }
+  if(conv>0) setTimeout(ticketToast, up ? 900 : 220);
 }
 
 /* =====================================================================
@@ -4817,38 +5112,82 @@ function renderDexFilters(){
 }
 
 /* --- summon --- */
-let summoning=false, currentSummon=null;
+let summoning=false, currentSummon=null, currentSummonKind='chip';
+/* 스페셜 합체 소환 풀: 대형 합체/레전드 카봇 15~20종 */
+const SPECIAL_POOL_IDS = ['penta','pentastormx','stormx','grandcarbotgx','grandcarbotx','ultraportgx','ultraport',
+  'hyperbuildian','buildian','unicruiser','jetcruiser','safarisaber','starguardian','carbotx','kingdozer','kingguards','hawk','lifex'];
+function specialPool(){
+  let pool = SPECIAL_POOL_IDS.map(id=>CB_BY_ID[id]).filter(Boolean);
+  if(pool.length < 8) pool = CARBOTS.filter(c=> c.featured || (c.role && c.role.ko==='합체'));
+  return pool.length ? pool : CARBOTS;
+}
+function dexGrant(c){
+  const isNew = !(state.dex[c.id]>0);
+  state.dex[c.id] = (state.dex[c.id]||0)+1;
+  return isNew;
+}
+function specialSummon(){
+  if(summoning) return;
+  if(state.specialTickets<=0){
+    toast(L({ko:'스페셜 합체 소환권이 없어요. 놀이·학습을 끝내 에너지 코어를 5개 모아 보세요!', en:'No special tickets yet. Finish play & learn to fill 5 energy cores!'}), '⚡');
+    sfxClick(); return;
+  }
+  const all = specialPool();
+  const fresh = all.filter(c=> !(state.dex[c.id]>0));
+  const bag = fresh.length ? fresh : all;
+  const c = bag[Math.floor(Math.random()*bag.length)];
+  const isNew = dexGrant(c);
+  state.specialTickets -= 1;
+  state.specialSummons = (state.specialSummons||0)+1;
+  state.summons += 1;
+  save();
+  currentSummonKind = 'special';
+  revealSummon(c, 'special', isNew);
+}
 function summon(){
   if(summoning) return;
   if(state.chips<=0){ toast(L({ko:'카봇칩이 없어요. 루틴을 먼저 완료해요!',en:'No chips yet. Finish a routine first!'}), '🧊'); sfxClick(); return; }
-  summoning = true;
-
   const pool = CARBOTS.filter(c=> !(state.dex[c.id]>0));
   const bag = pool.length ? pool : CARBOTS;
   const c = bag[Math.floor(Math.random()*bag.length)];
-  const isNew = !(state.dex[c.id]>0);
-
+  const isNew = dexGrant(c);
   state.chips -= 1;
   state.summons += 1;
-  state.dex[c.id] = (state.dex[c.id]||0)+1;
   save();
+  currentSummonKind = 'chip';
+  revealSummon(c, 'chip', isNew);
+}
+
+function revealSummon(c, kind, isNew){
+  const special = kind === 'special';
+  summoning = true;
   currentSummon = c;
 
   const ov = $('#summonOverlay');
   ov.hidden = false;
-  ov.classList.remove('show','lit','tunnel-on','flash','revealed');
+  ov.classList.remove('show','lit','tunnel-on','flash','revealed','special');
+  if(special) ov.classList.add('special');
   $('#ovBadge').innerHTML = images.dex[c.id]
     ? '<img src="'+images.dex[c.id]+'" alt="" class="ov-img">'
     : carbotSVG(c, 120);
-  $('#ovName').innerHTML = L({ko:'헬로 카봇! '+c.ko+' 소환!',en:'Hello Carbot! Summon '+c.en+'!'})
+  $('#ovName').innerHTML = (special
+      ? L({ko:'⚡ 스페셜 합체! '+c.ko+' 소환!',en:'⚡ Special combine! Summon '+c.en+'!'})
+      : L({ko:'헬로 카봇! '+c.ko+' 소환!',en:'Hello Carbot! Summon '+c.en+'!'}))
     + '<small>'+L({ko:c.en+' · '+c.veh.ko,en:c.ko+' · '+c.veh.en})+'</small>';
   $('#ovCall').textContent = L(c.call);
-  $('#ovTag').className = 'ov-tag ' + (isNew?'' : 'again');
-  $('#ovTag').textContent = isNew
-    ? L({ko:'🎉 새로운 카봇 도감 등록!',en:'🎉 New entry in the dex!'})
-    : L({ko:'또 만나서 반가워! ×'+state.dex[c.id],en:'Nice to meet again! ×'+state.dex[c.id]});
-  $('#ovAgain').disabled = state.chips<=0;
-  $('#ovAgain').style.opacity = state.chips<=0 ? .45 : 1;
+  $('#ovTag').className = 'ov-tag ' + (special ? 'special' : (isNew?'' : 'again'));
+  $('#ovTag').textContent = special
+    ? L({ko:'⚡ 스페셜 합체 소환 성공! '+(isNew?'도감 등록!':'도감 ×'+state.dex[c.id]), en:'⚡ Special combine summon! '+(isNew?'New dex entry!':'Dex ×'+state.dex[c.id])})
+    : (isNew
+        ? L({ko:'🎉 새로운 카봇 도감 등록!',en:'🎉 New entry in the dex!'})
+        : L({ko:'또 만나서 반가워! ×'+state.dex[c.id],en:'Nice to meet again! ×'+state.dex[c.id]}));
+  const kick = ov.querySelector('.ov-kicker');
+  if(kick) kick.textContent = special
+    ? L({ko:'⚡ 스페셜 합체 소환 성공', en:'⚡ Special combine summon'})
+    : L({ko:'카봇 소환 성공', en:'Carbot summoned'});
+  const canAgain = special ? state.specialTickets>0 : state.chips>0;
+  $('#ovAgain').disabled = !canAgain;
+  $('#ovAgain').style.opacity = canAgain ? 1 : .45;
 
   requestAnimationFrame(()=> ov.classList.add('show'));
 
@@ -4870,12 +5209,17 @@ function summon(){
     ov.classList.add('lit','revealed');
     const badge = $('#ovBadge');
     const r = badge.getBoundingClientRect();
-    burst(r.left + r.width/2, r.top + r.height/2 + 30, 42, [c.color, c.color2, '#ffd15c', '#ffffff']);
+    burst(r.left + r.width/2, r.top + r.height/2 + 30, special?70:42,
+          special ? ['#ffd15c','#fff3bf','#ffb02e','#ffffff'] : [c.color, c.color2, '#ffd15c', '#ffffff']);
     sfxCheer();
+    if(special){
+      setTimeout(()=>burst(innerWidth*0.22, innerHeight*0.34, 46, ['#ffd15c','#fff3bf','#ffffff']), 180);
+      setTimeout(()=>burst(innerWidth*0.78, innerHeight*0.38, 46, ['#ffd15c','#fff3bf','#ffffff']), 330);
+    }
   }, 1150);
 
   setTimeout(()=>{
-    summoning=false; renderWatch();
+    summoning=false; renderWatch(); renderRewards();
     if(dexFound() === CARBOTS.length){
       toast(L({ko:'카봇 도감 완성! '+dexTotalText(CARBOTS.length)+'종 모두 만났어요! 🏆',en:'Carbot Dex complete! You met all '+dexTotalText(CARBOTS.length)+'! 🏆'}), '🏆');
       boostBurst();
@@ -4886,7 +5230,7 @@ function summon(){
 function closeSummon(){
   const ov = $('#summonOverlay');
   ov.classList.remove('show');
-  setTimeout(()=>{ ov.hidden = true; ov.classList.remove('lit','tunnel-on','flash','revealed'); }, 260);
+  setTimeout(()=>{ ov.hidden = true; ov.classList.remove('lit','tunnel-on','flash','revealed','special'); }, 260);
   if($('#ovWatch')) $('#ovWatch').innerHTML = watchSVG();
 }
 
@@ -4929,6 +5273,7 @@ function updateCounts(){
   if($('#evDoneTxt')) $('#evDoneTxt').textContent = evDone+'/'+evs.length;
   const chip = $('#evCountChip');
   if(chip) chip.classList.toggle('hide', !evs.length);
+  renderRewards();
 }
 
 /* =====================================================================
@@ -6157,6 +6502,8 @@ function exportState(withImages){
     name:state.name, place:state.place, lang:state.lang, sound:state.sound, tts:state.tts, wake:state.wake, leave:state.leave,
     wakeLock:state.wakeLock, dayKey:state.dayKey, done:state.done, play:state.play, ev:state.ev, prep:state.prep,
     awarded:state.awarded, chips:state.chips, chipDay:state.chipDay, dex:state.dex, summons:state.summons, streak:state.streak, lastFull:state.lastFull,
+    energyCores:state.energyCores, specialTickets:state.specialTickets, specialSummons:state.specialSummons,
+    playMastery:state.playMastery, playAward:state.playAward,
     supplies:state.supplies, routines:state.routines, plays:state.plays, affirms:state.affirms, events:state.events
   };
   if(withImages) o.images = images;
@@ -6662,10 +7009,19 @@ function wire(){
   /* summon overlay */
   $('#ovClose').addEventListener('click', ()=>{ closeSummon(); sfxClick(); });
   $('#ovAgain').addEventListener('click', ()=>{
+    const kind = currentSummonKind;
+    if(kind==='special'){
+      if(state.specialTickets<=0) return;
+      closeSummon();
+      setTimeout(specialSummon, 280);
+      return;
+    }
     if(state.chips<=0) return;
     closeSummon();
     setTimeout(summon, 280);
   });
+  const ssb = $('#btnSpecialSummon');
+  if(ssb) ssb.addEventListener('click', ()=> specialSummon());
   $('#summonOverlay').addEventListener('click', e=>{
     if(e.target === $('#summonOverlay') && !summoning) closeSummon();
   });
@@ -6795,6 +7151,7 @@ function boot(){
   if(state.wakeLock) applyWakeLock(true);
   /* 읽기 전용 요약 — 화면에는 쓰이지 않고, 점검·테스트에만 쓴다 */
   window.__carbot = {count:CARBOTS.length, ids:CARBOTS.map(c=>c.id), state:state, version:2,
+    masterGrade:masterGrade, specialPool:specialPool, CORES_PER_TICKET:CORES_PER_TICKET,
     tr:{dict:koEnDict, sync:koEnSync, translate:translateKoToEn, cache:TR.cache, romanize:romanizeKo}};
 }
 function sfxNoop(){ /* keeps audio context creation inside user gesture when possible */ }
