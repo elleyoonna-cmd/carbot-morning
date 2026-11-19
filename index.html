@@ -1571,6 +1571,17 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
   padding:2px 6px; border-radius:7px; font-variant-numeric:tabular-nums; flex:0 0 auto}
 .routine.sel .alarm-chip{opacity:.5}
 .r-foot .alarm-chip{margin-left:auto}
+/* routine days badge + editor day picker */
+.r-days{display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:900; color:#2f5da8; background:#eaf2ff;
+  padding:2px 6px; border-radius:7px; flex:0 0 auto; letter-spacing:-.01em; white-space:nowrap}
+.routine.sel .r-days{opacity:.5}
+.day-pick-wrap{display:flex; flex-direction:column; gap:5px}
+.day-quick{display:flex; align-items:center; gap:5px; flex-wrap:wrap}
+.day-quick .dq-lbl{font-size:11px; font-weight:900; color:var(--muted); margin-right:1px}
+.day-quick button{height:30px; padding:0 10px; border-radius:9px; font-size:11.5px; font-weight:900;
+  color:#26508f; background:#eaf2ff; box-shadow:inset 0 0 0 1px rgba(47,108,230,.18); cursor:pointer}
+.day-quick button.on{background:linear-gradient(180deg,#d9ecff,#a9cdfb); color:#123a7a; box-shadow:inset 0 0 0 1px rgba(47,108,230,.42)}
+.day-quick .dq-sum{margin-left:auto; font-size:11px; font-weight:900; color:#2f5da8; background:#f2f7ff; padding:3px 8px; border-radius:8px}
 /* settings alarm blocks */
 .alarm-box{display:flex; flex-direction:column; gap:6px; padding:9px 10px; border-radius:13px; background:#fff8f2; border:1px dashed rgba(232,100,50,.32)}
 .alarm-box.on{background:#fff3ec; border-style:solid; border-color:rgba(232,100,50,.5)}
@@ -1797,6 +1808,36 @@ const WEEK_KO = ['일','월','화','수','목','금','토'];
 const WEEK_EN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const WEEK_EN_LONG = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const WEEK_ORDER = [1,2,3,4,5,6,0];
+
+/* ---------- 루틴 요일 (0=일 … 6=토, 일정·이벤트 rep.days와 같은 형식) ----------
+   days가 없거나 7일이 모두 들어 있으면 ‘매일’로 동작한다. 예전 기록은 days가 없으므로 그대로 매일. */
+function routineDays(r){
+  const a = (r && Array.isArray(r.days)) ? r.days.filter(d=>Number.isInteger(d)&&d>=0&&d<=6) : [];
+  const u = Array.from(new Set(a)).sort((x,y)=>x-y);
+  return u.length ? u : [0,1,2,3,4,5,6];
+}
+function routineOn(r, d){
+  const days = routineDays(r);
+  return days.length===7 || days.indexOf((d||new Date()).getDay())>=0;
+}
+function routinesToday(d){
+  return state.routines.filter(r=>routineOn(r, d || new Date()));
+}
+function daysPreset(days){
+  const u = Array.from(new Set(Array.isArray(days)?days:[])).filter(d=>Number.isInteger(d)&&d>=0&&d<=6).sort((x,y)=>x-y);
+  if(!u.length || u.length===7) return 'all';
+  if(u.join(',')==='1,2,3,4,5') return 'weekday';
+  if(u.join(',')==='0,6') return 'weekend';
+  return 'custom';
+}
+function daysLabel(days){
+  const p = daysPreset(days);
+  if(p==='all') return L({ko:'매일',en:'Daily'});
+  if(p==='weekday') return L({ko:'평일',en:'Weekdays'});
+  if(p==='weekend') return L({ko:'주말',en:'Weekends'});
+  const u = Array.from(new Set(days.filter(d=>Number.isInteger(d)&&d>=0&&d<=6))).sort((x,y)=>x-y);
+  return WEEK_ORDER.filter(d=>u.indexOf(d)>=0).map(d=>L({ko:WEEK_KO[d],en:WEEK_EN[d]})).join('·');
+}
 
 const DEFAULT_SUPPLIES = {
   0:[{ko:'다음 주 준비', en:'Next week prep'}],
@@ -2607,7 +2648,12 @@ function sanitizeRoutines(arr){
     const dflt = known
       ? {on:true, time:alarmTimeFor(i), ko:state.name.ko+'! '+known.ko, en:state.name.en+'! '+known.en}
       : {on:false, time:alarmTimeFor(i), ko:'', en:''};
-    return {id:id, ko:ko, en:txt(r.en, '', 40), art:sanitizeArt(r.art), alarm:sanitizeAlarm(r.alarm, dflt)};
+    const days = Array.isArray(r.days)
+      ? Array.from(new Set(r.days.filter(d=>Number.isInteger(d)&&d>=0&&d<=6))).sort((a,b)=>a-b)
+      : [];
+    const out = {id:id, ko:ko, en:txt(r.en, '', 40), art:sanitizeArt(r.art), alarm:sanitizeAlarm(r.alarm, dflt)};
+    if(days.length) out.days = days;   /* days가 없으면 매일 — 기존 기록 그대로 */
+    return out;
   });
 }
 function sanitizePlays(arr){
@@ -3426,7 +3472,7 @@ function renderClock(){
 
   const noteEl = $('#countNote');
   if(noteEl){
-    const noteTxt = (state.routines.length && state.routines.every(r=>state.done[r.id]))
+    const noteTxt = routinesAllDone()
       ? L({ko:'🎉 오늘의 루틴 완성!',en:'🎉 Routine complete!'})
       : L({ko:'🌱 오늘도 스스로!',en:'🌱 On my own today!'});
     if(noteEl.textContent !== noteTxt) noteEl.textContent = noteTxt;
@@ -3656,7 +3702,15 @@ function renderRoutines(){
     wrap.innerHTML = '<div class="empty-hint" style="grid-column:1/-1">'+L({ko:'아직 루틴 단계가 없어요. ✏️ 편집에서 추가해 보세요.',en:'No routine steps yet. Add them in ✏️ Edit.'})+'</div>';
     return;
   }
-  wrap.innerHTML = state.routines.map((r,i)=>{
+  const list = routinesToday();
+  if(!list.length){
+    wrap.innerHTML = '<div class="empty-hint" style="grid-column:1/-1">'
+      + '<span>'+L({ko:'오늘은 하는 루틴이 없어요. 요일을 바꾸면 오늘 루틴이 여기에 보여요.',en:'No routines run today. Change the days and today’s steps show up here.'})+'</span>'
+      + '<button type="button" class="mini-btn go" data-open-settings="routines" style="margin-left:auto;flex:0 0 auto">⚙️ '+L({ko:'설정 열기',en:'Open settings'})+'</button>'
+      + '</div>';
+    return;
+  }
+  wrap.innerHTML = list.map((r,i)=>{
     const done = !!state.done[r.id];
     return '<article class="routine'+(done?' sel':'')+'" data-id="'+esc(r.id)+'" role="button" tabindex="0" aria-pressed="'+done+'">'
       + '<div class="r-img">'+routineArtHTML(r)
@@ -3666,7 +3720,9 @@ function renderRoutines(){
       + '<div class="r-body">'
       +   '<h3 class="r-title">'+esc(pick(r.ko, r.en))+'</h3>'
       +   '<p class="r-sub">'+esc(pick(r.en, r.ko))+'</p>'
-      +   '<div class="r-foot">'+(r.alarm && r.alarm.on ? alarmChipHTML(alarmWhen('r', r)) : '')+'<span class="r-done">✓</span></div>'
+      +   '<div class="r-foot"><span class="r-days" data-routine-days="'+esc(r.id)+'">'+esc(daysLabel(routineDays(r)))+'</span>'
+      +     (r.alarm && r.alarm.on ? alarmChipHTML(alarmWhen('r', r)) : '')
+      +     '<span class="r-done">✓</span></div>'
       + '</div></article>';
   }).join('');
 }
@@ -3692,9 +3748,9 @@ function toggleRoutine(id, card){
   renderWatchStatusOnly();
   if(checkStreak()){
     sfxCheer();
-    setTimeout(()=>{ toast(L({ko:'루틴 '+state.routines.length+'단계 완성! 연속 '+state.streak+'일째! 🎉',en:'All steps done! Streak '+state.streak+' days! 🎉'}), '🏆'); boostBurst(); }, 320);
+    setTimeout(()=>{ toast(L({ko:'루틴 '+routinesToday().length+'단계 완성! 연속 '+state.streak+'일째! 🎉',en:'All steps done! Streak '+state.streak+' days! 🎉'}), '🏆'); boostBurst(); }, 320);
   }
-  if(!was && state.routines.length && state.routines.every(r=>state.done[r.id])){
+  if(!was && routinesAllDone()){
     $('#countNote').textContent = L({ko:'🎉 오늘의 루틴 완성!',en:'🎉 Routine complete!'});
   }
 }
@@ -3715,7 +3771,8 @@ function boostBurst(){
 }
 
 function checkStreak(){
-  if(!state.routines.length || !state.routines.every(r=>state.done[r.id])) return false;
+  const today = routinesToday();
+  if(!today.length || !today.every(r=>state.done[r.id])) return false;
   const t = dkey(new Date());
   if(state.lastFull === t) return false;
   const y = dkey(new Date(Date.now()-86400000));
@@ -3727,7 +3784,8 @@ function checkStreak(){
 
 /* ---------- 하루 한 번 카봇칩: 오늘 루틴을 전부 끝내면 +1 ---------- */
 function routinesAllDone(){
-  return state.routines.length>0 && state.routines.every(r=>!!state.done[r.id]);
+  const today = routinesToday();
+  return today.length>0 && today.every(r=>!!state.done[r.id]);
 }
 function syncDailyChip(award){
   const today = dkey(new Date());
@@ -4103,6 +4161,7 @@ function alarmDueList(now, lookback){
   state.routines.forEach(r=>{
     const a = r.alarm;
     if(!a || !a.on || state.done[r.id]) return;
+    if(!routineOn(r, now)) return;      /* 오늘 하는 루틴만 울린다 */
     if(hasFired('r', r.id)) return;
     if(hit(a.time)) out.push({kind:'r', id:r.id, item:r});
   });
@@ -4799,8 +4858,9 @@ function closeSummon(){
    13. counts
    ===================================================================== */
 function updateCounts(){
-  const rt = state.routines.length;
-  const rdone = state.routines.filter(r=>state.done[r.id]).length;
+  const today = routinesToday();
+  const rt = today.length;
+  const rdone = today.filter(r=>state.done[r.id]).length;
   const pt = state.plays.length;
   const pdone = state.plays.filter(p=>state.play[p.id]).length;
   if($('#msRoutine')) $('#msRoutine').textContent = rdone+'/'+rt;
@@ -4868,8 +4928,8 @@ function applyStatic(){
   $('#btnSound').classList.toggle('on', state.sound);
   $('#btnSound').setAttribute('aria-pressed', String(state.sound));
   $('#playPageDate').textContent = dateLabel(new Date());
-  $('#routineSub').textContent = L({ko:'아침부터 저녁까지 루틴을 모두 완료하면 카봇칩 +1을 받아요',en:'Finish every routine from morning to evening to earn +1 Carbot chip'});
-  $('#countNote').textContent = (state.routines.length && state.routines.every(r=>state.done[r.id]))
+  $('#routineSub').textContent = L({ko:'오늘 하는 루틴들을 모두 완료하면 카봇칩 +1을 받아요',en:'Finish every routine that runs today to earn +1 Carbot chip'});
+  $('#countNote').textContent = routinesAllDone()
     ? L({ko:'🎉 오늘의 루틴 완성!',en:'🎉 Routine complete!'})
     : L({ko:'🌱 오늘도 스스로!',en:'🌱 On my own today!'});
   $('#btnFull').setAttribute('aria-label', L({ko:'전체화면',en:'Full screen'}));
@@ -5124,7 +5184,7 @@ function eventEditor(e,i){
 /* ---------- routines ---------- */
 function bodyRoutines(){
   let h = '<div class="ed-head"><span class="fs-hint">'
-    + L({ko:'카드를 누르면 완료되는 단계예요. 순서·제목·그림을 바꾸고, 단계마다 🚨 출동 알람 시각과 멘트를 정할 수 있어요. 오늘 루틴을 전부 완료하면 카봇칩 +1!',en:'These are the steps the child taps to finish. Reorder, rename, change the art, and give each step its own 🚨 roll-out alarm time and line. Finish every routine today for +1 Carbot chip!'})
+    + L({ko:'카드를 누르면 완료되는 단계예요. 순서·제목·그림·하는 요일을 바꾸고, 단계마다 🚨 출동 알람 시각과 멘트를 정할 수 있어요. 오늘 하는 루틴을 전부 완료하면 카봇칩 +1!',en:'These are the steps the child taps to finish. Reorder, rename, change the art and the days each step runs, and give each step its own 🚨 roll-out alarm time and line. Finish every routine that runs today for +1 Carbot chip!'})
     + '</span><button class="add-btn" data-add="routine">＋ '+L({ko:'루틴 추가',en:'Add step'})+'</button></div>';
   if(!draft.routines.length)
     h += '<div class="empty-hint">'+L({ko:'루틴이 모두 지워졌어요. ‘루틴 추가’로 다시 만들어 주세요.',en:'All steps were removed. Add one above.'})+'</div>';
@@ -5163,6 +5223,18 @@ function routineEditor(r,i){
   h += '</div>';
   if(art.type==='carbot') h += cbPickHTML('r'+i, 'routines.'+i+'.art.v', null, 'bare');
   if(uiPick==='r'+i && art.type==='emoji') h += iconPickHTML('r'+i, EMOJIS, 'routines.'+i+'.art.v');
+  /* 하는 요일: 빠른 선택(매일·평일·주말) + 개별 요일 토글 */
+  const days = routineDays(r), pre = daysPreset(days);
+  h += '<div class="day-pick-wrap">'
+    +   '<div class="day-quick"><span class="dq-lbl">📅 '+L({ko:'요일',en:'Days'})+'</span>'
+    +     [['all',{ko:'매일',en:'Daily'}],['weekday',{ko:'평일',en:'Weekdays'}],['weekend',{ko:'주말',en:'Weekends'}]].map(x=>
+            '<button type="button" class="'+(pre===x[0]?'on':'')+'" data-rday-quick="'+i+'" data-preset="'+x[0]+'" aria-pressed="'+(pre===x[0])+'">'+L(x[1])+'</button>').join('')
+    +     '<span class="dq-sum" data-rday-sum="'+i+'">'+esc(daysLabel(days))+'</span>'
+    +   '</div>'
+    +   '<div class="day-pick">'+WEEK_ORDER.map(d=>
+          '<button type="button" class="'+(days.indexOf(d)>=0?'on':'')+'" data-rday="'+i+'" data-d="'+d+'" aria-pressed="'+(days.indexOf(d)>=0)+'">'+L({ko:WEEK_KO[d],en:WEEK_EN[d]})+'</button>').join('')
+    +   '</div>'
+    + '</div>';
   h += alarmBoxHTML('routines', i, r.alarm, 'r', r);
   if(custom)
     h += '<p class="fs-hint">'+L({ko:'이 기기에 저장한 사진을 쓰고 있어요. 바꾸려면 카봇 사진 탭에서 선택하세요.',en:'Using a photo saved on this device. Change it in the Photos tab.'})+'</p>';
@@ -5311,7 +5383,7 @@ function addNew(kind){
       rep:{type:'daily', days:[1], date:''}, reward:true, on:true, alarm:{on:false, lead:0, time:'16:00', ko:'', en:''}});
     setTabId='events';
   }else if(kind==='routine'){
-    draft.routines.push({id:uid('r'), ko:'새 루틴', en:'', art:{type:'carbot', v:cbRandomId()},
+    draft.routines.push({id:uid('r'), ko:'새 루틴', en:'', days:[0,1,2,3,4,5,6], art:{type:'carbot', v:cbRandomId()},
       alarm:{on:false, time:alarmTimeFor(draft.routines.length), ko:'', en:''}});
     setTabId='routines';
   }else if(kind==='play'){
@@ -5582,6 +5654,28 @@ function bindSettings(){
       renderSetBody(); return;
     }
 
+    /* 루틴 하는 요일 */
+    const rq = b.getAttribute('data-rday-quick');
+    if(rq!=null){
+      const i = Number(rq), p = b.getAttribute('data-preset');
+      const ds = p==='weekday' ? [1,2,3,4,5] : (p==='weekend' ? [0,6] : [0,1,2,3,4,5,6]);
+      if(draft.routines[i]) draft.routines[i].days = ds.slice();
+      sfxClick(); renderSetBody(); return;
+    }
+    const rd = b.getAttribute('data-rday');
+    if(rd!=null){
+      const i = Number(rd), d = Number(b.getAttribute('data-d'));
+      if(draft.routines[i]){
+        const ds = routineDays(draft.routines[i]).slice();
+        const at = ds.indexOf(d);
+        if(at>=0) ds.splice(at,1); else ds.push(d);
+        if(!ds.length) ds=[d];
+        ds.sort((x,y)=>x-y);
+        draft.routines[i].days = ds;
+      }
+      sfxClick(); renderSetBody(); return;
+    }
+
     const sw = b.getAttribute('data-sw');
     if(sw){
       const box = b.closest('.alarm-box');
@@ -5806,6 +5900,8 @@ function wire(){
   /* routine grid */
   const grid = $('#routines');
   grid.addEventListener('click', e=>{
+    const go = e.target.closest('[data-open-settings]');
+    if(go){ openSettings(go.getAttribute('data-open-settings')); sfxClick(); return; }
     const card = e.target.closest('.routine');
     if(!card) return;
     toggleRoutine(card.dataset.id, card);
