@@ -603,6 +603,78 @@ html[lang="en"] .brand-title{white-space:normal}
 .ov-actions .primary{background:linear-gradient(180deg,#ff6d60,#e8402f); color:#fff; box-shadow:0 12px 24px -14px rgba(232,64,47,.95)}
 .ov-actions .primary:disabled{opacity:.5; cursor:not-allowed; filter:grayscale(.4)}
 
+/* ---- 다시 끼우기: 내가 가진 카봇 칩 선반 ---- */
+.chip-shelf{width:100%; margin-top:14px; padding-top:12px; border-top:1px dashed var(--line2); position:relative; z-index:1}
+.shelf-head{display:flex; align-items:center; gap:8px; margin-bottom:5px}
+.shelf-hint{font-size:11px; font-weight:800; color:var(--muted); margin:0 0 9px; line-height:1.4}
+.shelf-grid{display:flex; flex-wrap:wrap; gap:8px; max-height:216px; overflow-y:auto; padding:2px; -webkit-overflow-scrolling:touch}
+.shelf-empty{font-size:11.5px; font-weight:800; color:var(--muted); padding:10px 12px; border-radius:12px; background:#f5f9ff; border:1.5px dashed var(--line2)}
+.shelf-chip{position:relative; width:68px; border-radius:16px; padding:7px 5px 6px; background:linear-gradient(180deg,#fff,#f3f7ff);
+  box-shadow:0 8px 18px -14px rgba(34,58,110,.9), inset 0 0 0 1px rgba(47,108,230,.18);
+  display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer;
+  transition:transform .16s cubic-bezier(.3,1.4,.5,1), box-shadow .2s}
+.shelf-chip:hover{transform:translateY(-4px) rotate(-3deg); box-shadow:0 16px 24px -16px rgba(34,58,110,.95), inset 0 0 0 1.5px rgba(47,108,230,.45)}
+.shelf-chip:active{transform:scale(.94)}
+.shelf-chip .sc-art{width:46px; height:46px; border-radius:12px; overflow:hidden; display:grid; place-items:center; background:#eef4ff}
+.shelf-chip .sc-art svg{width:46px; height:46px}
+.shelf-chip .sc-art img{width:100%; height:100%; object-fit:cover}
+.shelf-chip .sc-nm{font-size:9.5px; font-weight:900; color:var(--ink2); letter-spacing:-.02em; max-width:64px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.shelf-chip .sc-cnt{position:absolute; top:1px; right:1px; font-size:8.5px; font-weight:900; color:#43526f; background:#fff; border-radius:999px; padding:1px 4px; box-shadow:inset 0 0 0 1px var(--line2)}
+.shelf-more{align-self:center; min-height:40px; padding:8px 14px; margin-top:8px}
+.dx-insert{display:inline-flex; align-items:center; gap:3px; margin-top:6px; padding:5px 10px; border-radius:999px;
+  font-size:10.5px; font-weight:900; color:#1f4fb8; background:#eef5ff; box-shadow:inset 0 0 0 1px rgba(47,108,230,.28); cursor:pointer}
+.dx-insert:hover{background:#e2edff}
+.dx-insert:active{transform:scale(.96)}
+
+/* ---- 칩을 끼우면: 전체 화면 캐릭터 + 큰 한글 이름 ---- */
+.overlay.big{background:radial-gradient(circle at 50% 30%, rgba(52,104,220,.55), rgba(6,10,22,.97) 64%), #060a18}
+.overlay.big .ov-watch, .overlay.big .tunnel, .overlay.big .ov-flash, .overlay.big .ov-chip{display:none !important}
+.overlay.big .ov-stage{width:100%; max-width:100%; height:100%; max-height:100dvh; justify-content:center}
+.overlay.big .ov-reveal{
+  width:100%; max-width:min(860px,100%); height:100%; max-height:100dvh; margin:0;
+  padding:clamp(10px,2vh,26px) clamp(12px,3vw,32px); border-radius:0;
+  background:transparent; box-shadow:none; opacity:1; transform:none;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:clamp(4px,1.2vh,12px)}
+.overlay.big .ov-reveal > *{order:0}
+.overlay.big .ov-kicker{order:-2; color:#9dc0ff; letter-spacing:.2em; margin-top:0}
+.overlay.big .ov-name{order:-1; font-size:clamp(12px,2.3vh,18px); font-weight:850; color:#cfe0ff; letter-spacing:0; text-shadow:none; margin:0 0 clamp(2px,.8vh,10px); line-height:1.3}
+.overlay.big .ov-name small{display:none}
+.overlay.big .ov-badge{order:0; width:auto; height:auto; margin:0 auto; padding:0; background:transparent; box-shadow:none; border-radius:0}
+.overlay.big .ov-badge svg, .overlay.big .ov-badge img.ov-img{
+  width:min(72vw, 44vh, 470px); height:min(72vw, 44vh, 470px); border-radius:34px;
+  animation:bigPop .62s cubic-bezier(.2,1.5,.35,1) both;
+  filter:drop-shadow(0 28px 48px rgba(0,0,0,.55)) drop-shadow(0 0 26px rgba(120,190,255,.45))}
+@keyframes bigPop{0%{opacity:0; transform:scale(.72) translateY(24px)}60%{opacity:1; transform:scale(1.04)}100%{opacity:1; transform:none}}
+.ov-bigname{
+  display:none; flex-direction:column; align-items:center; gap:clamp(1px,.5vh,6px);
+  width:100%; margin-top:clamp(2px,1.2vh,14px); padding:0; border:0; background:none; cursor:pointer;
+  -webkit-tap-highlight-color:transparent}
+.overlay.big .ov-bigname{order:1; display:flex}
+.ov-bigname .bn-ko{
+  font-size:min(13.4vh, calc((100vw - 48px) / var(--bn, 4)), 148px);
+  font-weight:900; line-height:1.06; letter-spacing:.015em; color:#fff; word-break:keep-all; white-space:nowrap;
+  text-shadow:0 5px 0 rgba(16,36,84,.55), 0 0 34px rgba(126,196,255,.75)}
+.ov-bigname .bn-en{font-size:clamp(12px,2.4vh,20px); font-weight:850; color:#cfe0ff; letter-spacing:.01em}
+.ov-bigname .bn-hint{font-size:clamp(10px,1.9vh,14px); font-weight:900; color:#9dc0ff; background:rgba(120,180,255,.16); padding:4px 12px; border-radius:999px; margin-top:clamp(1px,.6vh,8px); box-shadow:inset 0 0 0 1px rgba(140,195,255,.32)}
+.ov-bigname:active .bn-ko{transform:scale(.97)}
+.overlay.big .ov-call{order:2; max-width:min(620px,94%); background:rgba(255,255,255,.1); border-color:rgba(160,200,255,.3); color:#e5efff; font-size:clamp(11.5px,2vh,15px); margin-top:clamp(2px,1vh,10px)}
+.overlay.big .ov-tag{order:3; background:rgba(255,255,255,.14); color:#e6f2ff; box-shadow:inset 0 0 0 1px rgba(180,215,255,.3)}
+.overlay.big .ov-tag.again{background:rgba(255,255,255,.14); color:#e6f2ff}
+.overlay.big .ov-tag.special{background:linear-gradient(180deg,#ffe9a3,#ffc93c); color:#5c3300}
+.overlay.big .ov-actions{order:4; margin-top:clamp(6px,1.8vh,18px); gap:10px}
+.overlay.big .ov-actions .btn{font-size:clamp(14px,2.4vh,20px); padding:clamp(11px,1.9vh,18px) clamp(18px,3vw,32px); border-radius:18px; font-weight:900}
+@media (max-height:640px){
+  .overlay.big .ov-call{display:none}
+  .overlay.big .ov-badge svg, .overlay.big .ov-badge img.ov-img{width:min(60vw,40vh,330px); height:min(60vw,40vh,330px)}
+  .overlay.big .ov-bigname .bn-ko{font-size:min(12vh, calc((100vw - 48px) / var(--bn, 4)), 120px)}
+}
+@media (max-width:430px){
+  .overlay.big .ov-kicker{font-size:10px}
+  .overlay.big .ov-name{font-size:12px}
+  .overlay.big .ov-actions{gap:7px}
+  .overlay.big .ov-actions .btn{padding:10px 14px; font-size:14px}
+}
+
 /* ============ settings modal ============ */
 .modal{
   position:fixed; inset:0; z-index:220; display:grid; place-items:center; padding:14px;
@@ -1415,6 +1487,17 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
           <div class="chips" id="chips"></div>
         </div>
 
+        <div class="chip-shelf" id="chipShelf">
+          <div class="shelf-head">
+            <span class="tray-title" data-i18n="shelfTitle">가진 카봇 칩 다시 끼우기</span>
+            <span class="chip-count" style="margin-left:auto"><span aria-hidden="true">🃏</span><b id="chipShelfCount">0</b></span>
+          </div>
+          <p class="shelf-hint" data-i18n="shelfHint">모은 카봇 칩을 누르면 시계에 다시 끼울 수 있어요. 칩이 줄지 않아 몇 번이든 다시 놀 수 있어요.</p>
+          <div class="shelf-grid" id="chipShelfGrid"></div>
+          <div class="shelf-empty" id="chipShelfEmpty" data-i18n="shelfEmpty">아직 모은 카봇 칩이 없어요. 루틴을 끝내고 칩을 끼워 카봇을 만나 보세요!</div>
+          <button type="button" class="btn shelf-more" id="chipShelfMore" hidden>더 보기 ＋</button>
+        </div>
+
         <div class="special-box" id="specialBox">
           <div class="sb-head">
             <span class="sb-title"><span aria-hidden="true">⚡</span><span data-i18n="specialBoxTitle">스페셜 합체 에너지</span></span>
@@ -1560,6 +1643,11 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
       <div class="ov-badge" id="ovBadge"></div>
       <div class="ov-kicker" data-i18n="ovKicker">카봇 소환 성공</div>
       <h2 class="ov-name" id="ovName"></h2>
+      <button type="button" class="ov-bigname" id="ovBigName" aria-label="카봇 이름 듣기">
+        <span class="bn-ko"></span>
+        <span class="bn-en"></span>
+        <span class="bn-hint"><span aria-hidden="true">🔊</span> <span data-i18n="ovReadHint">이름을 눌러 들어 보세요</span></span>
+      </button>
       <p class="ov-call" id="ovCall"></p>
       <span class="ov-tag" id="ovTag"></span>
       <div class="ov-actions">
@@ -2587,6 +2675,12 @@ const STR = {
   ovKicker:{ko:'카봇 소환 성공',en:'Summon complete'},
   ovAgain:{ko:'한 번 더',en:'Summon again'},
   ovClose:{ko:'닫기',en:'Close'},
+  ovReadHint:{ko:'이름을 눌러 들어 보세요',en:'Tap the name to hear it'},
+  shelfTitle:{ko:'가진 카봇 칩 다시 끼우기',en:'Put an owned chip back in'},
+  shelfHint:{ko:'모은 카봇 칩을 누르면 시계에 다시 끼울 수 있어요. 칩이 줄지 않아 몇 번이든 다시 놀 수 있어요.',en:'Tap a chip you already own to slide it into the watch again. No chip is used up.'},
+  shelfEmpty:{ko:'아직 모은 카봇 칩이 없어요. 루틴을 끝내고 칩을 끼워 카봇을 만나 보세요!',en:'No owned chips yet. Finish routines and slide a chip in to meet a Carbot!'},
+  insertBtn:{ko:'시계에 끼우기',en:'Insert'},
+  replayKicker:{ko:'카봇 칩 다시 끼우기',en:'Chip back in the watch'},
   settingsTitle:{ko:'설정',en:'Settings'},
   setTimeTitle:{ko:'아침 시간',en:'Morning times'},
   setSupplyTitle:{ko:'요일별 준비물',en:'Supplies by day'},
@@ -4990,6 +5084,7 @@ function renderWatch(){
   if(ovHost) ovHost.innerHTML = watchSVG();
 
   renderChips();
+  renderChipShelf();
   renderDexFilters();
   renderDex();
   renderWatchStatusOnly();
@@ -4999,8 +5094,11 @@ function renderWatch(){
 function renderWatchStatusOnly(){
   const el = $('#watchStatus');
   if(!el) return;
+  const owned = ownedCarbots().length;
   if(state.chips>0){
     el.innerHTML = L({ko:'카봇칩 <b>'+state.chips+'개</b>를 시계에 끼워 카봇을 소환해요!',en:'Slide one of your <b>'+state.chips+'</b> chips into the watch to summon a Carbot!'});
+  }else if(owned>0){
+    el.innerHTML = L({ko:'가진 카봇 칩 '+owned+'장을 눌러 시계에 다시 끼울 수 있어요! 칩은 줄지 않아요.',en:'Tap one of your '+owned+' owned chips to put it back in the watch. No chip is used up!'});
   }else{
     el.innerHTML = L({ko:'루틴을 완료해서 카봇칩을 모아 보세요!',en:'Finish a routine step to earn a Carbot chip!'});
   }
@@ -5042,6 +5140,51 @@ function renderChips(){
 }
 
 let dexFilter='all', dexSeries='', dexQuery='', dexLimit=36, dexSearchTimer=null;
+
+/* ---------- 가진 카봇 칩 다시 끼우기 (칩·도감 변화 없이 재소환) ---------- */
+let shelfLimit = 60;
+function ownedCarbots(){
+  return CARBOTS.filter(c=> (state.dex[c.id]||0) > 0);
+}
+function shelfChipHTML(c){
+  const custom = images.dex[c.id];
+  const art = custom ? '<img src="'+custom+'" alt="">' : carbotSVG(c, 46);
+  return '<button type="button" class="shelf-chip" data-insert="'+esc(c.id)+'"'
+    + ' aria-label="'+esc(c.ko)+' '+esc(L(STR.insertBtn))+'" title="'+esc(c.ko)+'">'
+    + '<span class="sc-art">'+art+'</span>'
+    + '<span class="sc-nm">'+esc(c.ko)+'</span>'
+    + '<span class="sc-cnt">×'+(state.dex[c.id]||0)+'</span>'
+    + '</button>';
+}
+function renderChipShelf(){
+  const grid = $('#chipShelfGrid');
+  if(!grid) return;
+  const list = ownedCarbots();
+  if($('#chipShelfCount')) $('#chipShelfCount').textContent = String(list.length);
+  const shown = list.slice(0, shelfLimit);
+  grid.innerHTML = shown.map(shelfChipHTML).join('');
+  const empty = $('#chipShelfEmpty');
+  if(empty){ empty.hidden = !!list.length; empty.textContent = L(STR.shelfEmpty); }
+  const more = $('#chipShelfMore');
+  if(more){
+    const hasMore = list.length > shelfLimit;
+    more.hidden = !hasMore;
+    more.style.display = hasMore ? '' : 'none';
+    more.textContent = L({ko:'더 보기 ＋ 60',en:'Show 60 more ＋'});
+  }
+}
+function insertOwnedChip(id){
+  if(summoning) return;
+  const c = (typeof id === 'string') ? CB_BY_ID[id] : id;
+  if(!c || !(state.dex[c.id] > 0)){
+    toast(L({ko:'아직 없는 카봇 칩이에요. 먼저 칩을 끼워 만나 보세요!',en:'You do not own that chip yet. Summon it first!'}), '🧊');
+    sfxClick();
+    return;
+  }
+  currentSummonKind = 'replay';
+  revealSummon(c, 'replay', false);
+}
+
 function dexCardHTML(c){
   const cnt = state.dex[c.id]||0;
   const own = cnt>0;
@@ -5056,6 +5199,7 @@ function dexCardHTML(c){
     +   '<div class="dx-ser">'+esc(serTxt)+' · '+esc(L(c.role))+'</div>'
     +   (own ? '<p class="dx-d">'+esc(L(c.desc))+'</p>'
              + '<span class="dx-badge">×'+cnt+' '+L({ko:'소환',en:'summons'})+'</span>'
+             + '<button type="button" class="dx-insert" data-insert="'+esc(c.id)+'"><span aria-hidden="true">⌚</span>'+esc(L(STR.insertBtn))+'</button>'
            : '<span class="dx-lock">🔒 '+L({ko:'미보유',en:'not yet'})+'</span>')
     + '</div></article>';
 }
@@ -5158,36 +5302,80 @@ function summon(){
   revealSummon(c, 'chip', isNew);
 }
 
+let summonTimers = [];
+function summonTimeout(fn, ms){
+  const id = setTimeout(()=>{ summonTimers = summonTimers.filter(x=> x!==id); fn(); }, ms);
+  summonTimers.push(id);
+  return id;
+}
+function clearSummonTimers(){
+  summonTimers.forEach(clearTimeout);
+  summonTimers = [];
+}
+function speakCarbotName(c){
+  return speakAlarm(String(c.ko||'') + '!', 'ko');
+}
+/* 큰 이름이 화면 폭을 넘지 않도록 글자 폭을 계산(한글 1 · 영문 .62 · 띄어쓰기 .34) */
+function bigNameUnits(txt){
+  let u = 0;
+  Array.from(String(txt||'')).forEach(ch=>{
+    if(ch===' ') u += .34;
+    else if(/[\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F]/.test(ch)) u += 1;
+    else u += .62;
+  });
+  return (Math.max(2, u) * 1.04).toFixed(2);
+}
+
 function revealSummon(c, kind, isNew){
   const special = kind === 'special';
+  const replay = kind === 'replay';
   summoning = true;
   currentSummon = c;
+  clearSummonTimers();
 
   const ov = $('#summonOverlay');
   ov.hidden = false;
-  ov.classList.remove('show','lit','tunnel-on','flash','revealed','special');
+  ov.classList.remove('show','lit','tunnel-on','flash','revealed','special','big');
+  const strayChip = ov.querySelector('.ov-chip'); if(strayChip) strayChip.remove();
   if(special) ov.classList.add('special');
   $('#ovBadge').innerHTML = images.dex[c.id]
     ? '<img src="'+images.dex[c.id]+'" alt="" class="ov-img">'
     : carbotSVG(c, 120);
   $('#ovName').innerHTML = (special
       ? L({ko:'⚡ 스페셜 합체! '+c.ko+' 소환!',en:'⚡ Special combine! Summon '+c.en+'!'})
-      : L({ko:'헬로 카봇! '+c.ko+' 소환!',en:'Hello Carbot! Summon '+c.en+'!'}))
+      : replay
+        ? L({ko:'헬로 카봇! '+c.ko+' 다시 소환!',en:'Hello Carbot! Summon '+c.en+' again!'})
+        : L({ko:'헬로 카봇! '+c.ko+' 소환!',en:'Hello Carbot! Summon '+c.en+'!'}))
     + '<small>'+L({ko:c.en+' · '+c.veh.ko,en:c.ko+' · '+c.veh.en})+'</small>';
   $('#ovCall').textContent = L(c.call);
   $('#ovTag').className = 'ov-tag ' + (special ? 'special' : (isNew?'' : 'again'));
   $('#ovTag').textContent = special
     ? L({ko:'⚡ 스페셜 합체 소환 성공! '+(isNew?'도감 등록!':'도감 ×'+state.dex[c.id]), en:'⚡ Special combine summon! '+(isNew?'New dex entry!':'Dex ×'+state.dex[c.id])})
-    : (isNew
+    : replay
+      ? L({ko:'⌚ 시계에 다시 끼웠어요! 도감 ×'+state.dex[c.id],en:'⌚ Chip back in the watch! Dex ×'+state.dex[c.id]})
+      : (isNew
         ? L({ko:'🎉 새로운 카봇 도감 등록!',en:'🎉 New entry in the dex!'})
         : L({ko:'또 만나서 반가워! ×'+state.dex[c.id],en:'Nice to meet again! ×'+state.dex[c.id]}));
   const kick = ov.querySelector('.ov-kicker');
   if(kick) kick.textContent = special
     ? L({ko:'⚡ 스페셜 합체 소환 성공', en:'⚡ Special combine summon'})
-    : L({ko:'카봇 소환 성공', en:'Carbot summoned'});
-  const canAgain = special ? state.specialTickets>0 : state.chips>0;
+    : replay
+      ? L(STR.replayKicker)
+      : L({ko:'카봇 소환 성공', en:'Carbot summoned'});
+  const canAgain = replay ? true : (special ? state.specialTickets>0 : state.chips>0);
   $('#ovAgain').disabled = !canAgain;
   $('#ovAgain').style.opacity = canAgain ? 1 : .45;
+
+  /* 전체 화면용: 캐릭터 이름(큰 한글 이름 + 영어 부제) */
+  const bn = $('#ovBigName');
+  if(bn){
+    const ko = String(c.ko||'');
+    const enLine = [c.en, (c.veh ? pick(c.veh.ko, c.veh.en) : '')].filter(Boolean).join(' · ');
+    const koEl = bn.querySelector('.bn-ko'); if(koEl) koEl.textContent = ko;
+    const enEl = bn.querySelector('.bn-en'); if(enEl) enEl.textContent = enLine;
+    bn.style.setProperty('--bn', bigNameUnits(ko));
+    bn.setAttribute('aria-label', ko + ' ' + L({ko:'이름 듣기',en:'hear the name'}));
+  }
 
   requestAnimationFrame(()=> ov.classList.add('show'));
 
@@ -5196,16 +5384,16 @@ function revealSummon(c, kind, isNew){
   chip.className = 'ov-chip';
   chip.innerHTML = chipSVG('fly');
   $('.ov-stage', ov).appendChild(chip);
-  setTimeout(()=> chip.classList.add('in'), 60);
+  summonTimeout(()=> chip.classList.add('in'), 60);
   sfxClick();
 
-  setTimeout(()=>{
+  summonTimeout(()=>{
     ov.classList.add('tunnel-on','flash');
     sfxSummon();
     setTimeout(()=> chip.remove(), 700);
   }, 420);
 
-  setTimeout(()=>{
+  summonTimeout(()=>{
     ov.classList.add('lit','revealed');
     const badge = $('#ovBadge');
     const r = badge.getBoundingClientRect();
@@ -5218,20 +5406,31 @@ function revealSummon(c, kind, isNew){
     }
   }, 1150);
 
-  setTimeout(()=>{
+  summonTimeout(()=>{
     summoning=false; renderWatch(); renderRewards();
     if(dexFound() === CARBOTS.length){
       toast(L({ko:'카봇 도감 완성! '+dexTotalText(CARBOTS.length)+'종 모두 만났어요! 🏆',en:'Carbot Dex complete! You met all '+dexTotalText(CARBOTS.length)+'! 🏆'}), '🏆');
       boostBurst();
     }
   }, 1250);
+
+  /* 2초 뒤: 캐릭터가 화면을 가득 채우고 한글 이름이 크게 떠오릅니다(한글 공부) */
+  summonTimeout(()=>{
+    if(ov.hidden) return;
+    ov.classList.add('big');
+    speakCarbotName(c);
+  }, 2000);
 }
 
 function closeSummon(){
+  clearSummonTimers();
+  summoning = false;
   const ov = $('#summonOverlay');
-  ov.classList.remove('show');
-  setTimeout(()=>{ ov.hidden = true; ov.classList.remove('lit','tunnel-on','flash','revealed','special'); }, 260);
+  const chip = ov.querySelector('.ov-chip'); if(chip) chip.remove();
+  ov.classList.remove('show','big');
+  setTimeout(()=>{ ov.hidden = true; ov.classList.remove('lit','tunnel-on','flash','revealed','special','big'); }, 260);
   if($('#ovWatch')) $('#ovWatch').innerHTML = watchSVG();
+  renderWatch(); renderRewards();
 }
 
 /* =====================================================================
@@ -7006,10 +7205,31 @@ function wire(){
     summon();
   });
 
+  /* 가진 카봇 칩 다시 끼우기 (칩 선반 + 도감 카드) */
+  function onInsertClick(e){
+    const b = e.target.closest('[data-insert]');
+    if(!b) return;
+    insertOwnedChip(b.getAttribute('data-insert'));
+  }
+  if($('#chipShelfGrid')) $('#chipShelfGrid').addEventListener('click', onInsertClick);
+  if($('#dexGrid')) $('#dexGrid').addEventListener('click', onInsertClick);
+  if($('#chipShelfMore')) $('#chipShelfMore').addEventListener('click', ()=>{
+    shelfLimit += 60; renderChipShelf(); sfxClick();
+  });
+
   /* summon overlay */
   $('#ovClose').addEventListener('click', ()=>{ closeSummon(); sfxClick(); });
+  if($('#ovBigName')) $('#ovBigName').addEventListener('click', ()=>{
+    if(currentSummon) speakCarbotName(currentSummon);
+  });
   $('#ovAgain').addEventListener('click', ()=>{
     const kind = currentSummonKind;
+    const c = currentSummon;
+    if(kind==='replay'){
+      closeSummon();
+      setTimeout(()=>{ if(c) insertOwnedChip(c.id); }, 280);
+      return;
+    }
     if(kind==='special'){
       if(state.specialTickets<=0) return;
       closeSummon();
