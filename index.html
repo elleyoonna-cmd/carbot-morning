@@ -13,6 +13,8 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="description" content="헬로 카봇과 함께하는 건우(Connor)의 아침 준비 대시보드">
 <title>카봇 모닝! 건우 · Carbot Morning! Connor</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23ff5b4d'/%3E%3Crect x='16' y='18' width='32' height='28' rx='8' fill='%23fff'/%3E%3Ccircle cx='26' cy='31' r='3.5' fill='%2322304c'/%3E%3Ccircle cx='38' cy='31' r='3.5' fill='%2322304c'/%3E%3Cpath d='M25 39q7 5 14 0' stroke='%23ff5b4d' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
 /* ============ tokens ============ */
@@ -3649,10 +3651,46 @@ function speakAlarm(text, lang){
     return true;
   }catch(e){ return false; }
 }
-function notifyAlarm(text, name){
+function notifyIconURL(){
+  try{ return new URL('icon-192.png', location.href).href; }catch(e){ return ''; }
+}
+/* 서비스 워커 준비(없거나 느리면 null) */
+function swReady(ms){
+  return new Promise(resolve=>{
+    if(!('serviceWorker' in navigator)) return resolve(null);
+    let done = false;
+    const t = setTimeout(()=>{ if(!done){ done = true; resolve(null); } }, ms || 1500);
+    navigator.serviceWorker.ready.then(reg=>{ if(!done){ done=true; clearTimeout(t); resolve(reg); } })
+      .catch(()=>{ if(!done){ done=true; clearTimeout(t); resolve(null); } });
+  });
+}
+let swReg = null;
+function registerSW(){
+  if(!('serviceWorker' in navigator)) return;
+  if(location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') return;
   try{
-    if(!('Notification' in window) || Notification.permission !== 'granted') return false;
-    const n = new Notification('🚨 카봇 출동 지령! · '+name, {body:text, tag:'carbot-alarm'});
+    navigator.serviceWorker.register('./sw.js').then(reg=>{ swReg = reg; }).catch(()=>{});
+  }catch(e){}
+}
+/* 상단 알림창: 서비스 워커 showNotification 우선, 미지원( file:// 등 )은 new Notification 폴백 */
+async function notifyAlarm(text, name, isTest){
+  try{
+    if('Notification' in window && Notification.permission !== 'granted') return false;
+    if(!('Notification' in window) && !('serviceWorker' in navigator)) return false;
+    const title = (isTest ? '🚨 (테스트) 카봇 출동 지령!' : '🚨 카봇 출동 지령!') + (name ? ' · '+name : '');
+    const icon = notifyIconURL();
+    const opts = {
+      body: text, tag: 'carbot-alarm', renotify: true, vibrate: [200,100,200],
+      data: {url: location.href}
+    };
+    if(icon){ opts.icon = icon; opts.badge = icon; }
+    if('serviceWorker' in navigator){
+      const reg = swReg || await swReady(1500);
+      if(reg && typeof reg.showNotification === 'function'){
+        try{ await reg.showNotification(title, opts); return true; }catch(e){ /* fall back */ }
+      }
+    }
+    const n = new Notification(title, {body:text, tag:'carbot-alarm', icon:icon || undefined});
     n.onclick = ()=>{ try{ window.focus(); }catch(e){} try{ n.close(); }catch(e){} };
     setTimeout(()=>{ try{ n.close(); }catch(e){} }, 25000);
     return true;
@@ -3669,8 +3707,8 @@ function updateNotifyUI(){
   const st = notifState();
   const map = {
     unsupported:{ko:'이 브라우저는 페이지 알림을 지원하지 않아요. 알람 창과 음성은 그대로 동작해요.',en:'This browser has no page notifications. The alarm popup and voice still work.'},
-    granted:{ko:'켜짐 · 다른 앱을 보고 있어도 시스템 알림이 함께 떠요.',en:'On · a system notification appears even in another app.'},
-    denied:{ko:'차단됨 · 브라우저 주소창의 자물쇠(사이트 설정)에서 알림을 허용해 주세요.',en:'Blocked · allow notifications in the site settings (lock icon).'},
+    granted:{ko:'켜짐 · 알람이 울리면 위쪽 알림창에 시스템 알림도 함께 떠요.',en:'On · a system notification appears in the top bar along with the alarm.'},
+    denied:{ko:'차단됨 · 주소창의 자물쇠(사이트 설정)에서 알림을 허용해 주세요. 허용하면 위쪽 알림창에도 떠요.',en:'Blocked · allow notifications in the site settings (lock icon) to get top-bar alerts.'},
     default:{ko:'아직 꺼짐 · ‘알림 권한 켜기’를 눌러 주세요.',en:'Off · press “Turn on notifications”.'}
   };
   el.textContent = L(map[st] || map.default);
@@ -3783,7 +3821,7 @@ function showAlarm(d, isTest){
   requestAnimationFrame(()=> ov.classList.add('show'));
   sfxAlarm();
   setTimeout(()=> speakAlarm(text, lang), 420);
-  if(!isTest) notifyAlarm(text, pick(it.ko, it.en));
+  notifyAlarm(text, pick(it.ko, it.en), !!isTest);
 }
 
 function closeAlarm(){
@@ -4312,6 +4350,7 @@ function bodyBasic(){
        L({ko:'알람이 울릴 때 카봇 목소리로 멘트를 읽어 줘요. (한국어·영어)',en:'Reads the roll-out line in Korean or English.'}), 'tts', draft.tts)
   +   '<div class="notify-row"><div class="st"><b>'+L({ko:'🔔 브라우저 알림',en:'🔔 Browser notification'})+'</b><span id="notifState"></span></div>'
   +     '<button type="button" class="mini-btn go" id="btnNotifPerm">'+L({ko:'알림 권한 켜기',en:'Turn on notifications'})+'</button></div>'
+  +   '<p class="fs-hint">'+L({ko:'안드로이드 태블릿·폰에서도 위쪽 알림창에 알림이 떠요. 브라우저나 홈 화면 앱이 열려 있거나 백그라운드에 있을 때 동작해요.',en:'Android tablets and phones get a notification in the top bar too — while the browser or home-screen app is open or in the background.'})+'</p>'
   +   '<button type="button" class="alarm-test-btn" id="btnAlarmTest"><span aria-hidden="true">🚨</span><span>'+L({ko:'알람 테스트',en:'Test the alarm'})+'</span></button>'
   +   '<p class="fs-hint">'+L({ko:'테스트를 한 번 눌러 두면 휴대폰·태블릿에서 소리와 음성이 바로 나와요. (브라우저 오디오 잠금 해제)',en:'Press Test once so sound and voice play right away on phones and tablets — it unlocks browser audio.'})+'</p>'
   +   '<p class="accent-note">'+L({ko:'⏰ 항목별 알람 시각·멘트는 루틴·일정·놀이 탭에서 정해요. 08:35 미리보기 중에는 울리지 않고, 효과음을 끄면 사이렌도 울리지 않아요.',en:'⏰ Set each alarm time and line in the Routine, Events and Play tabs. Alarms stay quiet in 08:35 preview, and the siren follows the sound switch.'})+'</p>'
@@ -5192,6 +5231,7 @@ function boot(){
   ensureDay();
   adoptChipDay();
   loadFired();
+  registerSW();
   applyStatic();
   renderDexFilters();
   $$('.tab').forEach(t=> t.setAttribute('aria-selected', String(t.dataset.tab==='dash')));
