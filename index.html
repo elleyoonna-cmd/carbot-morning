@@ -1349,8 +1349,10 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
           <div class="tm-missions" id="tmMissions"></div>
           <div class="tm-free hide" id="tmFreeWrap">
             <input class="ed-input" id="tmFreeIn" maxlength="20" placeholder="미션을 적어 보세요">
+            <button type="button" class="tr-btn" id="tmFreeTr" title="한글을 영어로 번역" aria-label="한글을 영어로 번역">🌐</button>
             <button type="button" class="mini-btn go" id="tmFreeGo" data-i18n="tmFreeGo">적용</button>
           </div>
+          <p class="tr-hint tm-free-hint hide" id="tmFreeHint"><span aria-hidden="true">🌐</span><span>한글만 적어도 영어 모드에서는 영어로 보여 줘요</span></p>
         </div>
 
         <div class="tm-ringwrap" id="tmRingWrap">
@@ -1720,6 +1722,25 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
 @media (max-width:400px){
   .tm-presets{grid-template-columns:repeat(3,1fr)}
 }
+/* ============ ko→en 자동 번역 (설정 편집기·타이머) ============ */
+.tr-wrap{display:flex; align-items:center; gap:5px; min-width:0}
+.tr-wrap>.ed-input{flex:1 1 auto; min-width:0}
+.tr-btn{flex:0 0 auto; width:34px; height:38px; border-radius:10px; display:grid; place-items:center;
+  font-size:14px; line-height:1; background:#eef5ff; color:#1f4fb8;
+  box-shadow:inset 0 0 0 1px rgba(47,108,230,.22); transition:transform .12s, background .18s, opacity .18s}
+.tr-btn:hover{background:#e2eeff}
+.tr-btn:active{transform:scale(.94)}
+.tr-btn.busy{opacity:.55; animation:trPulse .9s ease-in-out infinite}
+@keyframes trPulse{0%,100%{opacity:.45}50%{opacity:1}}
+.tr-busy{flex:0 0 auto; font-size:9.5px; font-weight:900; color:#7c8aa5; white-space:nowrap}
+.tr-busy[hidden]{display:none !important}
+.tr-ok{animation:trFlash .6s ease-out}
+@keyframes trFlash{0%{background:#e6f8ee; border-color:#3fbe86}100%{background:#fff}}
+.tr-hint{display:flex; align-items:flex-start; gap:6px; margin:0 0 10px; padding:8px 11px; border-radius:11px;
+  font-size:11px; font-weight:800; color:#2f5da8; background:#f1f7ff;
+  box-shadow:inset 0 0 0 1px rgba(47,108,230,.14); line-height:1.4}
+.tm-free-hint{margin:6px 0 0}
+.tm-free .tr-btn{width:38px; height:38px}
 </style>
 
 <script>
@@ -2497,7 +2518,9 @@ function alarmText(kind, item, lang){
   const a = item.alarm || {};
   const saved = lang==='ko' ? a.ko : a.en;
   if(saved) return saved;
-  const title = lang==='ko' ? (item.ko || item.en || '') : (item.en || item.ko || '');
+  let title = lang==='ko' ? (item.ko || item.en || '') : (item.en || item.ko || '');
+  /* 영어 멘트가 비어 있고 제목이 한글이면 자동 번역해서 읽어 준다 */
+  if(lang==='en' && hasHangul(title)){ const tr = koEnSync(title); if(tr) title = tr; }
   return autoAlarmText(kind, title, lang);
 }
 /* 실제로 울리는 시각 (일정은 time - lead) */
@@ -4348,7 +4371,7 @@ function sanitizeTimer(o){
   t.bot = (typeof o.bot==='string' && CB_BY_ID[o.bot]) ? o.bot : d.bot;
   t.missionId = TM_MISSIONS.some(m=>m.id===o.missionId) ? o.missionId : d.missionId;
   t.freeKo = txt(o.freeKo, '', 20);
-  t.freeEn = txt(o.freeEn, '', 20);
+  t.freeEn = txt(o.freeEn, '', 40);
   t.total = clamp(Math.round(Number(o.total)||d.total), 1, 3600);
   t.remain = clamp(Number.isFinite(Number(o.remain)) ? Math.round(Number(o.remain)) : t.total, 0, t.total);
   t.running = !!o.running && Number(o.endAt) > 0;
@@ -4366,7 +4389,12 @@ function tmMissionLabel(){
   const t = state.timer;
   if(t.missionId==='free'){
     const fk = t.freeKo || t.freeEn || TM_MISSIONS[5].ko;
-    const fe = t.freeEn || t.freeKo || TM_MISSIONS[5].en;
+    let fe = t.freeEn || t.freeKo || TM_MISSIONS[5].en;
+    /* 한글만 적어 둔 미션도 영어 모드에서는 영어로 보여 준다 */
+    if(state.lang==='en' && hasHangul(fe)){
+      const tr = koEnSync(fk);
+      if(tr) fe = tr;
+    }
     return L({ko:fk, en:fe});
   }
   const m = TM_MISSIONS.find(x=>x.id===t.missionId) || TM_MISSIONS[0];
@@ -4463,6 +4491,13 @@ function renderTimer(){
     return '<button type="button" class="tm-chip'+(on?' on':'')+'" data-tm-mission="'+m.id+'" aria-pressed="'+on+'">'+esc(L(m))+'</button>';
   }).join('');
   if($('#tmFreeWrap')) $('#tmFreeWrap').classList.toggle('hide', t.missionId!=='free');
+  if($('#tmFreeHint')){
+    $('#tmFreeHint').classList.toggle('hide', t.missionId!=='free');
+    const fhTxt = $('#tmFreeHint').querySelector('span:last-child');
+    if(fhTxt) fhTxt.textContent = L({ko:'한글만 적어도 영어 모드에서는 영어로 보여 줘요', en:'Korean is fine — English mode shows it in English'});
+  }
+  /* 영어 모드 + 한글만 적은 미션 → 백그라운드로 영문 번역 */
+  if(state.lang==='en' && t.missionId==='free' && hasHangul(t.freeKo||'') && hasHangul(t.freeEn||'')) trTimerFreeSchedule(0);
   const freeIn = $('#tmFreeIn');
   if(freeIn && document.activeElement!==freeIn) freeIn.value = t.freeKo || '';
   if(freeIn) freeIn.placeholder = L({ko:'미션을 적어 보세요', en:'Type your mission'});
@@ -4532,9 +4567,10 @@ function applyTimerFree(){
     return;
   }
   state.timer.freeKo = v;
-  state.timer.freeEn = v;
+  state.timer.freeEn = hasHangul(v) ? (koEnSync(v) || v) : v;
   state.timer.missionId = 'free';
   save(); renderTimer(); sfxClick();
+  if(hasHangul(v) && !koEnSync(v)) trTimerFree(false);
 }
 function timerSetMission(id){
   const t = state.timer;
@@ -4940,6 +4976,613 @@ function applyStatic(){
 }
 
 /* =====================================================================
+   14b. 한글 → 영어 자동 번역 (무료 · API 키 없음)
+   ---------------------------------------------------------------------
+   ① 내장 사전/패턴: 아이 생활·루틴·일정·놀이·준비물·칭찬/알람 멘트를 즉시 변환
+   ② 무료 번역 API : Google(1차) → Google clients5(2차) → MyMemory(3차), 타임아웃 3.5초
+   ③ 안전한 폴백   : 사전 부분 번역 → 한글 음역(로마자) — 영어 칸이 빈칸/한글로 남지 않음
+   ===================================================================== */
+const TR_CACHE_KEY = 'carbot-koen-cache-v1';
+const TR_AUTO_KEY  = 'carbot-autoen-v1';
+const TR_TIMEOUT   = 3500;
+const TR_CACHE_MAX = 260;
+const TR_AUTO_MAX  = 400;
+
+const TR = { cache:new Map(), inflight:new Map(), auto:{}, manual:{}, timers:{}, ready:false, timerKo:'', timerBusy:false };
+const TR_MANUAL_KEY = 'carbot-manualen-v1';
+
+function hasHangul(s){ return /[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7A3]/.test(String(s==null?'':s)); }
+function normKo(s){
+  return String(s==null?'':s)
+    .replace(/[\u200B-\u200D\uFEFF]/g,'')
+    .replace(/\s+/g,' ')
+    .trim()
+    .replace(/^[\s"'“‘(\[]+/,'')
+    .replace(/[\s"'”’)\].,!?~…:;·]+$/,'')
+    .trim();
+}
+
+/* ---------- ① 내장 사전 (아이 아침·생활 표현) ---------- */
+const KOEN_DICT = {
+  /* 이름 · 동네 */
+  '건우':'Connor', '윤나':'Yoonna', '용호동':'Yongho-dong', '우암동':'Uam-dong', '남구':'Nam-gu', '부산':'Busan',
+  /* 아침 루틴 */
+  '일어나기':'Wake up', '기상':'Wake up', '아침':'Morning', '아침 먹기':'Eat breakfast', '아침밥':'Breakfast',
+  '세수':'Wash face', '세수하기':'Wash face', '양치':'Brush teeth', '양치하기':'Brush teeth',
+  '세수·양치':'Wash & Brush Teeth', '세수하고 양치':'Wash up and brush teeth',
+  '옷 입기':'Get dressed', '옷입기':'Get dressed', '옷 갈아입기':'Change clothes',
+  '가방 챙기기':'Pack the bag', '가방':'Bag', '가방 챙기고 출발':'Grab the bag and head out',
+  '신발 신기':'Put on shoes', '신발':'Shoes', '머리 빗기':'Brush hair', '머리 감기':'Wash hair',
+  '준비':'Get ready', '준비하기':'Get ready', '출발':'Leave', '출발하기':'Head out', '집에 가기':'Head home',
+  '화장실':'Bathroom', '손 씻기':'Wash hands', '목욕':'Bath time', '목욕하기':'Take a bath',
+  /* 등·하원 · 기관 */
+  '등원':'Go to daycare', '등원하기':'Daycare run', '하원':'Pick-up from daycare', '하원하기':'Head home from daycare',
+  '어린이집':'Daycare', '유치원':'Preschool', '학교':'School', '학원':'Academy', '학원 가기':'Off to academy',
+  '친구 만나기':'Meet friends', '선생님':'Teacher',
+  /* 놀이 · 학습 */
+  '놀이':'Play', '놀이하기':'Play time', '책 읽기':'Read a book', '책 한 권':'One book', '그림책':'Picture book',
+  '동화책':'Storybook', '장난감 정리':'Tidy up toys', '정리 정돈':'Tidy up', '정리':'Tidy up',
+  '블록 놀이':'Block play', '블록':'Blocks', '블록 쌓기':'Building blocks', '레고':'Lego',
+  '블록 정리':'Tidy up blocks', '장난감 정리하기':'Tidy up toys', '방 정리':'Tidy the room', '책상 정리':'Tidy the desk',
+  '그림 그리기':'Draw a picture', '그리기':'Drawing', '색칠':'Colouring', '종이접기':'Paper folding',
+  '만들기':'Making things', '퍼즐':'Puzzle', '숫자':'Numbers', '숫자 놀이':'Number play', '한글':'Korean letters',
+  '한글 놀이':'Korean letter play', '영어':'English', '영어 놀이':'English play', '영어 노래':'English songs',
+  '영어 노래·그림책':'English Song & Book', '숫자·퍼즐 놀이':'Numbers & Puzzle Play',
+  '노래':'Singing', '춤':'Dancing', '운동':'Exercise', '산책':'Walk', '산책하기':'Go for a walk', '놀이터':'Playground',
+  /* 학원 · 활동 */
+  '태권도':'Taekwondo', '수영':'Swimming', '수영하기':'Go swimming', '발레':'Ballet', '축구':'Soccer',
+  '피아노':'Piano', '피아노 치기':'Play the piano', '바이올린':'Violin', '미술':'Art', '체육':'PE',
+  /* 일정 · 이벤트 */
+  '병원':'Clinic', '병원 가기':'Visit the clinic', '치과':'Dentist', '소아과':'Pediatric clinic',
+  '예방접종':'Vaccination', '약 먹기':'Take medicine', '발표회':'Presentation day', '생일':'Birthday',
+  '생일 파티':'Birthday party', '생일파티':'Birthday party', '할머니 댁':'Grandma\u2019s house',
+  '할머니 생신':'Grandma\u2019s birthday', '할아버지 댁':'Grandpa\u2019s house', '친척 집':'Relatives\u2019 house',
+  '나들이':'Outing', '가족 나들이':'Family outing', '소풍':'Picnic', '물놀이':'Water play', '캠핑':'Camping',
+  '여행':'Trip', '장보기':'Groceries', '마트':'Mart', '시장':'Market', '도서관':'Library',
+  '청소':'Cleaning', '빨래':'Laundry', '설거지':'Dishes', '요리':'Cooking', '낮잠':'Nap', '낮잠 자기':'Take a nap',
+  '간식':'Snack', '간식 먹기':'Have a snack', '점심':'Lunch', '점심 먹기':'Eat lunch',
+  '저녁':'Evening', '저녁 먹기':'Eat dinner', '저녁 목욕':'Evening bath', '잘 자요':'Good night',
+  /* 칭찬 · 응원 · 카봇 멘트 */
+  '잘했어':'Great job', '잘했어요':'Great job', '잘한다':'You are doing great', '멋져':'So cool', '멋져요':'So cool',
+  '최고':'The best', '파이팅':'You can do it', '화이팅':'You can do it', '힘내':'Cheer up', '사랑해':'I love you',
+  '고마워':'Thank you', '미안해':'I\u2019m sorry', '안녕':'Hello', '출동':'Roll out', '출동하자':'Let\u2019s roll out',
+  '카봇':'Carbot', '카봇 출동':'Carbot roll out', '준비 완료':'All ready', '다 했어':'All done',
+  '스스로 했어':'I did it myself', '혼자서 했어':'I did it on my own',
+  /* 준비물 */
+  '물통':'Water bottle', '이불':'Blanket', '낮잠이불':'Nap blanket', '이불가방':'Blanket bag', '여벌옷':'Spare clothes',
+  '실내화':'Indoor shoes', '체육복':'Gym clothes', '활동복':'Play clothes', '도서':'Library book', '책':'Book',
+  '숙제':'Homework', '주말 숙제':'Weekend homework', '알림장':'Notice book', '기저귀':'Diapers', '물티슈':'Wet wipes',
+  '손수건':'Handkerchief', '수건':'Towel', '모자':'Hat', '우산':'Umbrella', '마스크':'Mask', '도시락':'Lunch box',
+  '컵':'Cup', '수저':'Cutlery', '크레파스':'Crayons', '색연필':'Colour pencils', '스케치북':'Sketchbook',
+  '풀':'Glue', '가위':'Scissors', '이름표':'Name tag', '사진':'Photo', '현금':'Cash', '장난감':'Toy', '인형':'Doll',
+  '공':'Ball', '필통':'Pencil case', '연필':'Pencil', '지우개':'Eraser', '물감':'Paint', '붓':'Brush',
+  '다음 주 준비':'Next week prep', '다음주 준비':'Next week prep',
+  /* 확언 */
+  '오늘도 나는 스스로 잘하는 멋진 어린이!':'Today I\u2019m a big kid who can do things on my own!',
+  '오늘 하루도 즐거워!':'Let\u2019s have a happy day!', '나는 할 수 있어!':'I can do it!'
+};
+/* 사전 키를 입력과 같은 규칙(공백·끝 문장부호 정리)으로 정규화해 둔다 */
+const KOEN_NORM = (function(){
+  const o = {};
+  Object.keys(KOEN_DICT).forEach(function(k){ const n = normKo(k); if(n) o[n] = KOEN_DICT[k]; });
+  return o;
+})();
+const KOEN_NOSPACE = (function(){
+  const o = {};
+  Object.keys(KOEN_NORM).forEach(function(k){ o[k.replace(/\s+/g,'')] = KOEN_NORM[k]; });
+  return o;
+})();
+const KOEN_NAME_WORDS = {
+  '건우':'Connor', '윤나':'Yoonna', '용호동':'Yongho-dong', '우암동':'Uam-dong', '남구':'Nam-gu', '부산':'Busan',
+  '엄마':'Mommy', '아빠':'Daddy', '할머니':'Grandma', '할아버지':'Grandpa', '외할머니':'Grandma',
+  '외할아버지':'Grandpa', '친구':'friend', '선생님':'teacher'
+};
+const KOEN_PARTICLE = /(에서|에게서|한테서|으로|께서|이랑|에게|한테|부터|까지|처럼|보다|은|는|이|가|을|를|에|도|와|과|의|만|아|야|랑|로)$/;
+
+function finishEn(s){
+  let out = String(s==null?'':s).replace(/\s+/g,' ').trim();
+  if(!out) return '';
+  out = out.replace(/\bi'(m|ll|ve|d|s|re)\b/gi, function(m,a){ return 'I\u2019'+a.toLowerCase(); });
+  out = out.replace(/\bi\b/g,'I');
+  out = out.replace(/(^|[.!?]\s+)([a-z])/g, function(m,a,b){ return a+b.toUpperCase(); });
+  if(/^[a-z]/.test(out)) out = out.charAt(0).toUpperCase() + out.slice(1);
+  return out;
+}
+function lowerFirst(s){ return s ? s.charAt(0).toLowerCase() + s.slice(1) : s; }
+
+function koEnExact(s){
+  const k = normKo(s);
+  if(!k) return '';
+  return KOEN_NORM[k] || KOEN_NOSPACE[k.replace(/\s+/g,'')] || '';
+}
+function koEnToken(t){
+  if(!t) return '';
+  if(KOEN_NORM[t]) return KOEN_NORM[t];
+  if(KOEN_NAME_WORDS[t]) return KOEN_NAME_WORDS[t];
+  const base = t.replace(KOEN_PARTICLE,'');
+  if(base && base !== t){
+    if(KOEN_NORM[base]) return KOEN_NORM[base];
+    if(KOEN_NAME_WORDS[base]) return KOEN_NAME_WORDS[base];
+  }
+  return '';
+}
+function koEnGloss(s){
+  const toks = normKo(s).split(' ').filter(Boolean);
+  if(!toks.length) return '';
+  const out = [];
+  let hit = 0;
+  toks.forEach(function(t){
+    let w = koEnToken(t);
+    if(!w && /[,·]/.test(t)) w = koEnToken(t.replace(/[,·]/g,''));
+    if(w){ out.push(w); hit++; }
+  });
+  if(!hit) return '';
+  if(hit / toks.length < 0.8) return '';
+  return out.join(' ');
+}
+function koEnDict(src){
+  const s = normKo(src);
+  if(!s) return '';
+  const direct = koEnExact(s);
+  if(direct) return finishEn(direct);
+  let m;
+  if((m = s.match(/^(.+?)\s*(\d+)\s*분$/))){ const b = koEnExact(m[1]) || koEnGloss(m[1]); if(b) return finishEn(b+' · '+m[2]+' min'); }
+  if((m = s.match(/^(.+?)\s*(\d+)\s*초$/))){ const b = koEnExact(m[1]) || koEnGloss(m[1]); if(b) return finishEn(b+' · '+m[2]+' sec'); }
+  if((m = s.match(/^(.+?)\s*(\d+)\s*번$/))){ const b = koEnExact(m[1]) || koEnGloss(m[1]); if(b) return finishEn(b+' '+m[2]+' times'); }
+  if((m = s.match(/^(.+?)\s*(\d+)\s*개$/))){ const b = koEnExact(m[1]) || koEnGloss(m[1]); if(b) return finishEn(m[2]+' '+lowerFirst(b)); }
+  if((m = s.match(/^(.+?)하기$/))){ const b = koEnExact(m[1]) || koEnExact(m[1]+'하기'); if(b) return finishEn(b); }
+  if((m = s.match(/^(.+?)하자$/))){ const b = koEnExact(m[1]) || koEnExact(m[1]+'하기'); if(b) return finishEn('Let\u2019s '+lowerFirst(b)); }
+  if((m = s.match(/^(.+?)\s*댁$/))){ const b = koEnExact(m[1]) || koEnGloss(m[1]); if(b) return finishEn(b+'\u2019s house'); }
+  if((m = s.match(/^(.+?)\s*집$/))){ const b = koEnExact(m[1]) || koEnGloss(m[1]); if(b) return finishEn(b+'\u2019s house'); }
+  if(/[,·]/.test(s)){
+    const parts = s.split(/\s*[,·]\s*/).map(function(x){ return koEnExact(x) || koEnGloss(x); }).filter(Boolean);
+    if(parts.length > 1) return finishEn(parts.join(', '));
+  }
+  return finishEn(koEnGloss(s) || '');
+}
+
+/* ---------- ③ 음역 폴백 (네트워크가 막혀도 한글이 남지 않게) ---------- */
+const ROM_CHO  = ['g','kk','n','d','tt','r','m','b','pp','s','ss','','j','jj','ch','k','t','p','h'];
+const ROM_JUNG = ['a','ae','ya','yae','eo','e','yeo','ye','o','wa','wae','oe','yo','u','wo','we','wi','yu','eu','ui','i'];
+const ROM_JONG = ['','k','k','ks','n','nj','nh','t','l','lk','lm','lb','ls','lt','lp','lh','m','p','ps','t','t','ng','t','t','k','t','p','t'];
+function romanizeKo(s){
+  let out = '';
+  const str = String(s==null?'':s);
+  for(let i=0;i<str.length;i++){
+    const c = str.charCodeAt(i);
+    if(c>=0xAC00 && c<=0xD7A3){
+      const n = c - 0xAC00;
+      out += ROM_CHO[Math.floor(n/588)] + ROM_JUNG[Math.floor((n%588)/28)] + ROM_JONG[n%28];
+    }else{
+      out += str.charAt(i);
+    }
+  }
+  return out.replace(/\s+/g,' ').trim();
+}
+
+/* ---------- ② 무료 번역 API (Google → Google → MyMemory) ---------- */
+const TR_ENDPOINTS = [
+  function(ko){ return 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=en&dt=t&q=' + encodeURIComponent(ko); },
+  function(ko){ return 'https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=ko&tl=en&q=' + encodeURIComponent(ko); },
+  function(ko){ return 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(ko) + '&langpair=ko%7Cen'; }
+];
+function trParse(i, j){
+  try{
+    if(i===0){
+      if(Array.isArray(j) && Array.isArray(j[0])){
+        return j[0].map(function(x){ return Array.isArray(x) ? String(x[0]||'') : ''; }).join('').trim();
+      }
+      if(typeof j === 'string') return j.trim();
+      return '';
+    }
+    if(i===1){
+      if(Array.isArray(j)){
+        return j.map(function(x){ return Array.isArray(x) ? String(x[0]||'') : String(x==null?'':x); }).join(' ').trim();
+      }
+      if(typeof j === 'string') return j.trim();
+      return '';
+    }
+    if(j && j.responseData && typeof j.responseData.translatedText === 'string') return j.responseData.translatedText.trim();
+  }catch(e){}
+  return '';
+}
+function trFetch(url){
+  return new Promise(function(resolve, reject){
+    let done = false, ctl = null;
+    try{ if(typeof AbortController !== 'undefined') ctl = new AbortController(); }catch(e){}
+    const finish = function(err, val){
+      if(done) return;
+      done = true;
+      clearTimeout(tid);
+      if(err) reject(err); else resolve(val);
+    };
+    const tid = setTimeout(function(){ try{ if(ctl) ctl.abort(); }catch(e){} finish(new Error('timeout')); }, TR_TIMEOUT);
+    try{
+      fetch(url, {mode:'cors', credentials:'omit', cache:'no-store', signal: ctl ? ctl.signal : undefined})
+        .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+        .then(function(j){ finish(null, j); })
+        .catch(function(e){ finish(e); });
+    }catch(e){ finish(e); }
+  });
+}
+async function trApi(ko){
+  for(let i=0;i<TR_ENDPOINTS.length;i++){
+    let j = null;
+    try{ j = await trFetch(TR_ENDPOINTS[i](ko)); }catch(e){ continue; }
+    const out = trParse(i, j);
+    if(out && hasHangul(out) === false && out.toLowerCase() !== ko.toLowerCase()) return finishEn(out);
+  }
+  return '';
+}
+
+/* ---------- 캐시 · 공개 API ---------- */
+function trLoad(){
+  if(TR.ready) return;
+  TR.ready = true;
+  try{
+    const raw = localStorage.getItem(TR_CACHE_KEY);
+    if(raw){
+      const o = JSON.parse(raw);
+      Object.keys(o||{}).forEach(function(k){ if(typeof o[k]==='string' && o[k]) TR.cache.set(k, o[k]); });
+    }
+  }catch(e){}
+  try{
+    const raw = localStorage.getItem(TR_AUTO_KEY);
+    if(raw){
+      const o = JSON.parse(raw);
+      Object.keys(o||{}).forEach(function(k){ if(typeof o[k]==='string') TR.auto[k] = o[k]; });
+    }
+  }catch(e){}
+  try{
+    const raw = localStorage.getItem(TR_MANUAL_KEY);
+    if(raw){
+      const o = JSON.parse(raw);
+      Object.keys(o||{}).forEach(function(k){ if(typeof o[k]==='string') TR.manual[k] = o[k]; });
+    }
+  }catch(e){}
+}
+function trSaveCache(){
+  try{
+    const o = {}; let n = 0;
+    TR.cache.forEach(function(v,k){ if(n++ < TR_CACHE_MAX) o[k] = v; });
+    localStorage.setItem(TR_CACHE_KEY, JSON.stringify(o));
+  }catch(e){}
+}
+function trSaveAuto(){
+  try{
+    const o = {}; let n = 0;
+    Object.keys(TR.auto).forEach(function(k){ if(n++ < TR_AUTO_MAX) o[k] = TR.auto[k]; });
+    localStorage.setItem(TR_AUTO_KEY, JSON.stringify(o));
+  }catch(e){}
+}
+function trSaveManual(){
+  try{
+    const o = {}; let n = 0;
+    Object.keys(TR.manual).forEach(function(k){ if(n++ < TR_AUTO_MAX) o[k] = TR.manual[k]; });
+    localStorage.setItem(TR_MANUAL_KEY, JSON.stringify(o));
+  }catch(e){}
+}
+function trCacheGet(src){
+  trLoad();
+  const k = normKo(src);
+  if(!k) return '';
+  return TR.cache.get(k) || '';
+}
+function trCacheSet(src, en){
+  const k = normKo(src);
+  if(!k || !en) return;
+  TR.cache.set(k, en);
+  while(TR.cache.size > TR_CACHE_MAX){
+    const first = TR.cache.keys().next();
+    if(first.done) break;
+    TR.cache.delete(first.value);
+  }
+  trSaveCache();
+}
+/* 즉시(동기) 번역 — 사전·캐시에 있으면 바로, 없으면 '' */
+function koEnSync(src){
+  const s = String(src==null?'':src).trim();
+  if(!s) return '';
+  if(!hasHangul(s)) return s;
+  const hit = trCacheGet(s);
+  if(hit) return hit;
+  return koEnDict(s);
+}
+/* 비동기 번역 — 사전 → 캐시 → API → 음역 */
+async function translateKoToEn(src, opt){
+  trLoad();
+  const s = String(src==null?'':src).trim();
+  if(!s) return '';
+  if(!hasHangul(s)) return s;
+  const key = normKo(s);
+  const force = !!(opt && opt.force);
+  const hit = force ? '' : trCacheGet(s);
+  if(hit) return hit;
+  const dict = koEnDict(s);
+  if(dict && !force) return dict;
+  if(TR.inflight.has(key)) return TR.inflight.get(key);
+  const p = (async function(){
+    let api = '';
+    try{ api = await trApi(s); }catch(e){ api = ''; }
+    if(api){ trCacheSet(s, api); return api; }
+    return dict || finishEn(romanizeKo(s));
+  })().then(function(v){ TR.inflight.delete(key); return v; }, function(){ TR.inflight.delete(key); return dict || finishEn(romanizeKo(s)); });
+  TR.inflight.set(key, p);
+  return p;
+}
+
+/* ---------- 저장된 한글 데이터의 영어 칸 채우기 ---------- */
+function ensureEnglish(){
+  let changed = false;
+  const fill = function(obj, koKey, enKey){
+    if(!obj) return;
+    const ko = String(obj[koKey]==null?'':obj[koKey]).trim();
+    if(!ko || !hasHangul(ko)) return;
+    const cur = String(obj[enKey]==null?'':obj[enKey]).trim();
+    if(cur && cur !== ko) return;            /* 직접 쓴 영어는 그대로 둔다 */
+    const en = koEnSync(ko);
+    if(en && en !== cur){ obj[enKey] = en; changed = true; }
+  };
+  fill(state.name,'ko','en');
+  fill(state.place,'ko','en');
+  (state.routines||[]).forEach(function(r){ fill(r,'ko','en'); fill(r.alarm,'ko','en'); });
+  (state.plays||[]).forEach(function(p){ fill(p,'ko','en'); fill(p,'ko2','en2'); fill(p.alarm,'ko','en'); });
+  (state.events||[]).forEach(function(e){ fill(e,'ko','en'); fill(e.alarm,'ko','en'); });
+  (state.affirms||[]).forEach(function(a){ fill(a,'ko','en'); });
+  Object.keys(state.supplies||{}).forEach(function(d){
+    (state.supplies[d]||[]).forEach(function(it){ fill(it,'ko','en'); });
+  });
+  if(state.timer && state.timer.missionId === 'free') fill(state.timer,'freeKo','freeEn');
+  if(changed) save();
+  return changed;
+}
+/* 영어 모드일 때 API까지 써서 채운다 */
+let trAsyncToken = 0;
+async function ensureEnglishAsync(){
+  if(state.lang !== 'en') return;
+  const token = ++trAsyncToken;
+  const byKo = {};
+  const push = function(obj, koKey, enKey){
+    if(!obj) return;
+    const ko = String(obj[koKey]==null?'':obj[koKey]).trim();
+    if(!ko || !hasHangul(ko)) return;
+    const cur = String(obj[enKey]==null?'':obj[enKey]).trim();
+    if(cur && !hasHangul(cur) && cur !== ko) return;   /* 이미 영어 */
+    const job = {obj:obj, enKey:enKey, ko:ko};
+    (byKo[ko] = byKo[ko] || []).push(job);
+  };
+  push(state.name,'ko','en');
+  push(state.place,'ko','en');
+  (state.routines||[]).forEach(function(r){ push(r,'ko','en'); push(r.alarm,'ko','en'); });
+  (state.plays||[]).forEach(function(p){ push(p,'ko','en'); push(p,'ko2','en2'); push(p.alarm,'ko','en'); });
+  (state.events||[]).forEach(function(e){ push(e,'ko','en'); push(e.alarm,'ko','en'); });
+  (state.affirms||[]).forEach(function(a){ push(a,'ko','en'); });
+  Object.keys(state.supplies||{}).forEach(function(d){
+    (state.supplies[d]||[]).forEach(function(it){ push(it,'ko','en'); });
+  });
+  if(state.timer && state.timer.missionId === 'free') push(state.timer,'freeKo','freeEn');
+  const keys = Object.keys(byKo).slice(0, 12);
+  if(!keys.length) return;
+  let changed = false;
+  for(let i=0;i<keys.length;i++){
+    const ko = keys[i];
+    let out = '';
+    try{ out = await translateKoToEn(ko); }catch(e){ out = ''; }
+    if(token !== trAsyncToken) return;
+    if(!out) continue;
+    byKo[ko].forEach(function(job){
+      const cur = String(job.obj[job.enKey]==null?'':job.obj[job.enKey]).trim();
+      if(cur && !hasHangul(cur) && cur !== job.ko && cur !== koEnDict(job.ko)) return;
+      if(job.obj[job.enKey] !== out){ job.obj[job.enKey] = out; changed = true; }
+    });
+  }
+  if(changed){
+    save();
+    if(state.lang === 'en'){ applyStatic(); renderAll(); }
+  }
+}
+
+/* ---------- 설정 편집기: 한글 칸 ↔ 영어 칸 ---------- */
+function trPair(koPath){
+  const m = String(koPath||'').match(/^(.*)\.(ko2|ko)$/);
+  if(!m) return null;
+  return {koPath:koPath, enPath:m[1] + (m[2]==='ko2' ? '.en2' : '.en')};
+}
+function trBodyInput(path){
+  const list = $$('#setBody [data-f]');
+  for(let i=0;i<list.length;i++) if(list[i].getAttribute('data-f') === path) return list[i];
+  return null;
+}
+function applyTranslateUI(){
+  const body = $('#setBody');
+  if(!body || !draft) return;
+  const inputs = $$('#setBody [data-f]');
+  const byPath = {};
+  inputs.forEach(function(el){ const p = el.getAttribute('data-f'); if(p) byPath[p] = el; });
+  const hint = L({ko:'한글만 입력하면 영어가 자동으로 채워져요', en:'Type in Korean and the English fills itself in'});
+  let seeded = false;
+  inputs.forEach(function(koEl){
+    const p = koEl.getAttribute('data-f');
+    const pair = trPair(p);
+    if(!pair) return;
+    const enEl = byPath[pair.enPath];
+    if(!enEl) return;
+    const koVal = String(koEl.value||'').trim();
+    const enVal = String(enEl.value||'').trim();
+    if(enVal && (enVal === koVal || (koVal && enVal === koEnDict(koVal))) && TR.auto[pair.enPath] !== enVal){
+      TR.auto[pair.enPath] = enVal; seeded = true;
+    }
+    if(koEl.getAttribute('title') !== hint) koEl.setAttribute('title', hint);
+    if(enEl.closest('.tr-wrap')) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'tr-wrap';
+    enEl.parentNode.insertBefore(wrap, enEl);
+    wrap.appendChild(enEl);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'tr-btn';
+    btn.setAttribute('data-tr', pair.koPath);
+    btn.title = L({ko:'한글을 영어로 다시 번역', en:'Translate the Korean again'});
+    btn.setAttribute('aria-label', L({ko:'한글을 영어로 다시 번역', en:'Translate the Korean again'}));
+    btn.textContent = '\uD83C\uDF10';
+    wrap.appendChild(btn);
+    const busy = document.createElement('span');
+    busy.className = 'tr-busy';
+    busy.hidden = true;
+    busy.textContent = L({ko:'번역 중…', en:'Translating…'});
+    wrap.appendChild(busy);
+  });
+  if(seeded) trSaveAuto();
+}
+function trBusy(enPath, on){
+  const el = trBodyInput(enPath);
+  if(!el) return;
+  const wrap = el.closest('.tr-wrap');
+  if(!wrap) return;
+  const label = wrap.querySelector('.tr-busy');
+  if(label) label.hidden = !on;
+  const btn = wrap.querySelector('.tr-btn');
+  if(btn) btn.classList.toggle('busy', !!on);
+}
+function trPaint(enPath, val, flash){
+  if(!draft || !val) return false;
+  const cur = String(getPath(draft, enPath)==null?'':getPath(draft, enPath));
+  setPath(draft, enPath, val);
+  TR.auto[enPath] = val;
+  delete TR.manual[enPath];
+  trSaveAuto(); trSaveManual();
+  const el = trBodyInput(enPath);
+  if(el && document.activeElement !== el){
+    el.value = val;
+    if(flash){
+      el.classList.remove('tr-ok');
+      void el.offsetWidth;
+      el.classList.add('tr-ok');
+    }
+  }
+  return cur.trim() !== val;
+}
+function trIsAuto(enPath, koPath, koVal){
+  const cur = String(getPath(draft, enPath)==null?'':getPath(draft, enPath)).trim();
+  if(!cur) return true;
+  /* 사용자가 영어 칸에 직접 적어 둔 값만 보호한다 */
+  if(TR.manual[enPath] != null && TR.manual[enPath] === cur) return false;
+  return true;
+}
+async function trRun(koPath, force){
+  if(!draft) return;
+  const pair = trPair(koPath);
+  if(!pair) return;
+  const koVal = String(getPath(draft, pair.koPath)==null?'':getPath(draft, pair.koPath)).trim();
+  if(!koVal || !hasHangul(koVal)) return;
+  if(!force && !trIsAuto(pair.enPath, pair.koPath, koVal)) return;
+  const sync = koEnDict(koVal) || trCacheGet(koVal);
+  if(sync){ trPaint(pair.enPath, sync, true); return; }
+  trBusy(pair.enPath, true);
+  let out = '';
+  try{ out = await translateKoToEn(koVal); }catch(e){ out = ''; }
+  trBusy(pair.enPath, false);
+  if(!out || !draft) return;
+  const nowKo = String(getPath(draft, pair.koPath)==null?'':getPath(draft, pair.koPath)).trim();
+  if(nowKo !== koVal) return;
+  if(!force && !trIsAuto(pair.enPath, pair.koPath, koVal)) return;
+  trPaint(pair.enPath, out, true);
+}
+function trSchedule(koPath, delay){
+  const pair = trPair(koPath);
+  if(!pair) return;
+  const key = pair.koPath;
+  if(TR.timers[key]) clearTimeout(TR.timers[key]);
+  const wait = (delay==null) ? 550 : Math.max(0, delay);
+  if(wait === 0){
+    delete TR.timers[key];
+    trRun(key, false);
+    return;
+  }
+  TR.timers[key] = setTimeout(function(){ delete TR.timers[key]; trRun(key, false); }, wait);
+}
+
+/* ---------- 타이머 자유 미션 ---------- */
+function trTimerFreeSchedule(delay){
+  const wait = (delay==null) ? 550 : Math.max(0, delay);
+  if(TR.timers.timer) clearTimeout(TR.timers.timer);
+  if(wait === 0){ delete TR.timers.timer; trTimerFree(false); return; }
+  TR.timers.timer = setTimeout(function(){ delete TR.timers.timer; trTimerFree(false); }, wait);
+}
+async function trTimerFree(force){
+  const t = state.timer;
+  if(!t) return;
+  const ko = String(t.freeKo||'').trim();
+  if(!ko) return;
+  if(!hasHangul(ko)){ if(t.freeEn !== ko){ t.freeEn = ko; save(); } return; }
+  const cur = String(t.freeEn||'').trim();
+  if(!force && cur && !hasHangul(cur) && cur !== ko) return;
+  const sync = koEnSync(ko);
+  if(sync){
+    if(cur !== sync){
+      t.freeEn = sync; save();
+      if($('#tmRingMission')) $('#tmRingMission').textContent = tmMissionLabel();
+    }
+    return;
+  }
+  if(!force && TR.timerKo === ko) return;
+  if(TR.timerBusy) return;
+  TR.timerKo = ko;
+  TR.timerBusy = true;
+  let out = '';
+  try{ out = await translateKoToEn(ko); }catch(e){ out = ''; }
+  TR.timerBusy = false;
+  if(!out) return;
+  if(String(state.timer.freeKo||'').trim() !== ko) return;
+  const nowEn = String(state.timer.freeEn||'').trim();
+  if(!force && nowEn && !hasHangul(nowEn) && nowEn !== ko) return;
+  state.timer.freeEn = out;
+  save();
+  if($('#tmRingMission')) $('#tmRingMission').textContent = tmMissionLabel();
+}
+
+function wireTranslate(){
+  trLoad();
+  const body = $('#setBody');
+  if(body){
+    body.addEventListener('input', function(e){
+      const el = e.target;
+      const f = el && el.getAttribute && el.getAttribute('data-f');
+      if(!f || !draft) return;
+      if(/\.(ko2|ko)$/.test(f)){ trSchedule(f, 550); return; }
+      if(/\.(en2|en)$/.test(f)){
+        const v = String(el.value||'').trim();
+        if(TR.auto[f] !== v){ delete TR.auto[f]; trSaveAuto(); }
+        if(v){ TR.manual[f] = v; } else { delete TR.manual[f]; }
+        trSaveManual();
+      }
+    });
+    body.addEventListener('blur', function(e){
+      const el = e.target;
+      const f = el && el.getAttribute && el.getAttribute('data-f');
+      if(!f || !draft) return;
+      if(/\.(ko2|ko)$/.test(f)) trSchedule(f, 0);
+    }, true);
+    body.addEventListener('click', function(e){
+      const btn = e.target.closest && e.target.closest('[data-tr]');
+      if(!btn || !draft) return;
+      e.preventDefault();
+      const koPath = btn.getAttribute('data-tr');
+      const pair = trPair(koPath);
+      if(pair){
+        if(TR.timers[koPath]) clearTimeout(TR.timers[koPath]);
+        delete TR.timers[koPath];
+        trRun(koPath, true);
+      }
+    });
+  }
+  const freeIn = $('#tmFreeIn');
+  if(freeIn) freeIn.addEventListener('input', function(){ trTimerFreeSchedule(); });
+  const freeTr = $('#tmFreeTr');
+  if(freeTr) freeTr.addEventListener('click', function(){ trTimerFree(true); });
+}
+
+/* =====================================================================
    15. settings — tabbed editor
    ===================================================================== */
 const SET_TABS = [
@@ -5024,7 +5667,20 @@ function renderSetBody(){
     if(t) t.value = JSON.stringify(exportState(backupIncludeImages));
     updateBackupSize();
   }
+  if(TR_HINT_TABS.indexOf(setTabId) >= 0){
+    const tip = document.createElement('p');
+    tip.className = 'tr-hint';
+    tip.id = 'trHint';
+    tip.innerHTML = '<span aria-hidden="true">🌐</span><span>'
+      + (setTabId==='supplies'
+          ? L({ko:'한글만 적으면 영어가 자동으로 붙어요. ‘이불|Blanket’처럼 직접 적어도 돼요.', en:'Type Korean and the English is added for you — or write “이불|Blanket” yourself.'})
+          : L({ko:'한글만 입력하면 영어가 자동으로 채워져요. 영어 칸을 직접 고치면 그대로 둬요.', en:'Type in Korean and the English fills itself in. Your own English edits are kept.'}))
+      + '</span>';
+    host.insertBefore(tip, host.firstChild);
+  }
+  applyTranslateUI();
 }
+const TR_HINT_TABS = ['basic','events','routines','plays','supplies','affirms'];
 
 function inField(labelObj, path, val, ph){
   return '<label class="ed-lbl"><span>'+L(labelObj)+'</span>'
@@ -5055,7 +5711,8 @@ function alarmBoxHTML(prefix, i, a, kind, item){
   const al = a || {};
   const on = !!al.on;
   const tKo = item.ko || item.en || '';
-  const tEn = item.en || item.ko || '';
+  let tEn = item.en || item.ko || '';
+  if(tEn && hasHangul(tEn)){ const tr = koEnSync(tEn); if(tr) tEn = tr; }
   let h = '<div class="alarm-box'+(on?' on':'')+'" data-alarm-box="'+prefix+'.'+i+'">'
     + '<div class="ed-row-mini">'
     +   '<span class="alarm-tag">🚨 '+L({ko:'알람',en:'Alarm'})+'</span>'
@@ -5427,13 +6084,26 @@ function addTag(d){
   const raw = (inp.value||'').trim();
   if(!raw) return;
   const p = raw.split('|');
-  const ko = (p[0]||'').trim(), en = (p[1]||p[0]||'').trim();
+  const ko = (p[0]||'').trim();
+  /* 바(|)로 적지 않았으면 한글을 영어로 자동 번역해 넣는다 */
+  const typedEn = (p[1]||'').trim();
+  const en = typedEn || (hasHangul(ko) ? koEnSync(ko) : '');
   if(!ko && !en) return;
   if(!draft.supplies[d]) draft.supplies[d] = [];
-  draft.supplies[d].push({ko:ko||en, en:en||ko});
+  const item = {ko:ko||en, en:en||ko};
+  draft.supplies[d].push(item);
+  const needApi = !typedEn && hasHangul(ko) && !en;
   renderSetBody();
   const again = $('[data-tag-in="'+d+'"]');
   if(again) again.focus();
+  if(needApi){
+    translateKoToEn(ko).then(function(out){
+      if(!out || !draft || !item) return;
+      if(item.en && item.en !== item.ko) return;
+      item.en = out;
+      if(setTabId === 'supplies' && $('#setBody')) renderSetBody();
+    }).catch(function(){});
+  }
 }
 
 /* ---------- save ---------- */
@@ -5470,6 +6140,7 @@ function saveSettings(){
   state.affirms = sanitizeAffirms(draft.affirms);
   state.events = sanitizeEvents(draft.events);
   state.supplies = supplyFrom(draft.supplies);
+  ensureEnglish();
   save();
   applyStatic();
   renderAll();
@@ -5837,9 +6508,11 @@ function wire(){
 
   $('#btnLang').addEventListener('click', ()=>{
     state.lang = state.lang==='ko' ? 'en' : 'ko';
+    ensureEnglish();
     save();
     applyStatic();
     renderAll();
+    if(state.lang==='en') ensureEnglishAsync();
     sfxClick();
     toast(state.lang==='ko' ? '한국어로 바꿨어요' : 'Switched to English', '🌐');
   });
@@ -6099,9 +6772,12 @@ function boot(){
   $('#clockMascot').innerHTML = carbotSVG(CARBOTS[0], 34);
   loadImages();
   loadState();
+  trLoad();
   /* 기본 데이터에도 항목별 알람 필드를 채운다(기존 v1/v2 기록도 안전하게 병합) */
   state.routines = sanitizeRoutines(state.routines);
   state.plays = sanitizePlays(state.plays);
+  /* 한글만 저장된 영어 칸을 사전·캐시로 즉시 채운다 */
+  ensureEnglish();
   ensureDay();
   adoptChipDay();
   loadFired();
@@ -6110,6 +6786,7 @@ function boot(){
   renderDexFilters();
   $$('.tab').forEach(t=> t.setAttribute('aria-selected', String(t.dataset.tab==='dash')));
   wire();
+  wireTranslate();
   renderAll();
   sfxNoop();
   setInterval(tick, 1000);
@@ -6117,7 +6794,8 @@ function boot(){
   setInterval(()=>loadWeather(false), 10*60*1000);
   if(state.wakeLock) applyWakeLock(true);
   /* 읽기 전용 요약 — 화면에는 쓰이지 않고, 점검·테스트에만 쓴다 */
-  window.__carbot = {count:CARBOTS.length, ids:CARBOTS.map(c=>c.id), state:state, version:2};
+  window.__carbot = {count:CARBOTS.length, ids:CARBOTS.map(c=>c.id), state:state, version:2,
+    tr:{dict:koEnDict, sync:koEnSync, translate:translateKoToEn, cache:TR.cache, romanize:romanizeKo}};
 }
 function sfxNoop(){ /* keeps audio context creation inside user gesture when possible */ }
 
