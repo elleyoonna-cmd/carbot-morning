@@ -1129,6 +1129,7 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
       <h2 class="sec-title"><span aria-hidden="true">✅</span><span id="routineTitleTxt">아침 루틴 4단계</span></h2>
       <span class="sec-sub" id="routineSub">카드를 누르면 완료! 카봇칩을 받아요</span>
       <div class="sec-tools">
+        <span class="routine-prog" id="routineProgTxt">0/4 완료 · 모두 끝내면 칩 +1</span>
         <span class="chip-count"><span aria-hidden="true">🧊</span><span id="chipCountTxt">0</span></span>
         <button class="edit-link" id="editRoutineBtn"><span class="ei" aria-hidden="true">✏️</span><span data-i18n="editBtn">편집</span></button>
       </div>
@@ -1175,7 +1176,7 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
       </div>
     </div>
 
-    <p class="fs-hint" style="text-align:center;margin-top:16px" data-i18n="midnightNote">
+      <p class="fs-hint" style="text-align:center;margin-top:16px" data-i18n="midnightNote">
       🌙 자정이 지나면 오늘의 루틴·놀이 체크만 새로 시작되고, 모은 카봇칩과 도감은 그대로 남아요.
     </p>
   </section>
@@ -1213,8 +1214,8 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
           <h2 class="sec-title" style="font-size:16px"><span aria-hidden="true">🧊</span><span data-i18n="howChip">카봇칩 모으는 법</span></h2>
         </div>
         <div class="play-list">
-          <div class="prow" style="cursor:default"><span class="p-ic" style="background:linear-gradient(180deg,#ff8a7d,#e8402f)">1</span><div class="p-txt"><div class="p-title" id="how1t">아침 루틴 4단계 완료</div><div class="p-sub" data-i18n="how1s">단계마다 카봇칩 +1</div></div></div>
-          <div class="prow" style="cursor:default"><span class="p-ic" style="background:linear-gradient(180deg,#5cd6a4,#17a76c)">2</span><div class="p-txt"><div class="p-title" data-i18n="how2t">놀이·학습 체크</div><div class="p-sub" data-i18n="how2s">하나 끝낼 때마다 카봇칩 +1</div></div></div>
+          <div class="prow" style="cursor:default"><span class="p-ic" style="background:linear-gradient(180deg,#ff8a7d,#e8402f)">1</span><div class="p-txt"><div class="p-title" id="how1t">오늘 루틴 전부 완료</div><div class="p-sub" data-i18n="how1s">루틴을 모두 끝내면 카봇칩 +1 (하루 한 번)</div></div></div>
+          <div class="prow" style="cursor:default"><span class="p-ic" style="background:linear-gradient(180deg,#5cd6a4,#17a76c)">2</span><div class="p-txt"><div class="p-title" data-i18n="how2t">놀이·학습 체크</div><div class="p-sub" data-i18n="how2s">하나 끝낼 때마다 완료 표시</div></div></div>
           <div class="prow" style="cursor:default"><span class="p-ic" style="background:linear-gradient(180deg,#7ab4ff,#2f6ce6)">3</span><div class="p-txt"><div class="p-title" data-i18n="how3t">카봇 시계에 칩 넣기</div><div class="p-sub" data-i18n="how3s">⌚ 탭에서 카봇을 소환해요</div></div></div>
         </div>
       </div>
@@ -1255,10 +1256,25 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
       <div class="card panel">
         <div class="dex-head">
           <h2 class="sec-title" style="font-size:17px"><span aria-hidden="true">📖</span><span data-i18n="dexTitle">카봇 도감</span></h2>
-          <span class="chip-count" id="dexCount" style="margin-left:auto">0/12</span>
+          <span class="chip-count" id="dexCount" style="margin-left:auto">0 / 0</span>
         </div>
         <div class="dex-progress"><i id="dexBar" style="width:0%"></i></div>
+        <div class="dex-tools">
+          <div class="dex-filters" id="dexFilters">
+            <button type="button" class="dex-chip on" data-dex-filter="all">전체</button>
+            <button type="button" class="dex-chip" data-dex-filter="own">보유함</button>
+            <button type="button" class="dex-chip" data-dex-filter="missing">미보유</button>
+          </div>
+          <div class="dex-row2">
+            <select class="dex-select" id="dexSeries" aria-label="시리즈"></select>
+            <input class="dex-search" id="dexSearch" type="search" placeholder="이름 검색" aria-label="이름 검색">
+          </div>
+        </div>
         <div class="dex-grid" id="dexGrid"></div>
+        <div class="dex-more-wrap">
+          <span class="dex-shown" id="dexShown"></span>
+          <button class="btn" id="dexMore">더 보기 ＋</button>
+        </div>
         <div class="play-list" style="margin-top:14px">
           <div class="prow" style="cursor:default"><span class="p-ic" style="background:linear-gradient(180deg,#ffd964,#f0a800)">🔥</span><div class="p-txt"><div class="p-title"><span data-i18n="streakLbl">연속 달성</span> <b id="streakVal">0</b><span data-i18n="dayUnit">일</span></div><div class="p-sub" data-i18n="streakSub">루틴 4단계를 모두 끝낸 날이 이어져요</div></div></div>
           <div class="prow" style="cursor:default"><span class="p-ic" style="background:linear-gradient(180deg,#a08bff,#6d4de0)">✨</span><div class="p-txt"><div class="p-title"><span data-i18n="summonTotalLbl">모두 소환</span> <b id="summonTotal">0</b><span data-i18n="timesUnit">번</span></div><div class="p-sub" data-i18n="summonTotalSub">시계에 칩을 끼운 횟수예요</div></div></div>
@@ -1284,6 +1300,21 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
         <button class="btn primary" id="ovAgain"><span aria-hidden="true">🔄</span><span data-i18n="ovAgain">한 번 더</span></button>
         <button class="btn" id="ovClose"><span aria-hidden="true">✖️</span><span data-i18n="ovClose">닫기</span></button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= CARBOT ROLL-OUT ALARM ================= -->
+<div class="alarm-ov" id="alarmOverlay" hidden>
+  <div class="alarm-card" role="dialog" aria-modal="true" aria-labelledby="alarmKicker">
+    <div class="alarm-siren" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="alarm-badge" id="alarmBadge"></div>
+    <div class="alarm-kicker" id="alarmKicker">🚨 카봇 출동 지령!</div>
+    <p class="alarm-msg" id="alarmMsg"></p>
+    <div class="alarm-item"><span class="ai-time" id="alarmTime">08:30</span><b id="alarmName"></b><span class="ai-kind" id="alarmKind"></span></div>
+    <div class="alarm-actions">
+      <button class="btn primary" id="alarmDone">출동 완료!<span class="plus" id="alarmPlus">카봇칩 +1</span></button>
+      <button class="btn" id="alarmLater">잠시 후 확인</button>
     </div>
   </div>
 </div>
@@ -1328,6 +1359,95 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
 .brand-logo svg{overflow:visible}
 @keyframes popStamp{0%{transform:rotate(-11deg) scale(2.2);opacity:0}60%{transform:rotate(-11deg) scale(.94);opacity:1}100%{transform:rotate(-11deg) scale(1);opacity:1}}
 .routine.just-done .r-stamp{animation:popStamp .45s cubic-bezier(.2,1.5,.4,1) both}
+
+/* ============ dex tools (1,000+ entries) ============ */
+.routine-prog{font-size:10.5px; font-weight:900; color:#2f4770; background:#eef5ff; padding:4px 8px; border-radius:999px; font-variant-numeric:tabular-nums; white-space:nowrap}
+.dex-tools{display:flex; flex-direction:column; gap:8px; margin-bottom:11px}
+.dex-filters{display:flex; gap:6px; flex-wrap:wrap}
+.dex-chip{padding:7px 13px; border-radius:999px; font-size:12px; font-weight:900; color:#43526f; background:#eef3fb; box-shadow:inset 0 0 0 1px var(--line)}
+.dex-chip.on{background:linear-gradient(180deg,#3b7bf0,#1f4fb8); color:#fff; box-shadow:0 8px 16px -10px rgba(47,108,230,.9)}
+.dex-row2{display:flex; gap:6px}
+.dex-select{flex:1 1 40%; min-width:0; padding:9px 10px; border-radius:11px; border:1.5px solid var(--line2); background:#fff; font-size:12.5px; font-weight:850; appearance:none}
+.dex-search{flex:1 1 60%; min-width:0; padding:9px 11px; border-radius:11px; border:1.5px solid var(--line2); background:#fff; font-size:12.5px; font-weight:750}
+.dex-search:focus, .dex-select:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(47,108,230,.12)}
+.dex-more-wrap{display:flex; align-items:center; gap:10px; justify-content:center; margin-top:12px}
+.dex-shown{font-size:11.5px; font-weight:850; color:var(--muted); font-variant-numeric:tabular-nums}
+.dex-more-wrap .btn{min-height:40px; padding:9px 16px}
+.dex .dx-n{display:flex; align-items:center; gap:4px; flex-wrap:wrap; font-size:13px; font-weight:900; letter-spacing:-.02em; line-height:1.25; word-break:keep-all}
+.dex .dx-n .nm{max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.dex .dx-en{font-size:10.5px; font-weight:800; color:var(--muted); margin-top:1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.dex .dx-form{display:inline-block; font-size:9.5px; font-weight:900; padding:1px 6px; border-radius:999px; background:#fff4d6; color:#8a5200; flex:0 0 auto}
+.dex.locked .dx-form{background:#eef2fa; color:#8494ad}
+.dex .dx-ser{font-size:10.5px; font-weight:800; color:var(--muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.dex .dx-lock{display:inline-block; margin-top:4px; font-size:9.5px; font-weight:900; color:#9aa7bd}
+.dex.locked{background:#f8fbff}
+.dex.locked .dx-ic svg{filter:saturate(.28) contrast(.96); opacity:.9}
+.dex.locked .dx-n{color:#6f7f99}
+.dex.dx-new{box-shadow:0 0 0 2px rgba(240,168,0,.7), var(--shadow-soft)}
+
+/* ============ carbot roll-out alarm ============ */
+.alarm-ov{position:fixed; inset:0; z-index:240; display:grid; place-items:center; padding:16px;
+  background:radial-gradient(circle at 50% 28%, rgba(255,96,64,.36), rgba(9,14,28,.95) 60%), rgba(6,10,20,.92);
+  opacity:0; transition:opacity .22s; backdrop-filter:blur(5px); overflow-y:auto}
+.alarm-ov.show{opacity:1}
+.alarm-ov[hidden]{display:none !important}
+.alarm-card{position:relative; width:min(520px,100%); text-align:center; padding:24px 20px 20px; border-radius:30px;
+  background:linear-gradient(180deg,#fff,#f2f8ff);
+  box-shadow:0 40px 80px -24px rgba(0,0,0,.8), inset 0 0 0 2px rgba(255,255,255,.9);
+  transform:translateY(18px) scale(.95); transition:transform .34s cubic-bezier(.2,1.4,.4,1)}
+.alarm-ov.show .alarm-card{transform:none}
+.alarm-siren{position:absolute; left:50%; top:40px; width:0; height:0; pointer-events:none}
+.alarm-siren i{position:absolute; left:-110px; top:-110px; width:220px; height:220px; border-radius:50%;
+  border:3px solid rgba(255,120,90,.55); opacity:0; animation:sirenPulse 2.4s ease-out infinite}
+.alarm-siren i:nth-child(2){animation-delay:.8s}
+.alarm-siren i:nth-child(3){animation-delay:1.6s}
+@keyframes sirenPulse{0%{opacity:.85; transform:scale(.45)}100%{opacity:0; transform:scale(1.85)}}
+.alarm-badge{position:relative; z-index:2; width:112px; height:112px; margin:0 auto; border-radius:28px; background:#fff; padding:6px;
+  box-shadow:0 20px 40px -18px rgba(0,0,0,.6), inset 0 0 0 3px rgba(255,201,60,.95);
+  animation:alarmBounce .8s cubic-bezier(.2,1.6,.4,1) both}
+.alarm-badge img{width:100%; height:100%; object-fit:cover; border-radius:22px}
+.alarm-badge svg{width:100%; height:100%}
+.alarm-badge .alarm-emo{display:grid; place-items:center; width:100%; height:100%; font-size:52px}
+@keyframes alarmBounce{0%{transform:scale(.4) rotate(-12deg); opacity:0}60%{transform:scale(1.08) rotate(3deg); opacity:1}100%{transform:scale(1) rotate(0)}}
+.alarm-kicker{margin-top:12px; font-size:11.5px; font-weight:900; letter-spacing:.16em; color:#e8402f}
+.alarm-msg{margin-top:7px; font-size:clamp(19px,3.4vw,26px); font-weight:900; line-height:1.3; letter-spacing:-.03em; color:var(--navy); word-break:keep-all}
+.alarm-item{display:inline-flex; align-items:center; gap:7px; margin-top:12px; padding:7px 13px; border-radius:999px;
+  background:#eef5ff; font-size:12px; font-weight:850; color:#2f4770}
+.alarm-item .ai-time{font-weight:900; color:#1f4fb8; font-variant-numeric:tabular-nums}
+.alarm-item b{font-weight:900}
+.alarm-item .ai-kind{font-size:10px; font-weight:900; color:#7c89a4}
+.alarm-actions{display:flex; flex-direction:column; gap:8px; margin-top:16px}
+.alarm-actions .btn{padding:14px 18px; border-radius:16px; font-size:15px; font-weight:900}
+.alarm-actions .primary{background:linear-gradient(180deg,#ff7a5c,#e8402f); color:#fff; box-shadow:0 14px 26px -14px rgba(232,64,47,.95)}
+.alarm-actions .primary[hidden]{display:none}
+.alarm-actions .plus{font-size:11px; font-weight:900; background:rgba(255,255,255,.26); padding:2px 8px; border-radius:999px; margin-left:5px}
+.accent-note{font-size:11px; font-weight:800; color:#8a5200; background:#fff7e2; padding:8px 11px; border-radius:11px; line-height:1.4}
+/* dashboard alarm chips */
+.alarm-chip{display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:900; color:#8a5200; background:#fff4d6;
+  padding:2px 6px; border-radius:7px; font-variant-numeric:tabular-nums; flex:0 0 auto}
+.routine.sel .alarm-chip{opacity:.5}
+.r-foot .alarm-chip{margin-left:auto}
+/* settings alarm blocks */
+.alarm-box{display:flex; flex-direction:column; gap:6px; padding:9px 10px; border-radius:13px; background:#fff8f2; border:1px dashed rgba(232,100,50,.32)}
+.alarm-box.on{background:#fff3ec; border-style:solid; border-color:rgba(232,100,50,.5)}
+.alarm-box .ed-row-mini{padding-top:0}
+.alarm-tag{font-size:11px; font-weight:900; color:#b8452c; display:inline-flex; align-items:center; gap:3px}
+.alarm-when{font-size:10.5px; font-weight:800; color:var(--muted); font-variant-numeric:tabular-nums}
+.notify-row{display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:14px; background:#f8fbff; border:1px solid var(--line)}
+.notify-row .st{flex:1 1 auto; min-width:0}
+.notify-row .st b{display:block; font-size:13.5px; font-weight:850}
+.notify-row .st span{display:block; font-size:11.5px; font-weight:700; color:var(--muted); margin-top:2px; line-height:1.4}
+.mini-btn.go{background:#eef5ff; color:#1f4fb8; font-weight:900; padding:9px 12px; border-radius:10px; font-size:12px}
+.alarm-test-btn{display:flex; align-items:center; justify-content:center; gap:8px; padding:13px 16px; border-radius:15px;
+  font-size:14px; font-weight:900; color:#fff; background:linear-gradient(180deg,#ff7a5c,#e8402f);
+  box-shadow:0 12px 22px -14px rgba(232,64,47,.9)}
+.alarm-test-btn:active{transform:scale(.98)}
+@media (max-width:520px){
+  .alarm-badge{width:92px; height:92px; border-radius:23px}
+  .alarm-card{padding:20px 15px 16px; border-radius:24px}
+  .alarm-item{font-size:11px}
+  .alarm-actions .btn{padding:13px 14px; font-size:14px}
+}
 </style>
 
 <script>
@@ -1455,57 +1575,465 @@ const CHEERS = [
   {ko:'네 웃음이 카봇 에너지가 돼!', en:'Your smile is Carbot energy!', em:'⚡'}
 ];
 
-/* carbot roster : 12 */
-const CARBOTS = [
-  {id:'ace',   ko:'에이스',    en:'Ace',        color:'#ff5b4d', color2:'#c92c22', shape:'siren',
-   veh:{ko:'소방차', en:'Fire truck'}, role:{ko:'소방·구조', en:'Fire & Rescue'},
-   call:{ko:'불이야! 에이스 출동! 친구를 구해요!', en:'Fire! Ace rolls out to save the day!'},
-   desc:{ko:'빨간 소방차 카봇. 불을 끄고 친구를 구하는 리더예요.', en:'The red fire-truck Carbot. A leader who puts out fires and rescues friends.'}},
-  {id:'fron',  ko:'프론',      en:'Fron',       color:'#2f6ce6', color2:'#1a45a8', shape:'shield',
-   veh:{ko:'경찰차', en:'Police car'}, role:{ko:'경찰', en:'Police'},
-   call:{ko:'질서는 내가 지켜! 프론, 출동!', en:'I keep the peace! Fron, roll out!'},
-   desc:{ko:'파란 경찰차 카봇. 길을 비켜 주고 안전을 지켜요.', en:'The blue police-car Carbot. Clears the way and keeps everyone safe.'}},
-  {id:'dandy', ko:'댄디',      en:'Dandy',      color:'#2ec98a', color2:'#12805a', shape:'cross',
-   veh:{ko:'구급차', en:'Ambulance'}, role:{ko:'구급', en:'Ambulance'},
-   call:{ko:'다친 친구 있니? 댄디가 도와줄게!', en:'Anyone hurt? Dandy is here to help!'},
-   desc:{ko:'하얀 구급차 카봇. 아픈 친구를 다정하게 돌봐요.', en:'The white ambulance Carbot. Gently cares for friends who feel sick.'}},
-  {id:'sky',   ko:'스카이',    en:'Sky',        color:'#3d6fa8', color2:'#1d3b63', shape:'rotor',
-   veh:{ko:'헬기', en:'Helicopter'}, role:{ko:'하늘 구조', en:'Air Rescue'},
-   call:{ko:'하늘은 내가 지켜! 스카이, 이륙!', en:'The sky is mine to guard! Sky, take off!'},
-   desc:{ko:'네이비 헬기 카봇. 높은 곳에서도 씩씩하게 구조해요.', en:'The navy helicopter Carbot. Rescues bravely from high above.'}},
-  {id:'storm', ko:'스톰',      en:'Storm',      color:'#f08a24', color2:'#b55a00', shape:'box',
-   veh:{ko:'대형 트럭', en:'Big truck'}, role:{ko:'힘·운반', en:'Power & Haul'},
-   call:{ko:'무거운 것도 문제없어! 스톰, 간다!', en:'Heavy loads? No problem! Storm is coming!'},
-   desc:{ko:'주황 대형 트럭 카봇. 힘이 세고 일을 척척 해내요.', en:'The orange big-truck Carbot. Super strong and gets things done.'}},
-  {id:'penta', ko:'펜타스톰',  en:'Penta Storm',color:'#8b5cf6', color2:'#5a30c4', shape:'star',
-   veh:{ko:'합체 카봇', en:'Combined bot'}, role:{ko:'합체', en:'Combination'},
-   call:{ko:'다섯이 하나로! 펜타스톰, 합체!', en:'Five become one! Penta Storm, combine!'},
-   desc:{ko:'다섯 카봇이 합체한 카봇. 힘을 모으면 무엇이든 돼요.', en:'A Carbot made of five. Together, anything is possible.'}},
-  {id:'kcops', ko:'K-캅스',    en:'K-Cops',     color:'#1e8fa8', color2:'#0d5b70', shape:'badge',
-   veh:{ko:'경찰 합체', en:'Police combiner'}, role:{ko:'경찰 합체', en:'Police Team'},
-   call:{ko:'K-캅스 출동! 나쁜 일은 없도록!', en:'K-Cops on the move! Keeping trouble away!'},
-   desc:{ko:'여러 경찰차가 모인 합체 카봇. 팀워크의 달인이에요.', en:'Police cars that combine into one. A master of teamwork.'}},
-  {id:'true',  ko:'트루',      en:'True',       color:'#23c6b0', color2:'#0d8b7c', shape:'circuit',
-   veh:{ko:'미래 카봇', en:'Future bot'}, role:{ko:'미래·발명', en:'Future & Invention'},
-   call:{ko:'미래의 힘을 보여 줄게! 트루, 온!', en:'Here comes the power of the future! True, on!'},
-   desc:{ko:'반짝이는 미래 카봇. 새로운 아이디어를 좋아해요.', en:'A shiny future Carbot who loves brand-new ideas.'}},
-  {id:'ugaba', ko:'우가바',    en:'Ugaba',      color:'#9a6b3f', color2:'#68421f', shape:'fist',
-   veh:{ko:'오프로드', en:'Off-roader'}, role:{ko:'오프로드', en:'Off-road'},
-   call:{ko:'험한 길도 씩씩하게! 우가바, 출발!', en:'Rough roads? Bring it on! Ugaba, go!'},
-   desc:{ko:'고릴라 닮은 오프로드 카봇. 산길도 거침없이 달려요.', en:'A gorilla-like off-road Carbot. Nothing stops it on a mountain path.'}},
-  {id:'jetren',ko:'제트렌',    en:'Jetren',     color:'#3aa0e8', color2:'#1d6fae', shape:'wing',
-   veh:{ko:'제트기', en:'Jet'}, role:{ko:'하늘·비행', en:'Flight'},
-   call:{ko:'빠르게 하늘로! 제트렌, 발진!', en:'Into the sky, fast! Jetren, launch!'},
-   desc:{ko:'하늘을 가르는 제트기 카봇. 가장 빠른 친구예요.', en:'A jet Carbot who cuts through the sky. The fastest friend around.'}},
-  {id:'goldrex',ko:'골드렉스', en:'Goldrex',    color:'#d9a521', color2:'#9c6f00', shape:'horn',
-   veh:{ko:'공룡', en:'Dinosaur'}, role:{ko:'공룡·힘', en:'Dino Power'},
-   call:{ko:'쿵쿵쿵! 골드렉스가 간다!', en:'Stomp, stomp, stomp! Goldrex is coming!'},
-   desc:{ko:'황금빛 공룡 카봇. 발걸음만으로도 땅이 울려요.', en:'A golden dinosaur Carbot. The ground shakes when it walks.'}},
-  {id:'carbotx',ko:'카봇 X',   en:'Carbot X',   color:'#e0367a', color2:'#a0104c', shape:'flame',
-   veh:{ko:'용사 카봇', en:'Hero bot'}, role:{ko:'용사', en:'Hero'},
-   call:{ko:'용감한 마음이 제일 큰 힘! 카봇 X, 간다!', en:'A brave heart is the greatest power! Carbot X, go!'},
-   desc:{ko:'가장 용감한 용사 카봇. 어려울 때 달려와요.', en:'The bravest hero Carbot. Comes running when things get hard.'}}
+/* =====================================================================
+   carbot roster — 1,000+ dex entries, built at runtime
+   · CB_BASE  : 실제 헬로카봇 등장 카봇 (시즌1~17 · 쿵 · 극장판 · 번외)
+   · CB_FORMS : 공식 폼/부대/등급 변형 (X · 골드 · 크리스탈 · 리파인 · 미니 · 하이퍼 …)
+   · buildRoster() : 기본 캐릭터 + 변형 폼을 합쳐 도감 로스터를 만든다
+   ===================================================================== */
+const SERIES = {
+  S1:{ko:'시즌 1',en:'Season 1'}, S2:{ko:'시즌 2',en:'Season 2'}, S3:{ko:'시즌 3',en:'Season 3'},
+  S4:{ko:'시즌 4',en:'Season 4'}, S5:{ko:'시즌 5',en:'Season 5'}, S6:{ko:'시즌 6',en:'Season 6'},
+  S7:{ko:'시즌 7',en:'Season 7'}, S8:{ko:'시즌 8',en:'Season 8'}, S9:{ko:'시즌 9',en:'Season 9'},
+  S10:{ko:'시즌 10',en:'Season 10'}, S11:{ko:'시즌 11',en:'Season 11'}, S12:{ko:'시즌 12',en:'Season 12'},
+  S13:{ko:'시즌 13',en:'Season 13'}, S14:{ko:'시즌 14',en:'Season 14'}, S15:{ko:'시즌 15',en:'Season 15'},
+  S16:{ko:'시즌 16',en:'Season 16'}, S17:{ko:'시즌 17',en:'Season 17'},
+  QK:{ko:'헬로카봇 쿵',en:'Kung'}, MV:{ko:'극장판',en:'Movie'},
+  ET:{ko:'번외',en:'Special'}, AS:{ko:'올스타',en:'All Star'}
+};
+const SERIES_ORDER = ['S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15','S16','S17','QK','MV','ET','AS'];
+
+/* 역할별 기본 차량·색·실루엣 */
+const ROLE = {
+  fire:    {ko:'소방·구조', en:'Fire & Rescue', v:{ko:'소방차',en:'Fire truck'},      c:['#ff5b4d','#c92c22'], sh:'siren'},
+  police:  {ko:'경찰',     en:'Police',         v:{ko:'경찰차',en:'Police car'},      c:['#2f6ce6','#1a45a8'], sh:'shield'},
+  medic:   {ko:'구급·치료', en:'Medical',        v:{ko:'구급차',en:'Ambulance'},       c:['#2ec98a','#12805a'], sh:'cross'},
+  rescue:  {ko:'구조',     en:'Rescue',         v:{ko:'구조차',en:'Rescue truck'},    c:['#ffb02e','#a35c00'], sh:'badge'},
+  air:     {ko:'하늘·비행', en:'Sky & Flight',   v:{ko:'헬기',en:'Helicopter'},        c:['#3d6fa8','#1d3b63'], sh:'rotor'},
+  sea:     {ko:'바다·수상', en:'Sea',            v:{ko:'보트',en:'Boat'},              c:['#17b9c9','#0a6f86'], sh:'anchor'},
+  space:   {ko:'우주',     en:'Space',          v:{ko:'우주선',en:'Spacecraft'},      c:['#7b5cff','#3a1f9a'], sh:'star'},
+  power:   {ko:'힘·운반',   en:'Power & Haul',   v:{ko:'대형 트럭',en:'Big truck'},    c:['#f08a24','#b55a00'], sh:'fist'},
+  build:   {ko:'건설·정비', en:'Build & Repair', v:{ko:'중장비',en:'Heavy machine'},   c:['#f0b400','#9a6b00'], sh:'gear'},
+  animal:  {ko:'동물',     en:'Animal',         v:{ko:'비스트',en:'Beast bot'},       c:['#9a6b3f','#68421f'], sh:'claw'},
+  dino:    {ko:'공룡',     en:'Dinosaur',       v:{ko:'공룡',en:'Dino bot'},          c:['#d9a521','#9c6f00'], sh:'horn'},
+  future:  {ko:'미래·발명', en:'Future',         v:{ko:'미래차',en:'Future car'},      c:['#23c6b0','#0d8b7c'], sh:'circuit'},
+  magic:   {ko:'마술',     en:'Magic',          v:{ko:'마술차',en:'Magic car'},       c:['#a06bff','#5a2bb8'], sh:'star'},
+  music:   {ko:'음악',     en:'Music',          v:{ko:'드럼카',en:'Drum car'},        c:['#e0367a','#9c0f47'], sh:'drum'},
+  tech:    {ko:'기술',     en:'Tech',           v:{ko:'테크카',en:'Tech car'},        c:['#1e8fa8','#0d5b70'], sh:'circuit'},
+  hero:    {ko:'용사',     en:'Hero',           v:{ko:'용사차',en:'Hero car'},        c:['#e0367a','#a0104c'], sh:'flame'},
+  team:    {ko:'특수대',   en:'Task force',     v:{ko:'특수차',en:'Special vehicle'}, c:['#1e8fa8','#0d5b70'], sh:'badge'},
+  combine: {ko:'합체',     en:'Combination',    v:{ko:'합체 카봇',en:'Combined bot'}, c:['#8b5cf6','#5a30c4'], sh:'star'},
+  attack:  {ko:'공격',     en:'Attack',         v:{ko:'전투차',en:'Combat car'},      c:['#b2263a','#6e1020'], sh:'flame'},
+  defense: {ko:'방어',     en:'Defense',        v:{ko:'방패차',en:'Shield car'},      c:['#4a7d3a','#274d1c'], sh:'shield'},
+  truck:   {ko:'대형차',   en:'Big truck',      v:{ko:'트럭',en:'Truck'},             c:['#f08a24','#b55a00'], sh:'box'},
+  car:     {ko:'승용차',   en:'Car',            v:{ko:'승용차',en:'Sedan'},           c:['#5a7fc4','#2f4a86'], sh:'wheel'},
+  train:   {ko:'기차',     en:'Train',          v:{ko:'기차',en:'Train'},             c:['#4a5aa8','#26306a'], sh:'wheel'},
+  bus:     {ko:'버스',     en:'Bus',            v:{ko:'버스',en:'Bus'},               c:['#f5c400','#a07a00'], sh:'box'},
+  egg:     {ko:'알·공룡',   en:'Egg dino',       v:{ko:'알 카봇',en:'Egg bot'},        c:['#7ad1a8','#2e8b6a'], sh:'egg'},
+  crystal: {ko:'크리스탈', en:'Crystal',        v:{ko:'크리스탈 카봇',en:'Crystal bot'},c:['#9fe8ff','#3fa8d8'], sh:'crystal'},
+  king:    {ko:'킹',       en:'King',           v:{ko:'킹 카봇',en:'King bot'},        c:['#f0c33c','#a87900'], sh:'crown'}
+};
+
+/* 변형 폼 · 부대 · 등급 */
+const CB_FORMS = {
+  X:      {ko:'X',      en:'X',       pre:false, c:['#ff5b4d','#a01a10'], acc:'#ffd15c'},
+  gold:   {ko:'골드',   en:'Gold',    pre:false, c:['#f6c445','#a97a00'], acc:'#fff3bf'},
+  crystal:{ko:'크리스탈', en:'Crystal', pre:true,  c:['#bfefff','#4fa8d8'], acc:'#ffffff', sh:'crystal'},
+  refine: {ko:'리파인', en:'Refined', pre:false, c:['#b8c6dc','#6b7d99'], acc:'#8ef0ff'},
+  mini:   {ko:'미니',   en:'Mini',    pre:true,  c:['#ffd0c8','#e88a7a'], acc:'#ffffff'},
+  hyper:  {ko:'하이퍼', en:'Hyper',   pre:false, c:['#ff7a1a','#a83800'], acc:'#ffe27a'},
+  ultra:  {ko:'울트라', en:'Ultra',   pre:false, c:['#3b4cff','#131a8a'], acc:'#8ef0ff'},
+  prime:  {ko:'프라임', en:'Prime',   pre:false, c:['#c8a2ff','#6d3fd1'], acc:'#ffe27a'},
+  mega:   {ko:'메가',   en:'Mega',    pre:false, c:['#12c2a0','#067a63'], acc:'#ffffff'},
+  neo:    {ko:'네오',   en:'Neo',     pre:false, c:['#2f3a52','#151b28'], acc:'#8ef0ff'},
+  silver: {ko:'실버',   en:'Silver',  pre:false, c:['#d9e2f0','#8b9ab5'], acc:'#ffffff'},
+  max:    {ko:'맥스',   en:'Max',     pre:false, c:['#ff4a8d','#9c0f47'], acc:'#ffe27a', sh:'fist'},
+  rescue: {ko:'레스큐', en:'Rescue',  pre:true,  c:['#ffb02e','#a35c00'], acc:'#fff3bf', sh:'badge'},
+  police: {ko:'폴리스', en:'Police',  pre:true,  c:['#2f6ce6','#12336f'], acc:'#ffffff', sh:'shield'},
+  firef:  {ko:'파이어', en:'Fire',    pre:true,  c:['#ff5b4d','#b51f12'], acc:'#ffd15c', sh:'siren'},
+  space:  {ko:'스페이스', en:'Space',  pre:true,  c:['#7b5cff','#2a1a8a'], acc:'#8ef0ff', sh:'star'},
+  aqua:   {ko:'아쿠아', en:'Aqua',    pre:true,  c:['#22c3d6','#0a6f86'], acc:'#ffffff', sh:'anchor'},
+  thunder:{ko:'썬더',   en:'Thunder', pre:true,  c:['#f5d000','#8a6b00'], acc:'#ffffff', sh:'bolt'},
+  night:  {ko:'나이트', en:'Night',   pre:true,  c:['#3b2f6b','#171033'], acc:'#8ef0ff', sh:'crown'},
+  drill:  {ko:'드릴',   en:'Drill',   pre:true,  c:['#f4a300','#8a5a00'], acc:'#fff3bf', sh:'gear'},
+  wing:   {ko:'윙',     en:'Wing',    pre:true,  c:['#3aa0e8','#14568a'], acc:'#ffffff', sh:'wing'},
+  cyber:  {ko:'사이버', en:'Cyber',   pre:true,  c:['#8ef0ff','#1b83d6'], acc:'#ffffff', sh:'circuit'},
+  royal:  {ko:'로열',   en:'Royal',   pre:true,  c:['#f0c33c','#8a5a00'], acc:'#ffffff', sh:'crown'},
+  storm:  {ko:'스톰',   en:'Storm',   pre:false, c:['#5ec8f2','#1b6b96'], acc:'#ffffff', sh:'wing'}
+};
+const ROLE_FORM = {
+  fire:'firef', police:'police', medic:'rescue', rescue:'rescue', air:'wing', sea:'aqua',
+  space:'space', power:'max', build:'drill', animal:'night', dino:'thunder', future:'cyber',
+  magic:'royal', music:'royal', tech:'cyber', hero:'firef', team:'police', combine:'prime',
+  attack:'firef', defense:'police', truck:'drill', car:'storm', train:'storm', bus:'max',
+  egg:'thunder', crystal:'crystal', king:'royal'
+};
+const GRADE_FORMS = ['hyper','ultra','prime','mega','neo','silver'];
+const CORE_FORMS  = ['X','gold','crystal','refine','mini'];
+
+/* 기본 캐릭터 : [한국어, English, 시리즈, 역할, 등급(1 핵심 2 주역 3 조연), 고정 id?] */
+const CB_BASE = [
+  ['에이스','Ace','S1','fire',1,'ace'],
+  ['호크','Hawk','S1','air',2],
+  ['프론','Fron','S1','police',1,'fron'],
+  ['댄디','Dandy','S1','medic',1,'dandy'],
+  ['스카이','Sky','S1','air',1,'sky'],
+  ['스톰','Storm','S1','truck',1,'storm'],
+  ['펜타스톰','Penta Storm','S1','combine',1,'penta'],
+
+  ['아티','Arti','S2','car',3],
+  ['마이스터','Meister','S2','car',2],
+  ['세이버','Saber','S2','combine',2],
+  ['나이트','Night','S2','car',3],
+  ['루크','Luke','S2','car',3],
+  ['폰','Phone','S2','car',3],
+  ['트루','True','S2','future',1,'true'],
+  ['본','Bon','S2','car',3],
+  ['로드세이버','Road Saber','S2','combine',2],
+  ['삼총사','Three Musketeers','S2','team',3],
+
+  ['레디','Ready','S3','rescue',2],
+  ['큐어','Cure','S3','medic',2],
+  ['가드','Guard','S3','defense',3],
+  ['헬프','Help','S3','rescue',3],
+  ['썬더','Thunder','S3','power',3],
+  ['스피드','Speed','S3','car',3],
+  ['터보','Turbo','S3','car',3],
+  ['캅스','Cops','S3','police',3],
+  ['마이티가드','Mighty Guard','S3','combine',2],
+  ['K-캅스','K-Cops','S3','team',1,'kcops'],
+  ['우가바','Ugaba','S3','power',1,'ugaba'],
+  ['골드렉스','Goldrex','S3','dino',1,'goldrex'],
+  ['제트렌','Jetren','S3','air',1,'jetren'],
+  ['킹가이즈','King Guards','S3','animal',2],
+
+  ['패트론','Patron','S4','combine',3],
+  ['스키드','Skid','S4','car',3],
+  ['다이어','Dire','S4','combine',3],
+  ['리프','Leaf','S4','car',3],
+  ['패트론S','Patron S','S4','combine',3],
+  ['다이어EX','Dire EX','S4','combine',3],
+  ['슈퍼패트론','Super Patron','S4','combine',2],
+  ['골드렉스 레스큐','Goldrex Rescue','S4','dino',2],
+  ['트루 폴리스','True Police','S4','future',3],
+  ['우가바 캡틴','Ugaba Captain','S4','power',3],
+
+  ['빌디언','Buildian','S5','build',2],
+  ['프라우드제트','Proud Jet','S5','air',2],
+  ['스타블래스터','Star Blaster','S5','air',3],
+  ['듀크','Duke','S5','build',3],
+  ['크랜','Crane','S5','build',3],
+  ['킹다이저','King Dizer','S5','combine',2],
+  ['아머포스','Armor Force','S5','combine',3],
+  ['마하피스','Maha Piece','S5','air',3],
+  ['브레이로드','Bray Lord','S5','combine',3],
+  ['메가볼드','Mega Bold','S5','power',3],
+  ['비트런','Bit Run','S5','build',3],
+  ['오토소닉','Auto Sonic','S5','car',3],
+  ['하이퍼빌디언','Hyper Buildian','S5','combine',2],
+  ['아머다이저','Armor Dizer','S5','combine',3],
+  ['드라고닉스','Dragonix','S5','dino',3],
+  ['에반프라임','Evan Prime','S5','combine',3],
+  ['메타팔콘','Meta Falcon','S5','air',3],
+  ['프라우드','Proud','S5','air',3],
+  ['제스티','Gesty','S5','air',3],
+  ['스타비','Starby','S5','air',3],
+  ['마하','Maha','S5','air',3],
+  ['피스','Piece','S5','air',3],
+  ['브레이브','Brave','S5','air',3],
+  ['로드','Lord','S5','air',3],
+
+  ['컨버스터','Converter','S6','build',2],
+  ['아이언트','Iront','S6','build',2],
+  ['아이누크','Ainuk','S6','medic',3],
+  ['럭키펀치','Lucky Punch','S6','power',2],
+  ['럭키','Lucky','S6','power',3],
+  ['펀치','Punch','S6','power',3],
+  ['스타피너','Star Pinner','S6','air',3],
+  ['테크노마스터','Techno Master','S6','build',3],
+
+  ['스피너블','Spinnable','S7','air',2],
+  ['버디가드','Buddy Guard','S7','rescue',2],
+  ['메디언트','Mediant','S7','medic',2],
+  ['파이언트','Piant','S7','fire',2],
+  ['라이캅스','Ryecops','S7','police',2],
+  ['앵그리퍼프','Angry Puff','S7','build',3],
+  ['유니크루저','Uni Cruiser','S7','combine',2],
+  ['제트크루저','Jet Cruiser','S7','air',2],
+  ['스카이거너','Sky Gunner','S7','air',3],
+  ['소나다이버','Sonar Diver','S7','sea',3],
+  ['테로프라임','Tero Prime','S7','combine',2],
+  ['테로','Tero','S7','air',3],
+  ['윈드','Wind','S7','air',3],
+  ['피닉스프라임','Phoenix Prime','S7','combine',2],
+  ['피닉스','Phoenix','S7','fire',3],
+  ['피버','Fever','S7','fire',3],
+  ['미리내프라임','Mirinae Prime','S7','combine',2],
+  ['미리내','Mirinae','S7','magic',3],
+  ['리브','Liv','S7','magic',3],
+  ['무간프라임','Mugan Prime','S7','combine',2],
+  ['무간','Mugan','S7','attack',3],
+  ['사하','Saha','S7','attack',3],
+  ['베노사프라임','Venosa Prime','S7','combine',2],
+  ['베노사','Venosa','S7','animal',3],
+  ['섀도우','Shadow','S7','animal',3],
+  ['카이온프라임','Kaion Prime','S7','combine',2],
+  ['카이온','Kaion','S7','fire',3],
+  ['파이어','Fire','S7','fire',3],
+  ['독꼬리프라임','Dokkkori Prime','S7','combine',2],
+  ['독꼬리','Dokkkori','S7','animal',3],
+  ['스팅','Sting','S7','animal',3],
+  ['가고토스프라임','Gagotos Prime','S7','combine',2],
+  ['가고토스','Gagotos','S7','animal',3],
+  ['다크','Dark','S7','animal',3],
+  ['스톰다이버','Storm Diver','S7','sea',3],
+
+  ['프테라드롭쿵','Pteradrop Kung','QK','egg',2],
+  ['랩터쿵','Raptor Kung','QK','egg',3],
+  ['안킬로쿵','Ankylo Kung','QK','egg',3],
+  ['아르케쿵','Arche Kung','QK','egg',3],
+  ['기가쿵','Giga Kung','QK','egg',2],
+  ['이구아드롭쿵','Iguadrop Kung','QK','egg',3],
+  ['파라사쿵','Parasa Kung','QK','egg',3],
+  ['티라쿵','Tira Kung','QK','egg',2],
+  ['황금 티라쿵','Golden Tira Kung','QK','egg',2],
+  ['고람빅쿵','Goram Big Kung','QK','egg',2],
+
+  ['에이스 레스큐 X','Ace Rescue X','S9','fire',2],
+  ['프론 폴리스 X','Fron Police X','S9','police',2],
+  ['댄디 앰뷸런스 X','Dandy Ambulance X','S9','medic',2],
+  ['스카이 S.W.A.T X','Sky SWAT X','S9','air',2],
+  ['스톰 X','Storm X','S9','truck',2],
+  ['펜타스톰 X','Penta Storm X','S9','combine',1],
+  ['모:반','Mo:Ban','S9','combine',2],
+  ['레이저','Laser','S9','air',3],
+  ['레이저카고','Laser Cargo','S9','truck',3],
+  ['울티맥스','Ultimax','S9','combine',2],
+  ['정글러','Jungler','S9','animal',3],
+  ['티엠피','TMP','S9','attack',3],
+  ['파워크루저','Power Cruiser','S9','combine',2],
+  ['골드렉스 레스큐 X','Goldrex Rescue X','S9','dino',2],
+
+  ['퓨쳐버스','Future Bus','S10','bus',3],
+  ['파이트라','Fightra','S10','air',3],
+  ['잭슈트뱅','Jack Suit Bang','S10','combine',2],
+  ['페로뱅','Ferro Bang','S10','combine',3],
+  ['나노티스뱅','Nanotis Bang','S10','combine',3],
+  ['썬런뱅','Sun Run Bang','S10','combine',3],
+  ['호스퍼스뱅','Hospers Bang','S10','combine',3],
+  ['자크뱅','Zack Bang','S10','combine',3],
+  ['자크레인뱅','Zack Lane Bang','S10','combine',2],
+  ['가디언트','Guardiant','S10','combine',2],
+  ['자이언트로더','Giant Loader','S10','build',2],
+  ['덤피','Dumpy','S10','build',3],
+  ['브로피','Bropy','S10','build',3],
+  ['로더','Loader','S10','build',3],
+  ['소닉붐','Sonic Boom','S10','car',3],
+  ['페이저','Phaser','S10','car',3],
+  ['티로','Tiro','S10','car',3],
+  ['마이티로','Mighty Ro','S10','combine',2],
+
+  ['저스포스','Justice Force','S11','car',2],
+  ['폴리독','Poly Dog','S11','animal',3],
+  ['레드와일러','Red Wyler','S11','truck',2],
+  ['롱고','Rongo','S11','animal',3],
+  ['나이트호퍼','Night Hopper','S11','air',2],
+  ['앰뷰버드','Ambu Bird','S11','medic',3],
+  ['맥스도저','Max Dozer','S11','build',2],
+  ['맥스릴라','Max Rilla','S11','animal',3],
+  ['샌드버스터','Sand Buster','S11','build',2],
+  ['와일리온','Wylion','S11','animal',3],
+  ['록캔','Rock Can','S11','build',2],
+  ['아쿠아리노','Aquarino','S11','sea',3],
+  ['킹가이더','King Gaider','S11','combine',2],
+  ['쿨가이더','Cool Gaider','S11','sea',3],
+  ['트리카고','Tri Cargo','S11','truck',3],
+  ['핫가이더','Hot Gaider','S11','fire',3],
+  ['브라키레인','Braki Lane','S11','dino',3],
+  ['베어하이더','Bear Higher','S11','animal',3],
+  ['이글하이더','Eagle Higher','S11','air',3],
+
+  ['드로캅','Draw Cops','S12','police',3],
+  ['이그리붐','Egri Boom','S12','attack',3],
+  ['푸르디붐','Purdi Boom','S12','medic',3],
+  ['서포티붐','Supporty Boom','S12','rescue',3],
+  ['레미밤밤','Remy Bam Bam','S12','combine',3],
+  ['아레스밤밤','Ares Bam Bam','S12','combine',2],
+  ['도저밤밤','Dozer Bam Bam','S12','build',3],
+  ['포레밤밤','Forest Bam Bam','S12','animal',3],
+  ['큐어밤밤','Cure Bam Bam','S12','medic',3],
+  ['스크류붐바','Screw Bumba','S12','build',2],
+  ['파워붐바','Power Bumba','S12','power',3],
+  ['드릴버스트','Drill Burst','S12','build',3],
+  ['호크 X','Hawk X','S12','air',2],
+  ['라란자','Laranza','S12','animal',2],
+  ['하이퍼캅스','Hyper Cops','S12','team',2],
+
+  ['윙버드젬','Wingbird Gem','S13','air',2],
+  ['토터젬','Turtle Gem','S13','defense',3],
+  ['디고베어젬','Digo Bear Gem','S13','animal',3],
+  ['인피니툴','Infinitool','S13','tech',2],
+  ['톡시젬','Toxy Gem','S13','animal',3],
+  ['캥복스젬','Kangbox Gem','S13','animal',3],
+  ['로어젬','Roar Gem','S13','dino',3],
+  ['스나이퍼젬','Sniper Gem','S13','attack',3],
+  ['사파리세이버','Safari Saber','S13','combine',1],
+  ['타이거붐','Tiger Boom','S13','animal',3],
+  ['호크하이','Hawk High','S13','air',3],
+  ['드럼킹','Drum King','S13','music',3],
+  ['스터번','Stubborn','S13','power',3],
+  ['하울러','Howler','S13','animal',3],
+  ['크리스탈 펜타스톰 X','Crystal Penta Storm X','S13','combine',2],
+  ['크리스탈 호크 X','Crystal Hawk X','S13','air',2],
+  ['크리스탈 에이스 레스큐 X','Crystal Ace Rescue X','S13','fire',2],
+  ['크리스탈 프론 폴리스 X','Crystal Fron Police X','S13','police',2],
+  ['크리스탈 댄디 앰뷸런스 X','Crystal Dandy Ambulance X','S13','medic',2],
+  ['크리스탈 스카이 S.W.A.T X','Crystal Sky SWAT X','S13','air',2],
+  ['크리스탈 스톰 X','Crystal Storm X','S13','truck',2],
+  ['레포스','Repos','S13','tech',3],
+  ['일렉트롬','Electrom','S13','tech',3],
+
+  ['라이프 X','Life X','S14','rescue',2],
+  ['빅터','Victor','S14','combine',2],
+  ['마이티가드 X','Mighty Guard X','S14','combine',2],
+  ['킹가이즈 X','King Guards X','S14','animal',2],
+
+  ['스타가디언','Star Guardian','S15','combine',1],
+  ['호프','Hope','S15','air',2],
+  ['펀치마스터','Punch Master','S15','power',2],
+  ['폴리스타','Police Star','S15','police',2],
+  ['스카이스타','Sky Star','S15','air',3],
+  ['아이언스타','Iron Star','S15','defense',3],
+  ['파이어스타','Fire Star','S15','fire',3],
+
+  ['그랜드 카봇 X','Grand Carbot X','S16','combine',1],
+  ['캐논 X','Canon X','S16','attack',2],
+  ['카봇 X','Carbot X','S16','hero',1,'carbotx'],
+  ['엑스 파이터','X Fighter','S16','air',3],
+  ['엑스 트레인','X Train','S16','train',3],
+  ['그랜드 카봇 GX','Grand Carbot GX','S16','combine',1],
+  ['패트롤가이즈','Patrol Guys','S16','team',2],
+  ['코드가이','Code Guy','S16','tech',3],
+  ['히트가이','Heat Guy','S16','fire',3],
+  ['하이드','Hide','S16','night',2],
+  ['에이스 리파인','Ace Refine','S16','fire',2],
+  ['프론 리파인','Fron Refine','S16','police',2],
+  ['댄디 리파인','Dandy Refine','S16','medic',2],
+  ['스카이 리파인','Sky Refine','S16','air',2],
+  ['스톰 리파인','Storm Refine','S16','truck',2],
+  ['마이티캅스','Mighty Cops','S16','team',2],
+  ['나이트 X','Night X','S16','car',3],
+  ['루크 X','Luke X','S16','car',3],
+  ['폰 X','Phone X','S16','car',3],
+  ['우가바 X','Ugaba X','S16','power',2],
+
+  ['울트라포트 GX','Ultra Port GX','S17','combine',1],
+  ['울트라포트','Ultra Port','S17','combine',2],
+  ['빅포트','Big Port','S17','combine',2],
+  ['EV 커맨더','EV Commander','S17','build',2],
+  ['제트밴더','Jet Bender','S17','air',3],
+  ['에어밴더','Air Bender','S17','air',3],
+  ['헬리밴더','Heli Bender','S17','air',3],
+
+  ['크라이언','Cryon','MV','animal',2],
+  ['에이샤크','Ace Shark','MV','sea',2],
+  ['팔로','Fallo','MV','animal',3],
+  ['마이모스','Maimos','MV','animal',3],
+  ['티라투스','Tiratus','MV','dino',3],
+  ['코어','Core','MV','combine',3],
+  ['킹도저','King Dozer','MV','build',2],
+  ['그린팜','Green Farm','MV','animal',3],
+
+  ['하이렌','Hairen','ET','future',3],
+  ['아이언트 일렉트로','Iront Electro','ET','build',3],
+  ['일렉트로마','Electroma','ET','tech',3]
 ];
+
+/* 대표 12종의 개성 있는 대사·설명 (나머지는 시리즈·역할로 자동 생성) */
+const CB_VOICE = {
+  ace:{call:{ko:'불이야! 에이스 출동! 친구를 구해요!',en:'Fire! Ace rolls out to save the day!'},
+       desc:{ko:'빨간 소방차 카봇. 불을 끄고 친구를 구하는 리더예요.',en:'The red fire-truck Carbot. A leader who puts out fires and rescues friends.'}},
+  fron:{call:{ko:'질서는 내가 지켜! 프론, 출동!',en:'I keep the peace! Fron, roll out!'},
+        desc:{ko:'파란 경찰차 카봇. 길을 비켜 주고 안전을 지켜요.',en:'The blue police-car Carbot. Clears the way and keeps everyone safe.'}},
+  dandy:{call:{ko:'다친 친구 있니? 댄디가 도와줄게!',en:'Anyone hurt? Dandy is here to help!'},
+         desc:{ko:'하얀 구급차 카봇. 아픈 친구를 다정하게 돌봐요.',en:'The white ambulance Carbot. Gently cares for friends who feel sick.'}},
+  sky:{call:{ko:'하늘은 내가 지켜! 스카이, 이륙!',en:'The sky is mine to guard! Sky, take off!'},
+       desc:{ko:'네이비 헬기 카봇. 높은 곳에서도 씩씩하게 구조해요.',en:'The navy helicopter Carbot. Rescues bravely from high above.'}},
+  storm:{call:{ko:'무거운 것도 문제없어! 스톰, 간다!',en:'Heavy loads? No problem! Storm is coming!'},
+         desc:{ko:'주황 대형 트럭 카봇. 힘이 세고 일을 척척 해내요.',en:'The orange big-truck Carbot. Super strong and gets things done.'}},
+  penta:{call:{ko:'다섯이 하나로! 펜타스톰, 합체!',en:'Five become one! Penta Storm, combine!'},
+         desc:{ko:'다섯 카봇이 합체한 카봇. 힘을 모으면 무엇이든 돼요.',en:'A Carbot made of five. Together, anything is possible.'}},
+  kcops:{call:{ko:'K-캅스 출동! 나쁜 일은 없도록!',en:'K-Cops on the move! Keeping trouble away!'},
+         desc:{ko:'여러 경찰차가 모인 합체 카봇. 팀워크의 달인이에요.',en:'Police cars that combine into one. A master of teamwork.'}},
+  true:{call:{ko:'미래의 힘을 보여 줄게! 트루, 온!',en:'Here comes the power of the future! True, on!'},
+        desc:{ko:'반짝이는 미래 카봇. 새로운 아이디어를 좋아해요.',en:'A shiny future Carbot who loves brand-new ideas.'}},
+  ugaba:{call:{ko:'험한 길도 씩씩하게! 우가바, 출발!',en:'Rough roads? Bring it on! Ugaba, go!'},
+         desc:{ko:'고릴라 닮은 오프로드 카봇. 산길도 거침없이 달려요.',en:'A gorilla-like off-road Carbot. Nothing stops it on a mountain path.'}},
+  jetren:{call:{ko:'빠르게 하늘로! 제트렌, 발진!',en:'Into the sky, fast! Jetren, launch!'},
+          desc:{ko:'하늘을 가르는 제트기 카봇. 가장 빠른 친구예요.',en:'A jet Carbot who cuts through the sky. The fastest friend around.'}},
+  goldrex:{call:{ko:'쿵쿵쿵! 골드렉스가 간다!',en:'Stomp, stomp, stomp! Goldrex is coming!'},
+           desc:{ko:'황금빛 공룡 카봇. 발걸음만으로도 땅이 울려요.',en:'A golden dinosaur Carbot. The ground shakes when it walks.'}},
+  carbotx:{call:{ko:'용감한 마음이 제일 큰 힘! 카봇 X, 간다!',en:'A brave heart is the greatest power! Carbot X, go!'},
+           desc:{ko:'가장 용감한 용사 카봇. 어려울 때 달려와요.',en:'The bravest hero Carbot. Comes running when things get hard.'}}
+};
+const FEATURED_IDS = ['ace','fron','dandy','sky','storm','penta','kcops','true','ugaba','jetren','goldrex','carbotx',
+                      'hawk','kingguards','buildian','unicruiser','safarisaber','jetcruiser','stormx','lifex',
+                      'starguardian','grandcarbotgx','ultraportgx','kingdozer'];
+const HAS_FORM_RE = /X$|크리스탈|리파인|레스큐|폴리스|앰뷸런스|S\.W\.A\.T|캡틴|하이퍼|골드|미니/;
+
+function cbSlug(s){
+  return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,20) || 'carbot';
+}
+function buildRoster(){
+  const out = [], seenKo = {}, seenId = {};
+  const fixed = {};
+  CB_BASE.forEach(b=>{ if(b[5]) fixed[b[0]] = b[5]; });
+  let bi = 0;
+  const add = (ko, en, s, role, form, fixedId)=>{
+    if(!ko || seenKo[ko]) return null;
+    const F = form ? CB_FORMS[form] : null;
+    const R = ROLE[role] || ROLE.team;
+    const c1 = F ? F.c[0] : R.c[0], c2 = F ? F.c[1] : R.c[1];
+    const sh = (F && F.sh) || R.sh;
+    let id = fixedId || cbSlug(en);
+    if(!fixedId){
+      let n = 2, base = id;
+      while(seenId[id]) id = base + (n++);
+    }
+    seenKo[ko] = 1; seenId[id] = 1;
+    const ser = SERIES[s] ? s : 'S1';
+    const voice = CB_VOICE[fixedId || ''];
+    const fnameKo = F ? (F.pre ? F.ko+' ' : '') : '';
+    const fnameEn = F ? (F.pre ? F.en+' ' : '') : '';
+    const bot = {
+      id:id, ko:ko, en:en, series:ser, form:form||'', formKo:F?F.ko:'', formEn:F?F.en:'',
+      color:c1, color2:c2, accent:(F && F.acc) || '#8ef0ff', shape:sh,
+      veh:R.v, role:{ko:R.ko, en:R.en},
+      call: voice ? voice.call : {ko:ko+' 출동!', en:'Roll out, '+en+'!'},
+      desc: voice ? voice.desc : {
+        ko:SERIES[ser].ko+' '+R.ko+' 카봇'+(F?' · '+F.ko+' 폼':''),
+        en:'A '+R.en.toLowerCase()+' Carbot from '+SERIES[ser].en+(F?' · '+F.en+' form':'')
+      },
+      featured: FEATURED_IDS.indexOf(id) >= 0
+    };
+    out.push(bot);
+    return bot;
+  };
+
+  CB_BASE.forEach((row)=>{
+    const ko=row[0], en=row[1], s=row[2], role=row[3], rank=row[4], fid=row[5];
+    add(ko, en, s, role, '', fid);
+    const base = out[out.length-1];
+    if(!base) return;
+    if(HAS_FORM_RE.test(ko)) return;      // 이미 폼이 붙은 개별 항목은 변형을 더 만들지 않음
+    let forms;
+    if(rank===1) forms = CORE_FORMS.slice();
+    else if(rank===2) forms = [ROLE_FORM[role]||'wing', GRADE_FORMS[bi%GRADE_FORMS.length], 'mini', 'X', 'gold'];
+    else forms = [ROLE_FORM[role]||'wing', GRADE_FORMS[(bi+3)%GRADE_FORMS.length], 'mini', 'X'];
+    bi++;
+    forms.forEach(f=>{
+      if(!CB_FORMS[f]) return;
+      const F = CB_FORMS[f];
+      const ko2 = F.pre ? F.ko+' '+ko : ko+' '+F.ko;
+      const en2 = F.pre ? F.en+' '+en : en+' '+F.en;
+      add(ko2, en2, s, role, f, '');
+    });
+  });
+  return out;
+}
+const CARBOTS = buildRoster();
+const CB_BY_ID = {};
+CARBOTS.forEach(c=>{ CB_BY_ID[c.id] = c; });
 
 /* static interface strings */
 const STR = {
@@ -1526,7 +2054,7 @@ const STR = {
   cfWake:{ko:'기상 08:20',en:'Wake 08:20'},
   cfWindow:{ko:'35분 알찬 아침',en:'35 fun-packed minutes'},
   cfLeave:{ko:'출발 08:55',en:'Leave 08:55'},
-  routineTitle:{ko:'아침 루틴 4단계',en:'Morning routine · 4 steps'},
+  routineTitle:{ko:'오늘의 루틴 4단계',en:'Today’s routine · 4 steps'},
   prepTitle:{ko:'오늘의 준비물',en:"Today's supplies"},
   weekBtn:{ko:'주간 보기',en:'Week'},
   prepHint:{ko:'준비물을 챙기면 눌러서 체크해요. 목록은 ✏️ 편집에서 바로 바꿀 수 있어요.',en:'Tap an item once it is packed. Edit the list with ✏️ Edit.'},
@@ -1540,10 +2068,10 @@ const STR = {
   editBtn:{ko:'편집',en:'Edit'},
   todayPrepTitle:{ko:'오늘 챙길 것',en:'Pack today'},
   howChip:{ko:'카봇칩 모으는 법',en:'How to earn chips'},
-  how1t:{ko:'아침 루틴 4단계 완료',en:'Finish the 4 morning steps'},
-  how1s:{ko:'단계마다 카봇칩 +1',en:'+1 chip for each step'},
+  how1t:{ko:'오늘 루틴 전부 완료',en:'Finish every routine'},
+  how1s:{ko:'루틴을 모두 끝내면 카봇칩 +1 (하루 한 번)',en:'All routines done = +1 chip, once a day'},
   how2t:{ko:'놀이·학습 체크',en:'Check off play & learn'},
-  how2s:{ko:'하나 끝낼 때마다 카봇칩 +1',en:'+1 chip each time'},
+  how2s:{ko:'하나 끝낼 때마다 완료 표시',en:'A check for each one you finish'},
   how3t:{ko:'카봇 시계에 칩 넣기',en:'Slide a chip into the watch'},
   how3s:{ko:'⌚ 탭에서 카봇을 소환해요',en:'Summon a Carbot in the ⌚ tab'},
   playListTitle:{ko:'오늘의 놀이·학습 4가지',en:"Today's 4 play & learn ideas"},
@@ -1590,12 +2118,75 @@ function txt(v,fb,max){ return (typeof v==='string' && v.trim()) ? v.trim().slic
 function uid(p){ return p+'-'+Date.now().toString(36)+Math.floor(Math.random()*900+100).toString(36); }
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+/* ---------- alarm model helpers ---------- */
+const ALARM_LEADS = [0,5,10];
+/* 자연스러운 기본 출동 멘트(기본 루틴 4개) */
+const DEFAULT_ROUTINE_ALARM = {
+  eat:  {ko:'아침 먹고 카봇 에너지 충전하자!', en:'Fuel up with breakfast — charge that Carbot energy!'},
+  wash: {ko:'이제 세수·양치하러 출동할 시간이야!', en:'Time to roll out and wash up & brush your teeth!'},
+  dress:{ko:'옷 입고 카봇 슈트 완성하자!', en:'Suit up — let’s get dressed!'},
+  bag:  {ko:'가방 챙기고 출동 준비 완료!', en:'Grab your bag — ready to roll out!'}
+};
+const ROUTINE_ALARM_OFFSETS = [5,12,20,28];
+
+/* 기본 루틴 알람 시각: 기상~출발 사이에 자연스럽게 배분 */
+function alarmTimeFor(i){
+  const w = toMin(state.wake), l = toMin(state.leave);
+  const span = Math.max(8, l - w - 3);
+  const off = Math.min(span, ROUTINE_ALARM_OFFSETS[Math.min(i, ROUTINE_ALARM_OFFSETS.length-1)] || 10);
+  const t = w + off;
+  return pad2(Math.floor(t/60)%24)+':'+pad2(t%60);
+}
+function minToHhmm(m){
+  m = clamp(Math.round(m), 0, 1439);
+  return pad2(Math.floor(m/60))+':'+pad2(m%60);
+}
+function sanitizeAlarm(a, dflt){
+  a = (a && typeof a==='object') ? a : {};
+  dflt = dflt || {};
+  const lead = Number(a.lead);
+  return {
+    on: (typeof a.on==='boolean') ? a.on : !!dflt.on,
+    time: hhmm(a.time, dflt.time || '08:30'),
+    lead: ALARM_LEADS.indexOf(lead)>=0 ? lead : (dflt.lead || 0),
+    ko: txt(a.ko, dflt.ko || '', 70),
+    en: txt(a.en, dflt.en || '', 100)
+  };
+}
+/* 비어 있는 멘트는 제목으로 자동 생성 */
+function autoAlarmText(kind, title, lang){
+  const nm = lang==='ko' ? state.name.ko : state.name.en;
+  const t = title || (lang==='ko' ? '준비' : 'getting ready');
+  if(lang==='ko'){
+    if(kind==='e') return nm+'! 이제 '+t+' 시간이야! 출동 준비하자!';
+    return nm+'! 이제 '+t+'하러 출동할 시간이야!';
+  }
+  if(kind==='e') return nm+'! Time for '+t+'! Let’s roll out!';
+  return nm+'! Time to roll out for '+t+'!';
+}
+function alarmText(kind, item, lang){
+  const a = item.alarm || {};
+  const saved = lang==='ko' ? a.ko : a.en;
+  if(saved) return saved;
+  const title = lang==='ko' ? (item.ko || item.en || '') : (item.en || item.ko || '');
+  return autoAlarmText(kind, title, lang);
+}
+/* 실제로 울리는 시각 (일정은 time - lead) */
+function alarmWhen(kind, item){
+  const a = item.alarm || {};
+  if(kind==='e') return minToHhmm(toMin(item.time) - (a.lead||0));
+  return hhmm(a.time, '08:30');
+}
+function alarmChipHTML(hhmmStr, offMin){
+  return '<span class="alarm-chip" aria-label="'+(offMin?offMin+' min before':'alarm')+'">⏰ '+esc(fmtTimeStr(hhmmStr))+'</span>';
+}
+
 function defaults(){
   return {
-    v:2, lang:'ko', sound:true, wake:'08:20', leave:'08:55', wakeLock:false, preview:false,
+    v:2, lang:'ko', sound:true, tts:true, wake:'08:20', leave:'08:55', wakeLock:false, preview:false,
     name:{ko:'건우', en:'Connor'}, place:{ko:'용호동', en:'Yongho-dong'},
     dayKey:'', done:{}, play:{}, ev:{}, prep:{}, awarded:{r:[],p:[],e:[]},
-    chips:0, dex:{}, summons:0, streak:0, lastFull:'',
+    chips:0, chipDay:'', dex:{}, summons:0, streak:0, lastFull:'',
     supplies:clone(DEFAULT_SUPPLIES), routines:clone(DEFAULT_ROUTINES),
     plays:clone(DEFAULT_PLAYS), affirms:clone(DEFAULT_AFFIRM), events:[]
   };
@@ -1644,6 +2235,7 @@ function sanitize(o){
   if(!o || typeof o!=='object') return false;
   if(o.lang==='ko'||o.lang==='en') state.lang=o.lang;
   if(typeof o.sound==='boolean') state.sound=o.sound;
+  if(typeof o.tts==='boolean') state.tts=o.tts;
   if(typeof o.wakeLock==='boolean') state.wakeLock=o.wakeLock;
   state.wake = hhmm(o.wake, state.wake);
   state.leave = hhmm(o.leave, state.leave);
@@ -1657,7 +2249,18 @@ function sanitize(o){
   if(o.awarded && typeof o.awarded==='object')
     state.awarded={r:Array.isArray(o.awarded.r)?o.awarded.r:[], p:Array.isArray(o.awarded.p)?o.awarded.p:[], e:Array.isArray(o.awarded.e)?o.awarded.e:[]};
   if(Number.isFinite(o.chips)) state.chips=Math.max(0,Math.floor(o.chips));
-  if(o.dex && typeof o.dex==='object') state.dex=o.dex;
+  if(typeof o.chipDay==='string') state.chipDay=o.chipDay;
+  if(o.dex && typeof o.dex==='object'){
+    /* keep only ids that still exist; alias the old 'pentastorm' spelling */
+    const dex = {};
+    Object.keys(o.dex).forEach(k=>{
+      const id = (k==='pentastorm') ? 'penta' : k;
+      if(!CB_BY_ID[id]) return;
+      const n = Number(o.dex[k]);
+      if(Number.isFinite(n) && n>0) dex[id] = (dex[id]||0) + Math.floor(n);
+    });
+    state.dex = dex;
+  }
   if(Number.isFinite(o.summons)) state.summons=Math.max(0,Math.floor(o.summons));
   if(Number.isFinite(o.streak)) state.streak=Math.max(0,Math.floor(o.streak));
   if(typeof o.lastFull==='string') state.lastFull=o.lastFull;
@@ -1702,7 +2305,11 @@ function sanitizeRoutines(arr){
     if(seen[id]) id = uid('r');
     seen[id]=1;
     const ko = txt(r.ko, '루틴 '+(i+1), 24);
-    return {id:id, ko:ko, en:txt(r.en, '', 40), art:sanitizeArt(r.art)};
+    const known = DEFAULT_ROUTINE_ALARM[id];
+    const dflt = known
+      ? {on:true, time:alarmTimeFor(i), ko:state.name.ko+'! '+known.ko, en:state.name.en+'! '+known.en}
+      : {on:false, time:alarmTimeFor(i), ko:'', en:''};
+    return {id:id, ko:ko, en:txt(r.en, '', 40), art:sanitizeArt(r.art), alarm:sanitizeAlarm(r.alarm, dflt)};
   });
 }
 function sanitizePlays(arr){
@@ -1715,7 +2322,8 @@ function sanitizePlays(arr){
     const ko = txt(p.ko, '놀이 '+(i+1), 40);
     const pi = Number.isInteger(p.pi) ? clamp(p.pi,0,PALETTE.length-1) : (i%PALETTE.length);
     return {id:id, ic:txt(p.ic,'✨',4), pi:pi, ko:ko, en:txt(p.en, '', 60),
-            ko2:txt(p.ko2,'',50), en2:txt(p.en2,'',70)};
+            ko2:txt(p.ko2,'',50), en2:txt(p.en2,'',70),
+            alarm:sanitizeAlarm(p.alarm, {on:false, time:'09:00', ko:'', en:''})};
   });
 }
 function sanitizeAffirms(arr){
@@ -1743,7 +2351,8 @@ function sanitizeEvents(arr){
       ko:ko, en:txt(e.en, '', 40),
       icon:txt(e.icon,'📌',4), cat:txt(e.cat,'etc',10),
       rep:{type:type, days:days.length?days:[1], date:date},
-      reward:e.reward!==false, on:e.on!==false
+      reward:e.reward!==false, on:e.on!==false,
+      alarm:sanitizeAlarm(e.alarm, {on:false, time:hhmm(e.time,'16:00'), lead:0, ko:'', en:''})
     };
   });
 }
@@ -1889,13 +2498,31 @@ function toast(msg, em){
    ===================================================================== */
 function mirror(markup){ return '<g transform="translate(120 0) scale(-1 1)">'+markup+'</g>'; }
 
+/* colour helpers for the parametric visor accent */
+function hex2rgb(h){
+  h = String(h||'#8ef0ff').replace('#','');
+  if(h.length===3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+  const n = parseInt(h,16);
+  return [(n>>16)&255, (n>>8)&255, n&255];
+}
+function mixHex(h, target, t){
+  const a = hex2rgb(h), b = hex2rgb(target);
+  const f = v => Math.round(a[v] + (b[v]-a[v])*t);
+  return '#' + [f(0),f(1),f(2)].map(v=>('0'+v.toString(16)).slice(-2)).join('');
+}
+function visorColors(c){
+  const ac = c.accent || '#8ef0ff';
+  return {top:mixHex(ac,'#ffffff',.55), mid:ac, low:mixHex(ac,'#0a1a3a',.4)};
+}
+
 /* carbot vehicle colour signature: glossy body + darker trim */
 function carbotDefs(uid, c){
+  const vc = visorColors(c);
   return '<defs>'
     + '<linearGradient id="'+uid+'a" x1="0" y1="0" x2=".35" y2="1"><stop offset="0" stop-color="'+c.color+'"/><stop offset=".55" stop-color="'+c.color+'"/><stop offset="1" stop-color="'+c.color2+'"/></linearGradient>'
     + '<linearGradient id="'+uid+'m" x1="0" y1="0" x2=".2" y2="1"><stop offset="0" stop-color="#f2f7ff"/><stop offset=".45" stop-color="#c3d1e8"/><stop offset="1" stop-color="#7d8dab"/></linearGradient>'
     + '<linearGradient id="'+uid+'d" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4b597a"/><stop offset="1" stop-color="#232c44"/></linearGradient>'
-    + '<linearGradient id="'+uid+'v" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b6f4ff"/><stop offset=".5" stop-color="#3ecbf6"/><stop offset="1" stop-color="#1477c9"/></linearGradient>'
+    + '<linearGradient id="'+uid+'v" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+vc.top+'"/><stop offset=".5" stop-color="'+vc.mid+'"/><stop offset="1" stop-color="'+vc.low+'"/></linearGradient>'
     + '<radialGradient id="'+uid+'g" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffffff" stop-opacity=".9"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>'
     + '</defs>';
 }
@@ -1943,6 +2570,37 @@ function emblem(c){
         + '<circle cx="57.4" cy="68.4" r="1.4" fill="'+c.color2+'"/><circle cx="62.6" cy="68.4" r="1.4" fill="'+c.color2+'"/>';
     case 'flame':
       return '<path d="M60 62c3.6 4.4 7 7.4 7 11a7 7 0 0 1-14 0c0-2.5 1.6-3.8 2.7-5.2.6 1.9 1.6 2.7 2.4 2.7 0-3.2.5-5.6 1.9-8.5z" fill="'+W+'"/>';
+    case 'crystal':
+      return '<path d="M60 62l7 6-7 10.5L53 68z" fill="'+W+'"/>'
+        + '<path d="M60 62l7 6h-14z" fill="'+c.color+'"/>'
+        + '<path d="M60 68v10.5L53 68z" fill="'+c.color2+'" opacity=".55"/>';
+    case 'crown':
+      return '<path d="M51 77l-2.4-13 5.6 4.4L60 61l5.8 7.4L71.4 64 69 77z" fill="'+W+'"/>'
+        + '<circle cx="53" cy="70.4" r="1.5" fill="'+c.color2+'"/><circle cx="60" cy="68" r="1.7" fill="'+c.color2+'"'
+        + '/><circle cx="67" cy="70.4" r="1.5" fill="'+c.color2+'"/>';
+    case 'anchor':
+      return '<circle cx="60" cy="65" r="3.2" fill="none" stroke="'+W+'" stroke-width="2.4"/>'
+        + '<path d="M60 68.4v9.2M52 73h16M53 77.4c1.4 2.6 4 3.8 7 3.8s5.6-1.2 7-3.8" stroke="'+W+'" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
+    case 'bolt':
+      return '<path d="M62.6 61.6l-8.4 9.8h5.2l-2 8 8.6-10.2h-5.2z" fill="'+W+'"/>';
+    case 'drum':
+      return '<rect x="52.4" y="65" width="15.2" height="9.4" rx="2.4" fill="none" stroke="'+W+'" stroke-width="2.4"/>'
+        + '<path d="M52.4 69.4h15.2" stroke="'+W+'" stroke-width="1.8"/>'
+        + '<path d="M54 63.4l2.4-4M66 63.4l-2.4-4" stroke="'+W+'" stroke-width="2" stroke-linecap="round"/>';
+    case 'egg':
+      return '<ellipse cx="60" cy="71" rx="7.4" ry="9.4" fill="'+W+'"/>'
+        + '<path d="M55 69.6l3.4 2.6 3-2.2 3.2 2.4" stroke="'+c.color2+'" stroke-width="1.5" fill="none" stroke-linecap="round"/>';
+    case 'gear':
+      return '<circle cx="60" cy="70.4" r="4.2" fill="none" stroke="'+W+'" stroke-width="2.4"/>'
+        + '<g stroke="'+W+'" stroke-width="2.6" stroke-linecap="round">'
+        + '<path d="M60 62.6v3M60 75.2v3M51.4 70.4h3M65.6 70.4h3M54 64.4l2.1 2.1M63.9 74.3l2.1 2.1M66 64.4l-2.1 2.1M56.1 74.3L54 76.4"/></g>';
+    case 'claw':
+      return '<g stroke="'+W+'" stroke-width="3" stroke-linecap="round" fill="none">'
+        + '<path d="M52.6 63.4q4.4 5.2 3.4 13.6M58.2 62.6q4.4 5.6 3.4 14.4M64 63.4q4.2 5.2 3.2 13"/></g>';
+    case 'wheel':
+      return '<circle cx="60" cy="70.4" r="7.6" fill="none" stroke="'+W+'" stroke-width="2.6"/>'
+        + '<circle cx="60" cy="70.4" r="2.6" fill="'+W+'"/>'
+        + '<path d="M60 62.8v5M53.4 74.2l4.4-2.6M66.6 74.2l-4.4-2.6" stroke="'+W+'" stroke-width="2.2" stroke-linecap="round"/>';
     default:
       return '<circle cx="60" cy="70" r="6" fill="'+W+'"/>';
   }
@@ -2067,6 +2725,32 @@ function carbotGearBack(c, uid){
     case 'flame': /* hero cape */
       return '<path d="M36 50q-16 14-12 50l14-8q-6-22 6-34z" fill="'+c.color2+'" opacity=".6"/>'
         + '<path d="M84 50q16 14 12 50l-14-8q6-22-6-34z" fill="'+c.color2+'" opacity=".6"/>';
+    case 'crystal': /* floating shards */
+      return '<g fill="'+c.color+'" opacity=".55"><path d="M20 40l7 5-7 9-7-9z"/><path d="M100 40l7 5-7 9-7-9z"/>'
+        + '<path d="M26 78l5 4-5 7-5-7z"/><path d="M94 78l5 4-5 7-5-7z"/></g>';
+    case 'crown': /* royal rays */
+      return '<g stroke="'+c.color+'" stroke-width="2.4" stroke-linecap="round" opacity=".5">'
+        + '<path d="M30 26l-8-8M90 26l8-8M22 46l-10-3M98 46l10-3"/></g>';
+    case 'anchor': /* waves */
+      return '<g stroke="'+c.color+'" stroke-width="3" fill="none" stroke-linecap="round" opacity=".5">'
+        + '<path d="M12 92q10-8 20 0t20 0 20 0 20 0"/></g>';
+    case 'bolt': /* electric arcs */
+      return '<g stroke="#ffe27a" stroke-width="2.6" fill="none" stroke-linecap="round" opacity=".85">'
+        + '<path d="M18 34l8 6-6 8M102 34l-8 6 6 8M14 66l7 4-5 7"/></g>';
+    case 'drum': /* sound rings */
+      return '<g fill="none" stroke="'+c.color+'" stroke-width="2.4" opacity=".55">'
+        + '<circle cx="60" cy="58" r="40"/><circle cx="60" cy="58" r="49" stroke-dasharray="6 7"/></g>';
+    case 'egg': /* shell halves */
+      return '<g fill="#f7fff9" stroke="#8bbfa4" stroke-width="1.6" opacity=".9">'
+        + '<path d="M18 96q10-22 26-14-6 8-2 16z"/><path d="M102 96q-10-22-26-14 6 8 2 16z"/></g>';
+    case 'gear': /* cog ring */
+      return '<circle cx="60" cy="58" r="49" fill="none" stroke="'+c.color+'" stroke-width="3" stroke-dasharray="4 9" opacity=".6"/>';
+    case 'claw': /* slash marks */
+      return '<g stroke="'+c.color+'" stroke-width="3.4" stroke-linecap="round" opacity=".4">'
+        + '<path d="M22 30l10 14M34 24l10 14M96 76l-10-14"/></g>';
+    case 'wheel': /* tyre arcs */
+      return '<g fill="none" stroke="'+c.color+'" stroke-width="3" opacity=".5">'
+        + '<path d="M18 74a42 42 0 0 1 12-26M102 74a42 42 0 0 0-12-26"/></g>';
     default:
       return '';
   }
@@ -2119,6 +2803,31 @@ function carbotGearTop(c, uid){
         + '<path d="M38 20q-9-4-13-11 9 3 14 8z" fill="#f0c33c" stroke="#8a6500" stroke-width="1.4"/>';
     case 'flame':
       return '<path d="M60 1.4c3.8 5 6.6 7.6 6.6 11.4a6.6 6.6 0 0 1-13.2 0c0-2.6 1.8-4 3-5.6.6 2 1.6 2.8 2.4 2.8 0-3.4.5-6 1.2-8.6z" fill="#ff8a3c" stroke="#d9560f" stroke-width="1.2"/>';
+    case 'crystal':
+      return '<g fill="'+c.color+'" stroke="#1c2438" stroke-width="1.2">'
+        + '<path d="M60 0.8l5 8-5 4-5-4z"/><path d="M46 6l4.4 6-4.4 3.4-4.4-3.4z"/><path d="M74 6l4.4 6-4.4 3.4-4.4-3.4z"/></g>';
+    case 'crown':
+      return '<g><path d="M48 16l-2-11 8 5 6-8 6 8 8-5-2 11z" fill="#f0c33c" stroke="#8a5a00" stroke-width="1.4"/></g>';
+    case 'anchor':
+      return '<g stroke="#c9d6ee" stroke-width="2.2" fill="none"><path d="M78 22l8-8"/></g>'
+        + '<circle cx="88" cy="12" r="3.4" fill="'+c.color+'"/>';
+    case 'bolt':
+      return '<path d="M62 2l-6 9h5l-2 6 7-8h-4z" fill="#ffe27a" stroke="#8a6b00" stroke-width="1"/>';
+    case 'drum':
+      return '<g><ellipse cx="60" cy="10" rx="11" ry="4" fill="#e8eefc" stroke="#5d6c8c" stroke-width="1.2"/>'
+        + '<path d="M49 10v5c0 2.2 5 4 11 4s11-1.8 11-4v-5" fill="'+c.color+'" stroke="#1c2438" stroke-width="1.2"/>'
+        + '<path d="M51 4l-3 4M69 4l3 4" stroke="#c9d6ee" stroke-width="1.8" stroke-linecap="round"/></g>';
+    case 'egg':
+      return '<path d="M60 2c5 0 8 5 8 9 0 4.4-3.6 7-8 7s-8-2.6-8-7c0-4 3-9 8-9z" fill="#f7fff9" stroke="#8bbfa4" stroke-width="1.4"/>'
+        + '<path d="M55 9l4 2 3-2" stroke="#8bbfa4" stroke-width="1.2" fill="none"/>';
+    case 'gear':
+      return '<g transform="translate(60 8)" fill="none" stroke="#c9d6ee" stroke-width="1.8">'
+        + '<circle r="5.4"/><circle r="1.8" fill="#c9d6ee"/></g>';
+    case 'claw':
+      return '<g fill="'+c.color+'"><path d="M44 22l-4-12 9 7z"/><path d="M76 22l4-12-9 7z"/></g>';
+    case 'wheel':
+      return '<g><path d="M60 16V8" stroke="#c9d6ee" stroke-width="2.4" stroke-linecap="round"/>'
+        + '<circle cx="60" cy="6" r="3.6" fill="'+c.color+'" stroke="#1c2438" stroke-width="1.2"/></g>';
     default:
       return '';
   }
@@ -2604,7 +3313,7 @@ function renderRoutines(){
       + '<div class="r-body">'
       +   '<h3 class="r-title">'+esc(pick(r.ko, r.en))+'</h3>'
       +   '<p class="r-sub">'+esc(pick(r.en, r.ko))+'</p>'
-      +   '<div class="r-foot"><span class="r-reward">🧊 +1</span><span class="r-done">✓</span></div>'
+      +   '<div class="r-foot">'+(r.alarm && r.alarm.on ? alarmChipHTML(alarmWhen('r', r)) : '')+'<span class="r-done">✓</span></div>'
       + '</div></article>';
   }).join('');
 }
@@ -2621,14 +3330,11 @@ function toggleRoutine(id, card){
     card.classList.add('sel','just-done');
     card.setAttribute('aria-pressed','true');
     setTimeout(()=>card.classList.remove('just-done'), 600);
-    if(!state.awarded.r.includes(id)){
-      state.awarded.r.push(id);
-      addChips(1, card);
-    }
     sfxStamp();
     burstAt(card, 40);
     save();
   }
+  syncDailyChip(!was);
   updateCounts();
   renderWatchStatusOnly();
   if(checkStreak()){
@@ -2666,6 +3372,45 @@ function checkStreak(){
   return true;
 }
 
+/* ---------- 하루 한 번 카봇칩: 오늘 루틴을 전부 끝내면 +1 ---------- */
+function routinesAllDone(){
+  return state.routines.length>0 && state.routines.every(r=>!!state.done[r.id]);
+}
+function syncDailyChip(award){
+  const today = dkey(new Date());
+  const all = routinesAllDone();
+  if(all){
+    if(state.chipDay !== today){
+      state.chipDay = today;
+      if(award){
+        state.chips += 1;
+        sfxChip();
+        burst(innerWidth/2, innerHeight*0.42, 80);
+        setTimeout(()=>burst(innerWidth*0.3, innerHeight*0.36, 46), 210);
+        setTimeout(()=>burst(innerWidth*0.7, innerHeight*0.38, 46), 370);
+        toast(L({ko:'오늘 루틴 완주! 카봇칩 +1 획득!',en:'All of today’s routines done! Carbot chip +1!'}), '🧊');
+        updateCounts(); renderWatchStatusOnly();
+      }
+      save();
+      return true;
+    }
+    return false;
+  }
+  if(state.chipDay === today){
+    state.chipDay = '';
+    state.chips = Math.max(0, state.chips - 1);
+    updateCounts(); renderWatchStatusOnly();
+    save();
+    if(award) toast(L({ko:'루틴을 다시 모두 끝내면 카봇칩 +1을 다시 받아요',en:'Finish every routine again to get the chip back'}), '↩️');
+  }
+  return false;
+}
+/* 앱을 열 때: 이미 다 끝낸 상태면 오늘 지급으로만 기록(추가 지급 없음) */
+function adoptChipDay(){
+  const today = dkey(new Date());
+  if(routinesAllDone() && state.chipDay !== today){ state.chipDay = today; save(); }
+}
+
 function renderPlays(){
   const rowHTML = (p, big)=>{
     const done = !!state.play[p.id];
@@ -2673,6 +3418,7 @@ function renderPlays(){
       + '<span class="p-ic" style="background:'+palG(p.pi)+'">'+esc(p.ic)+'</span>'
       + '<div class="p-txt"><div class="p-title">'+esc(pick(p.ko, p.en))+'</div>'
       + '<div class="p-sub">'+esc(pick(p.ko2, p.en2))+'</div></div>'
+      + (p.alarm && p.alarm.on ? alarmChipHTML(alarmWhen('p', p)) : '')
       + '<span class="p-box">✓</span></div>';
   };
   const today = $('#todayPlay');
@@ -2691,7 +3437,6 @@ function togglePlay(id, el){
     delete state.play[id];
   }else{
     state.play[id]=true;
-    if(!state.awarded.p.includes(id)){ state.awarded.p.push(id); addChips(1, el); }
     sfxStamp();
     burstAt(el, 30);
   }
@@ -2824,7 +3569,7 @@ function renderEvents(){
       + '<span class="ev-ic" aria-hidden="true">'+esc(e.icon)+'</span>'
       + '<div class="ev-t"><div class="ev-title">'+esc(pick(e.ko, e.en))+'</div>'
       +   '<div class="ev-sub">'+esc(catLabel(e.cat))+' · '+esc(repLabel(e))+'</div></div>'
-      + (e.reward!==false ? '<span class="ev-reward">🧊+1</span>' : '')
+      + (e.alarm && e.alarm.on ? alarmChipHTML(alarmWhen('e', e), e.alarm.lead) : '')
       + '<span class="ev-box" aria-hidden="true">✓</span></div>';
   }).join('');
 }
@@ -2836,13 +3581,271 @@ function toggleEvent(id, el){
     delete state.ev[k];
   }else{
     state.ev[k] = true;
-    if(e.reward!==false && state.awarded.e.indexOf(k)<0){ state.awarded.e.push(k); addChips(1, el); }
     sfxStamp();
     burstAt(el, 26);
   }
   save();
   renderEvents();
   updateCounts();
+}
+
+/* =====================================================================
+   11c. carbot roll-out alarms (item alarms · siren · TTS · notification)
+   ===================================================================== */
+const FIRE_KEY = 'carbot-morning-fire-v1';
+let firedAlarms = {date:'', ids:[]};
+let alarmOpen = false, alarmQueue = [], currentAlarm = null, lastAlarmMin = -1;
+
+function firedSync(){
+  const k = dkey(new Date());
+  if(firedAlarms.date !== k) firedAlarms = {date:k, ids:[]};
+}
+function loadFired(){
+  firedSync();
+  try{
+    const o = JSON.parse(localStorage.getItem(FIRE_KEY)||'null');
+    if(o && typeof o==='object' && o.date===dkey(new Date()) && Array.isArray(o.ids))
+      firedAlarms = {date:o.date, ids:o.ids.filter(x=>typeof x==='string').slice(-300)};
+  }catch(e){ /* ignore broken storage */ }
+}
+function persistFired(){
+  try{ localStorage.setItem(FIRE_KEY, JSON.stringify(firedAlarms)); }catch(e){}
+}
+function hasFired(kind, id){
+  firedSync();
+  return firedAlarms.ids.indexOf(kind+'|'+id) >= 0;
+}
+function markFired(kind, id){
+  firedSync();
+  const k = kind+'|'+id;
+  if(firedAlarms.ids.indexOf(k) < 0){ firedAlarms.ids.push(k); persistFired(); }
+}
+
+/* 경쾌한 카봇 출동 사이렌 + 차임벨 */
+function sfxAlarm(){
+  [0, .30, .60].forEach((s)=>{
+    beep(720, s, .16, 'square', .07, 1180);
+    beep(1180, s+.16, .16, 'square', .07, 720);
+  });
+  [1046, 1318, 1568, 2093].forEach((f,i)=> beep(f, 1.05+i*.09, .26, 'sine', .09));
+}
+function cleanSpeech(t){
+  return String(t||'').replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}]/gu,'').replace(/\s+/g,' ').trim();
+}
+function speakAlarm(text, lang){
+  if(!state.tts) return false;
+  if(!('speechSynthesis' in window) || typeof window.SpeechSynthesisUtterance!=='function') return false;
+  try{
+    const s = window.speechSynthesis;
+    s.cancel();
+    const u = new SpeechSynthesisUtterance(cleanSpeech(text));
+    u.lang = lang==='en' ? 'en-US' : 'ko-KR';
+    u.rate = .96; u.pitch = 1.06; u.volume = 1;
+    const vs = (s.getVoices ? s.getVoices() : []) || [];
+    const want = u.lang.toLowerCase();
+    const v = vs.find(x=> String(x.lang||'').replace('_','-').toLowerCase().indexOf(want)===0);
+    if(v) u.voice = v;
+    s.speak(u);
+    return true;
+  }catch(e){ return false; }
+}
+function notifyAlarm(text, name){
+  try{
+    if(!('Notification' in window) || Notification.permission !== 'granted') return false;
+    const n = new Notification('🚨 카봇 출동 지령! · '+name, {body:text, tag:'carbot-alarm'});
+    n.onclick = ()=>{ try{ window.focus(); }catch(e){} try{ n.close(); }catch(e){} };
+    setTimeout(()=>{ try{ n.close(); }catch(e){} }, 25000);
+    return true;
+  }catch(e){ return false; }
+}
+function notifSupported(){ return ('Notification' in window); }
+function notifState(){
+  if(!notifSupported()) return 'unsupported';
+  return Notification.permission || 'default';
+}
+function updateNotifyUI(){
+  const el = $('#notifState');
+  if(!el) return;
+  const st = notifState();
+  const map = {
+    unsupported:{ko:'이 브라우저는 페이지 알림을 지원하지 않아요. 알람 창과 음성은 그대로 동작해요.',en:'This browser has no page notifications. The alarm popup and voice still work.'},
+    granted:{ko:'켜짐 · 다른 앱을 보고 있어도 시스템 알림이 함께 떠요.',en:'On · a system notification appears even in another app.'},
+    denied:{ko:'차단됨 · 브라우저 주소창의 자물쇠(사이트 설정)에서 알림을 허용해 주세요.',en:'Blocked · allow notifications in the site settings (lock icon).'},
+    default:{ko:'아직 꺼짐 · ‘알림 권한 켜기’를 눌러 주세요.',en:'Off · press “Turn on notifications”.'}
+  };
+  el.textContent = L(map[st] || map.default);
+  const b = $('#btnNotifPerm');
+  if(b){
+    b.hidden = (st==='granted');
+    b.textContent = st==='denied' ? L({ko:'권한 다시 확인',en:'Check again'}) : L({ko:'알림 권한 켜기',en:'Turn on notifications'});
+  }
+}
+function requestNotify(){
+  if(!notifSupported()){
+    toast(L({ko:'이 브라우저는 페이지 알림을 지원하지 않아요',en:'This browser has no page notifications'}), 'ℹ️');
+    updateNotifyUI();
+    return;
+  }
+  try{
+    const p = Notification.requestPermission((res)=>{ updateNotifyUI(); if(res==='granted') toast(L({ko:'브라우저 알림을 켰어요',en:'Browser notifications on'}), '🔔'); });
+    if(p && p.then) p.then(()=> updateNotifyUI()).catch(()=> updateNotifyUI());
+  }catch(e){
+    toast(L({ko:'알림 권한을 켜지 못했어요. 브라우저 설정에서 허용해 주세요.',en:'Could not turn on notifications. Allow them in the browser settings.'}), '⚠️');
+  }
+  setTimeout(updateNotifyUI, 400);
+}
+
+/* 오늘 해당하고 아직 완료하지 않은 알람 항목을 찾는다 */
+function alarmDueList(now, lookback){
+  const cur = now.getHours()*60 + now.getMinutes();
+  const hit = (hh)=>{
+    const m = toMin(hh);
+    if(m === cur) return true;
+    if(lookback && cur - m >= 1 && cur - m <= lookback) return true;
+    return false;
+  };
+  const out = [];
+  state.routines.forEach(r=>{
+    const a = r.alarm;
+    if(!a || !a.on || state.done[r.id]) return;
+    if(hasFired('r', r.id)) return;
+    if(hit(a.time)) out.push({kind:'r', id:r.id, item:r});
+  });
+  state.plays.forEach(p=>{
+    const a = p.alarm;
+    if(!a || !a.on || state.play[p.id]) return;
+    if(hasFired('p', p.id)) return;
+    if(hit(a.time)) out.push({kind:'p', id:p.id, item:p});
+  });
+  state.events.forEach(e=>{
+    const a = e.alarm;
+    if(!a || !a.on || !evMatches(e, now)) return;
+    if(state.ev[evKey(e, now)]) return;
+    if(hasFired('e', e.id)) return;
+    if(hit(alarmWhen('e', e))) out.push({kind:'e', id:e.id, item:e});
+  });
+  return out;
+}
+
+function checkAlarms(){
+  if(state.preview) return;          /* 08:35 미리보기 중에는 실제 알람을 울리지 않는다 */
+  if(!$('#alarmOverlay') || alarmOpen) return;
+  const now = new Date();
+  const cur = now.getHours()*60 + now.getMinutes();
+  const gap = lastAlarmMin < 0 ? 0 : cur - lastAlarmMin;
+  lastAlarmMin = cur;
+  /* 이미 울린 항목은 fired 기록으로 걸러지므로 매초 확인해도 안전하다 */
+  const due = alarmDueList(now, gap > 1 ? 2 : 0);
+  if(!due.length) return;
+  due.forEach(d=> markFired(d.kind, d.id));
+  alarmQueue = due.slice(1);
+  showAlarm(due[0], false);
+}
+
+function alarmBadgeHTML(d){
+  const it = d.item;
+  if(d.kind === 'r'){
+    const custom = images.routine[it.id];
+    if(custom) return '<img src="'+custom+'" alt="">';
+    const art = it.art || {type:'img', v:'1'};
+    if(art.type === 'img') return '<img src="'+(ART_IMG[art.v] || IMG.one)+'" alt="">';
+    if(art.type === 'carbot') return carbotSVG(CB_BY_ID[art.v] || CARBOTS[0], 112);
+    return '<span class="alarm-emo">'+esc(art.v || '⭐')+'</span>';
+  }
+  if(d.kind === 'p'){
+    let h = 0;
+    String(it.id||'').split('').forEach(ch=>{ h = (h*31 + ch.charCodeAt(0)) % 9973; });
+    return carbotSVG(CARBOTS[h % CARBOTS.length], 112);
+  }
+  return '<span class="alarm-emo">'+esc(it.icon || '📌')+'</span>';
+}
+
+function showAlarm(d, isTest){
+  if(!d) return;
+  const it = d.item;
+  const lang = state.lang;
+  const text = alarmText(d.kind, it, lang);
+  alarmOpen = true;
+  currentAlarm = {kind:d.kind, id:d.id, item:it, test:!!isTest};
+  const ov = $('#alarmOverlay');
+  $('#alarmBadge').innerHTML = alarmBadgeHTML(d);
+  $('#alarmKicker').textContent = L({ko:'🚨 카봇 출동 지령!', en:'🚨 Carbot roll-out call!'});
+  $('#alarmMsg').textContent = text;
+  $('#alarmTime').textContent = fmtTimeStr(alarmWhen(d.kind, it));
+  $('#alarmName').textContent = pick(it.ko, it.en);
+  $('#alarmKind').textContent = d.kind==='r' ? L({ko:'루틴',en:'Routine'})
+    : d.kind==='p' ? L({ko:'놀이·학습',en:'Play'})
+    : d.kind==='e' ? L({ko:'일정',en:'Event'}) : L({ko:'테스트',en:'Test'});
+  $('#alarmDone').textContent = isTest ? L({ko:'좋아요!',en:'Got it!'}) : L({ko:'출동 완료!',en:'Rolled out!'});
+  $('#alarmLater').hidden = !!isTest;
+  ov.hidden = false;
+  ov.classList.remove('show');
+  requestAnimationFrame(()=> ov.classList.add('show'));
+  sfxAlarm();
+  setTimeout(()=> speakAlarm(text, lang), 420);
+  if(!isTest) notifyAlarm(text, pick(it.ko, it.en));
+}
+
+function closeAlarm(){
+  const ov = $('#alarmOverlay');
+  if(!ov) return;
+  alarmOpen = false;
+  currentAlarm = null;
+  ov.classList.remove('show');
+  try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
+  setTimeout(()=>{ if(!alarmOpen) ov.hidden = true; }, 240);
+  const next = alarmQueue.shift();
+  if(next) setTimeout(()=> showAlarm(next, false), 560);
+}
+
+function directDone(kind, id){
+  if(kind==='r') state.done[id] = true;
+  else if(kind==='p') state.play[id] = true;
+  else {
+    const e = state.events.find(x=>x.id===id);
+    if(e) state.ev[evKey(e, new Date())] = true;
+  }
+  sfxStamp();
+  save();
+  syncDailyChip(true);
+  renderAll();
+}
+function alarmComplete(){
+  const d = currentAlarm;
+  if(!d){ closeAlarm(); return; }
+  const kind = d.kind, id = d.id, isTest = !!d.test;
+  closeAlarm();
+  if(isTest){ sfxDing(); return; }
+  let done = false;
+  if(kind === 'r'){
+    if(!state.done[id]){
+      const el = $('.routine[data-id="'+String(id).replace(/"/g,'')+'"]');
+      if(el) toggleRoutine(id, el); else directDone('r', id);
+      done = true;
+    }
+  }else if(kind === 'p'){
+    if(!state.play[id]){
+      const el = $('[data-id="'+String(id).replace(/"/g,'')+'"]');
+      if(el) togglePlay(id, el); else directDone('p', id);
+      done = true;
+    }
+  }else if(kind === 'e'){
+    const e = state.events.find(x=>x.id===id);
+    if(e && !state.ev[evKey(e, new Date())]){
+      const el = $('[data-ev="'+String(id).replace(/"/g,'')+'"]');
+      if(el) toggleEvent(id, el); else directDone('e', id);
+      done = true;
+    }
+  }
+  toast(done ? L({ko:'출동 완료! 오늘도 멋져!',en:'Roll-out complete! Great job!'})
+             : L({ko:'이미 완료했어요!',en:'Already done!'}), '🚨');
+}
+
+/* 설정 탭의 알람 테스트: 지금 바로 창 + 사이렌 + 음성(모바일 오디오 잠금 해제) */
+function testAlarm(){
+  const it = state.routines.find(r=>r.alarm && r.alarm.on) || state.routines[0]
+           || {id:'test', ko:'양치', en:'brushing teeth', art:{type:'emoji', v:'🦷'}};
+  showAlarm({kind:'r', id:it.id, item:it}, true);
 }
 
 /* =====================================================================
@@ -2882,7 +3885,7 @@ function renderChips(){
     if(tray && !$('#chipEmpty')){
       const box = document.createElement('div');
       box.className='stage-empty'; box.id='chipEmpty';
-      box.innerHTML = '<p>'+L({ko:'아직 카봇칩이 없어요.<br>아침 루틴 하나를 끝내면 카봇칩을 받아요!',en:'No chips yet.<br>Finish one morning step to get a Carbot chip!'})+'</p>'
+      box.innerHTML = '<p>'+L({ko:'아직 카봇칩이 없어요.<br>오늘 루틴을 모두 끝내면 카봇칩을 받아요!',en:'No chips yet.<br>Finish all of today’s routines to get a Carbot chip!'})+'</p>'
         + '<button class="btn" id="goDash">'+L({ko:'루틴 하러 가기',en:'Go to routines'})+'</button>';
       tray.appendChild(box);
       const b = $('#goDash'); if(b) b.onclick = ()=>switchTab('dash');
@@ -2906,28 +3909,65 @@ function renderChips(){
   if($('#chipTrayCount')) $('#chipTrayCount').textContent = String(n);
 }
 
+let dexFilter='all', dexSeries='', dexQuery='', dexLimit=36, dexSearchTimer=null;
+function dexCardHTML(c){
+  const cnt = state.dex[c.id]||0;
+  const own = cnt>0;
+  const custom = images.dex[c.id];
+  const art = custom ? '<img src="'+custom+'" alt="">' : carbotSVG(c, 52);
+  const serTxt = SERIES[c.series] ? L(SERIES[c.series]) : '';
+  return '<article class="dex'+(own?'':' locked')+'" data-dex="'+esc(c.id)+'">'
+    + '<div class="dx-ic">'+art+'</div>'
+    + '<div class="dx-b">'
+    +   '<div class="dx-n"><span class="nm">'+esc(pick(c.ko, c.en))+'</span></div>'
+    +   '<div class="dx-en">'+esc(pick(c.en, c.ko))+'</div>'
+    +   '<div class="dx-ser">'+esc(serTxt)+' · '+esc(L(c.role))+'</div>'
+    +   (own ? '<p class="dx-d">'+esc(L(c.desc))+'</p>'
+             + '<span class="dx-badge">×'+cnt+' '+L({ko:'소환',en:'summons'})+'</span>'
+           : '<span class="dx-lock">🔒 '+L({ko:'미보유',en:'not yet'})+'</span>')
+    + '</div></article>';
+}
+function dexFiltered(){
+  const q = dexQuery.trim().toLowerCase();
+  return CARBOTS.filter(c=>{
+    const own = (state.dex[c.id]||0)>0;
+    if(dexFilter==='own' && !own) return false;
+    if(dexFilter==='missing' && own) return false;
+    if(dexSeries && c.series!==dexSeries) return false;
+    if(q && c.ko.toLowerCase().indexOf(q)<0 && c.en.toLowerCase().indexOf(q)<0) return false;
+    return true;
+  });
+}
+function dexTotalText(n){ return (n||0).toLocaleString(state.lang==='ko'?'ko-KR':'en-US'); }
 function renderDex(){
   const grid = $('#dexGrid');
   if(!grid) return;
-  grid.innerHTML = CARBOTS.map(c=>{
-    const cnt = state.dex[c.id]||0;
-    const found = cnt>0;
-    return '<article class="dex'+(found?'':' locked')+'">'
-      + '<div class="dx-ic">'+(images.dex[c.id] ? '<img src="'+images.dex[c.id]+'" alt="">' : carbotSVG(c,52))+'</div>'
-      + '<div class="dx-b">'
-      +   '<div class="dx-n">'+(found? L({ko:c.ko,en:c.en}) : '???')+(found? '<small>'+L({ko:c.en,en:c.ko})+'</small>':'')+'</div>'
-      +   (found? '<div class="dx-v">'+L(c.veh)+' · '+L(c.role)+'</div>' : '')
-      +   '<p class="dx-d">'+(found? L(c.desc) : L({ko:'카봇칩을 넣으면 만날 수 있어요!',en:'Slide a chip in to meet this Carbot!'}))+'</p>'
-      +   (found? '<span class="dx-badge">×'+cnt+' '+L({ko:'소환',en:'summons'})+'</span>':'')
-      + '</div></article>';
-  }).join('');
+  const list = dexFiltered();
+  const shown = Math.min(dexLimit, list.length);
+  grid.innerHTML = shown
+    ? list.slice(0, shown).map(dexCardHTML).join('')
+    : '<div class="empty-hint">'+L({ko:'찾는 카봇이 없어요. 검색어나 필터를 바꿔 보세요.',en:'No Carbot matches. Try another search or filter.'})+'</div>';
 
-  const found = dexFound();
-  const total = CARBOTS.length;
-  const cntEl = $('#dexCount');
-  if(cntEl) cntEl.textContent = found+'/'+total;
-  const bar = $('#dexBar');
-  if(bar) bar.style.width = Math.round(found/total*100)+'%';
+  const found = dexFound(), total = CARBOTS.length;
+  if($('#dexCount')) $('#dexCount').textContent = L({ko:'보유 '+found+' / ',en:'Owned '+found+' / '})+dexTotalText(total);
+  if($('#dexBar')) $('#dexBar').style.width = Math.round(found/Math.max(1,total)*100)+'%';
+  if($('#dexShown')) $('#dexShown').textContent = shown+' / '+dexTotalText(list.length);
+  const more = $('#dexMore');
+  if(more){
+    more.hidden = shown >= list.length;
+    more.textContent = L({ko:'더 보기 ＋ 36',en:'Show 36 more ＋'});
+  }
+}
+function renderDexFilters(){
+  const sel = $('#dexSeries');
+  if(!sel) return;
+  const cur = dexSeries;
+  sel.innerHTML = ['<option value="">'+L({ko:'모든 시리즈',en:'All series'})+'</option>']
+    .concat(SERIES_ORDER.filter(k=>SERIES[k]).map(k=>'<option value="'+k+'"'+(cur===k?' selected':'')+'>'+esc(L(SERIES[k]))+'</option>'))
+    .join('');
+  $$('#dexFilters .dex-chip').forEach(b=>{
+    b.classList.toggle('on', b.getAttribute('data-dex-filter')===dexFilter);
+  });
 }
 
 /* --- summon --- */
@@ -2991,7 +4031,7 @@ function summon(){
   setTimeout(()=>{
     summoning=false; renderWatch();
     if(dexFound() === CARBOTS.length){
-      toast(L({ko:'카봇 도감 완성! 12마리 모두 만났어요! 🏆',en:'Carbot Dex complete! You met all 12! 🏆'}), '🏆');
+      toast(L({ko:'카봇 도감 완성! '+dexTotalText(CARBOTS.length)+'종 모두 만났어요! 🏆',en:'Carbot Dex complete! You met all '+dexTotalText(CARBOTS.length)+'! 🏆'}), '🏆');
       boostBurst();
     }
   }, 1250);
@@ -3020,13 +4060,18 @@ function updateCounts(){
   if($('#chipTrayCount')) $('#chipTrayCount').textContent = String(state.chips);
   if($('#streakVal')) $('#streakVal').textContent = String(state.streak);
   if($('#summonTotal')) $('#summonTotal').textContent = String(state.summons);
-  const found = dexFound();
-  if($('#dexCount')) $('#dexCount').textContent = found+'/'+CARBOTS.length;
-  if($('#dexBar')) $('#dexBar').style.width = Math.round(found/CARBOTS.length*100)+'%';
+  const found = dexFound(), dtotal = CARBOTS.length;
+  if($('#dexCount')) $('#dexCount').textContent = L({ko:'보유 '+found+' / ',en:'Owned '+found+' / '})+dexTotalText(dtotal);
+  if($('#dexBar')) $('#dexBar').style.width = Math.round(found/Math.max(1,dtotal)*100)+'%';
 
   /* dynamic section titles */
-  if($('#routineTitleTxt')) $('#routineTitleTxt').textContent = L({ko:'아침 루틴 '+rt+'단계', en:'Morning routine · '+rt+' steps'});
-  if($('#how1t')) $('#how1t').textContent = L({ko:'아침 루틴 '+rt+'단계 완료', en:'Finish the '+rt+' morning steps'});
+  if($('#routineTitleTxt')) $('#routineTitleTxt').textContent = L({ko:'오늘의 루틴 '+rt+'단계', en:'Today’s routine · '+rt+' steps'});
+  if($('#how1t')) $('#how1t').textContent = L({ko:'오늘 루틴 '+rt+'단계 전부 완료', en:'Finish all '+rt+' routines today'});
+  const rAll = routinesAllDone();
+  if($('#routineProgTxt')) $('#routineProgTxt').textContent = L({
+    ko: rdone+'/'+rt+' 완료 · '+(rAll ? '칩 +1 받았어요!' : '모두 끝내면 칩 +1'),
+    en: rdone+'/'+rt+' done · '+(rAll ? 'chip +1 earned!' : 'all done = +1 chip')
+  });
   if($('#playTitleTxt')) $('#playTitleTxt').textContent = L({ko:'오늘의 놀이·학습', en:'Today’s play & learn'});
   if($('#playListTitleTxt')) $('#playListTitleTxt').textContent = L({ko:'오늘의 놀이·학습 '+pt+'가지', en:'Today’s '+pt+' play & learn ideas'});
 
@@ -3072,7 +4117,7 @@ function applyStatic(){
   $('#btnSound').classList.toggle('on', state.sound);
   $('#btnSound').setAttribute('aria-pressed', String(state.sound));
   $('#playPageDate').textContent = dateLabel(new Date());
-  $('#routineSub').textContent = L({ko:'카드를 누르면 완료! 카봇칩을 받아요',en:'Tap a card when done — earn a Carbot chip'});
+  $('#routineSub').textContent = L({ko:'아침부터 저녁까지 루틴을 모두 완료하면 카봇칩 +1을 받아요',en:'Finish every routine from morning to evening to earn +1 Carbot chip'});
   $('#countNote').textContent = (state.routines.length && state.routines.every(r=>state.done[r.id]))
     ? L({ko:'🎉 오늘의 루틴 완성!',en:'🎉 Routine complete!'})
     : L({ko:'🌱 오늘도 스스로!',en:'🌱 On my own today!'});
@@ -3117,7 +4162,7 @@ function openSettings(tab){
   draft = {
     name:{ko:state.name.ko, en:state.name.en},
     place:{ko:state.place.ko, en:state.place.en},
-    wake:state.wake, leave:state.leave, wakeLock:!!state.wakeLock, sound:!!state.sound,
+    wake:state.wake, leave:state.leave, wakeLock:!!state.wakeLock, sound:!!state.sound, tts:state.tts!==false,
     routines:clone(state.routines), plays:clone(state.plays),
     supplies:clone(state.supplies), affirms:clone(state.affirms), events:clone(state.events)
   };
@@ -3161,7 +4206,7 @@ function renderSetBody(){
   else if(setTabId==='photos') h = bodyPhotos();
   else h = bodyBackup();
   host.innerHTML = h;
-  if(setTabId==='basic') syncTimeSum();
+  if(setTabId==='basic'){ syncTimeSum(); updateNotifyUI(); }
   if(setTabId==='backup'){
     const t = $('#backupCode');
     if(t) t.value = JSON.stringify(exportState(backupIncludeImages));
@@ -3186,6 +4231,51 @@ function iconPickHTML(key, list, path){
   return '<div class="icon-pick">'+list.map(v=>
     '<button type="button" class="'+(v===cur?'on':'')+'" data-pick="'+key+'" data-v="'+escapeAttr(v)+'" aria-label="'+escapeAttr(v)+'">'+v+'</button>'
   ).join('')+'</div>';
+}
+
+/* ---------- 알람 편집 블록 (루틴·일정·놀이 공통) ---------- */
+function leadLabel(v){
+  if(Number(v)===5) return L({ko:'알람 · 5분 전',en:'Alarm · 5 min before'});
+  if(Number(v)===10) return L({ko:'알람 · 10분 전',en:'Alarm · 10 min before'});
+  return L({ko:'알람 · 정각',en:'Alarm · on time'});
+}
+function alarmBoxHTML(prefix, i, a, kind, item){
+  const al = a || {};
+  const on = !!al.on;
+  const tKo = item.ko || item.en || '';
+  const tEn = item.en || item.ko || '';
+  let h = '<div class="alarm-box'+(on?' on':'')+'" data-alarm-box="'+prefix+'.'+i+'">'
+    + '<div class="ed-row-mini">'
+    +   '<span class="alarm-tag">🚨 '+L({ko:'알람',en:'Alarm'})+'</span>'
+    +   '<button type="button" class="switch sm'+(on?' on':'')+'" role="switch" aria-checked="'+on+'" data-sw="'+prefix+'.'+i+'.alarm.on" aria-label="'+L({ko:'알람 켜기',en:'Alarm on'})+'"></button>';
+  if(kind === 'e'){
+    h += '<select class="ed-input ed-select" style="flex:0 0 auto;width:auto;padding:7px 9px;font-size:12.5px" data-f="'+prefix+'.'+i+'.alarm.lead">'
+      + ALARM_LEADS.map(v=>'<option value="'+v+'"'+(Number(al.lead||0)===v?' selected':'')+'>'+leadLabel(v)+'</option>').join('')
+      + '</select>';
+  }else{
+    h += '<input type="time" class="ed-input ed-time" step="60" style="flex:0 0 auto;font-size:12.5px;padding:7px 9px" data-f="'+prefix+'.'+i+'.alarm.time" value="'+escapeAttr(al.time||'')+'" aria-label="'+L({ko:'알람 시각',en:'Alarm time'})+'">';
+  }
+  h += '</div>';
+  if(kind === 'e')
+    h += '<p class="alarm-when" data-alarm-when="'+i+'">'+L({ko:'울리는 시각 ',en:'Rings at '})+'<b>'+esc(alarmWhenDraft(i))+'</b></p>';
+  h += '<input class="ed-input" data-f="'+prefix+'.'+i+'.alarm.ko" value="'+escapeAttr(al.ko||'')+'" placeholder="'+escapeAttr(autoAlarmText(kind, tKo, 'ko'))+'" aria-label="'+L({ko:'카봇 출동 멘트 (한국어)',en:'Roll-out line (Korean)'})+'">'
+    + '<input class="ed-input" data-f="'+prefix+'.'+i+'.alarm.en" value="'+escapeAttr(al.en||'')+'" placeholder="'+escapeAttr(autoAlarmText(kind, tEn, 'en'))+'" aria-label="'+L({ko:'카봇 출동 멘트 (English)',en:'Roll-out line (English)'})+'" '
+    + '>'
+    + '</div>';
+  return h;
+}
+function alarmWhenDraft(i){
+  const e = draft && draft.events ? draft.events[i] : null;
+  if(!e) return '--:--';
+  const lead = Number(e.alarm && e.alarm.lead || 0);
+  return fmtTimeStr(minToHhmm(toMin(e.time) - lead));
+}
+function syncAlarmWhenLabels(){
+  if(!draft) return;
+  $$('#setBody [data-alarm-when]').forEach(el=>{
+    const b = el.querySelector('b');
+    if(b) b.textContent = alarmWhenDraft(Number(el.getAttribute('data-alarm-when')));
+  });
 }
 
 /* ---------- basic ---------- */
@@ -3215,13 +4305,23 @@ function bodyBasic(){
   +   '<div class="fs-title">'+L({ko:'화면과 소리',en:'Screen & sound'})+'</div>'
   +   switchRow(L({ko:'화면 꺼짐 방지',en:'Keep screen awake'}), L({ko:'아침 준비하는 동안 태블릿 화면이 꺼지지 않아요. (지원 기기에서만)',en:'The screen stays on during morning prep. (Where supported)'}), 'wakeLock', draft.wakeLock)
   +   switchRow(L({ko:'효과음',en:'Sound effects'}), L({ko:'딩동·소환·완료 소리를 브라우저에서 직접 만들어요.',en:'Dings, summons and stamps are made right in the browser.'}), 'sound', draft.sound)
+  + '</div>'
+  + '<div class="field-set">'
+  +   '<div class="fs-title">🚨 '+L({ko:'카봇 출동 알람',en:'Carbot roll-out alarms'})+'</div>'
+  +   switchRow(L({ko:'카봇 음성으로 읽어주기 (TTS)',en:'Read the line aloud (TTS)'}),
+       L({ko:'알람이 울릴 때 카봇 목소리로 멘트를 읽어 줘요. (한국어·영어)',en:'Reads the roll-out line in Korean or English.'}), 'tts', draft.tts)
+  +   '<div class="notify-row"><div class="st"><b>'+L({ko:'🔔 브라우저 알림',en:'🔔 Browser notification'})+'</b><span id="notifState"></span></div>'
+  +     '<button type="button" class="mini-btn go" id="btnNotifPerm">'+L({ko:'알림 권한 켜기',en:'Turn on notifications'})+'</button></div>'
+  +   '<button type="button" class="alarm-test-btn" id="btnAlarmTest"><span aria-hidden="true">🚨</span><span>'+L({ko:'알람 테스트',en:'Test the alarm'})+'</span></button>'
+  +   '<p class="fs-hint">'+L({ko:'테스트를 한 번 눌러 두면 휴대폰·태블릿에서 소리와 음성이 바로 나와요. (브라우저 오디오 잠금 해제)',en:'Press Test once so sound and voice play right away on phones and tablets — it unlocks browser audio.'})+'</p>'
+  +   '<p class="accent-note">'+L({ko:'⏰ 항목별 알람 시각·멘트는 루틴·일정·놀이 탭에서 정해요. 08:35 미리보기 중에는 울리지 않고, 효과음을 끄면 사이렌도 울리지 않아요.',en:'⏰ Set each alarm time and line in the Routine, Events and Play tabs. Alarms stay quiet in 08:35 preview, and the siren follows the sound switch.'})+'</p>'
   + '</div>';
 }
 
 /* ---------- events ---------- */
 function bodyEvents(){
   let h = '<div class="ed-head"><span class="fs-hint">'
-    + L({ko:'하루 일정이나 특별 이벤트를 추가해요. 시간·반복·아이콘을 고르면 대시보드에 오늘 것만 시간순으로 보여요.',en:'Add daily schedules or special events. With time, repeat and icon set, only today’s appear on the dashboard in order.'})
+    + L({ko:'하루 일정이나 특별 이벤트를 추가해요. 시간·반복·아이콘을 고르면 대시보드에 오늘 것만 시간순으로 보여요. 🚨 알람은 정각·5분 전·10분 전 중에 골라요.',en:'Add daily schedules or special events. With time, repeat and icon set, only today’s appear on the dashboard in order. Set each 🚨 alarm for on time, 5 or 10 minutes before.'})
     + '</span><button class="add-btn" data-add="event">＋ '+L({ko:'일정 추가',en:'Add event'})+'</button></div>';
   if(!draft.events.length)
     h += '<div class="empty-hint">'+L({ko:'아직 일정이 없어요. 위의 ‘일정 추가’를 눌러 보세요.',en:'No events yet. Press “Add event” above.'})+'</div>';
@@ -3260,18 +4360,18 @@ function eventEditor(e,i){
   if(t==='date')
     h += '<input type="date" class="ed-input" data-f="events.'+i+'.rep.date" value="'+escapeAttr(e.rep.date)+'">';
   h += '<div class="ed-row-mini">'
-    +   '<span class="mini-lbl">'+L({ko:'완료하면 카봇칩 +1',en:'+1 chip when done'})+'</span>'
-    +   '<button type="button" class="switch sm'+(e.reward?' on':'')+'" role="switch" aria-checked="'+!!e.reward+'" data-sw="events.'+i+'.reward" aria-label="chip"></button>'
-    +   '<span class="mini-lbl" style="margin-left:6px">'+L({ko:'대시보드에 보이기',en:'Show on dashboard'})+'</span>'
+    +   '<span class="mini-lbl">'+L({ko:'대시보드에 보이기',en:'Show on dashboard'})+'</span>'
     +   '<button type="button" class="switch sm'+(e.on?' on':'')+'" role="switch" aria-checked="'+!!e.on+'" data-sw="events.'+i+'.on" aria-label="show"></button>'
-    + '</div></div>';
+    + '</div>'
+    + alarmBoxHTML('events', i, e.alarm, 'e', e)
+    + '</div>';
   return h;
 }
 
 /* ---------- routines ---------- */
 function bodyRoutines(){
   let h = '<div class="ed-head"><span class="fs-hint">'
-    + L({ko:'카드를 누르면 완료되는 아침 단계예요. 순서·제목·그림을 바꾸고 새 단계를 더할 수 있어요.',en:'These are the steps the child taps to finish. Reorder, rename, change the art, or add a step.'})
+    + L({ko:'카드를 누르면 완료되는 단계예요. 순서·제목·그림을 바꾸고, 단계마다 🚨 출동 알람 시각과 멘트를 정할 수 있어요. 오늘 루틴을 전부 완료하면 카봇칩 +1!',en:'These are the steps the child taps to finish. Reorder, rename, change the art, and give each step its own 🚨 roll-out alarm time and line. Finish every routine today for +1 Carbot chip!'})
     + '</span><button class="add-btn" data-add="routine">＋ '+L({ko:'루틴 추가',en:'Add step'})+'</button></div>';
   if(!draft.routines.length)
     h += '<div class="empty-hint">'+L({ko:'루틴이 모두 지워졌어요. ‘루틴 추가’로 다시 만들어 주세요.',en:'All steps were removed. Add one above.'})+'</div>';
@@ -3304,12 +4404,13 @@ function routineEditor(r,i){
     h += '<select class="ed-input ed-select" data-f="routines.'+i+'.art.v">'+['1','2','3','4'].map(v=>
       '<option value="'+v+'"'+(v===art.v?' selected':'')+'>'+L({ko:'일러스트 ',en:'Illustration '})+v+'</option>').join('')+'</select>';
   else if(art.type==='carbot')
-    h += '<select class="ed-input ed-select" data-f="routines.'+i+'.art.v">'+CARBOTS.map(c=>
+    h += '<select class="ed-input ed-select" data-f="routines.'+i+'.art.v">'+CARBOTS.filter(c=>c.featured).map(c=>
       '<option value="'+c.id+'"'+(c.id===art.v?' selected':'')+'>'+L({ko:c.ko,en:c.en})+'</option>').join('')+'</select>';
   else
     h += '<button type="button" class="mini-btn" data-icon="r'+i+'">'+esc(art.v)+' '+L({ko:'이모지 고르기',en:'Pick emoji'})+'</button>';
   h += '</div>';
   if(uiPick==='r'+i && art.type==='emoji') h += iconPickHTML('r'+i, EMOJIS, 'routines.'+i+'.art.v');
+  h += alarmBoxHTML('routines', i, r.alarm, 'r', r);
   if(custom)
     h += '<p class="fs-hint">'+L({ko:'이 기기에 저장한 사진을 쓰고 있어요. 바꾸려면 카봇 사진 탭에서 선택하세요.',en:'Using a photo saved on this device. Change it in the Photos tab.'})+'</p>';
   return h + '</div>';
@@ -3318,7 +4419,7 @@ function routineEditor(r,i){
 /* ---------- plays ---------- */
 function bodyPlays(){
   let h = '<div class="ed-head"><span class="fs-hint">'
-    + L({ko:'오늘 해 볼 놀이·학습 목록이에요. 배지 글자·색·제목·설명을 바꿀 수 있어요.',en:'The play & learn list for today. Change the badge, colour, title and note.'})
+    + L({ko:'오늘 해 볼 놀이·학습 목록이에요. 배지 글자·색·제목·설명을 바꾸고, 🚨 알람 시각과 멘트도 정할 수 있어요.',en:'The play & learn list for today. Change the badge, colour, title and note, and give each one its own 🚨 alarm time and line.'})
     + '</span><button class="add-btn" data-add="play">＋ '+L({ko:'놀이 추가',en:'Add play'})+'</button></div>';
   if(!draft.plays.length)
     h += '<div class="empty-hint">'+L({ko:'놀이가 모두 지워졌어요. ‘놀이 추가’로 다시 만들어 주세요.',en:'All play items were removed. Add one above.'})+'</div>';
@@ -3347,6 +4448,7 @@ function playEditor(p,i){
     +   '<input class="ed-input" data-f="plays.'+i+'.ko2" value="'+escapeAttr(p.ko2)+'" placeholder="'+L({ko:'설명 (한국어)',en:'Note (Korean)'})+'">'
     +   '<input class="ed-input" data-f="plays.'+i+'.en2" value="'+escapeAttr(p.en2)+'" placeholder="'+L({ko:'설명 (English)',en:'Note (English)'})+'">'
     + '</div>'
+    + alarmBoxHTML('plays', i, p.alarm, 'p', p)
     + '</div>';
   return h;
 }
@@ -3403,8 +4505,8 @@ function photoGrid(target){
   const cur = images[target] || {};
   const items = target==='routine'
     ? state.routines.map(r=>({id:r.id, label:pick(r.ko, r.en), art:routineArtHTML(r)}))
-    : CARBOTS.map(c=>({id:c.id, label:L({ko:c.ko,en:c.en}), art:carbotSVG(c,120)}));
-  const title = target==='routine' ? L({ko:'루틴 카드',en:'Routine cards'}) : L({ko:'도감 12종 카봇',en:'Dex · 12 Carbots'});
+    : CARBOTS.filter(c=>c.featured).map(c=>({id:c.id, label:L({ko:c.ko,en:c.en}), art:carbotSVG(c,120)}));
+  const title = target==='routine' ? L({ko:'루틴 카드',en:'Routine cards'}) : L({ko:'도감 대표 카봇',en:'Featured dex Carbots'});
   return '<div class="fs-title" style="margin-top:8px">'+title+'</div>'
    + '<div class="img-grid">'+items.map(it=>{
       const has = !!cur[it.id];
@@ -3448,13 +4550,15 @@ function addNew(kind){
   if(!draft) return;
   if(kind==='event'){
     draft.events.push({id:uid('e'), time:'16:00', ko:'새 일정', en:'', icon:'📌', cat:'etc',
-      rep:{type:'daily', days:[1], date:''}, reward:true, on:true});
+      rep:{type:'daily', days:[1], date:''}, reward:true, on:true, alarm:{on:false, lead:0, time:'16:00', ko:'', en:''}});
     setTabId='events';
   }else if(kind==='routine'){
-    draft.routines.push({id:uid('r'), ko:'새 루틴', en:'', art:{type:'emoji', v:'⭐'}});
+    draft.routines.push({id:uid('r'), ko:'새 루틴', en:'', art:{type:'emoji', v:'⭐'},
+      alarm:{on:false, time:alarmTimeFor(draft.routines.length), ko:'', en:''}});
     setTabId='routines';
   }else if(kind==='play'){
-    draft.plays.push({id:uid('p'), ic:'✨', pi:draft.plays.length % PALETTE.length, ko:'새 놀이', en:'', ko2:'', en2:''});
+    draft.plays.push({id:uid('p'), ic:'✨', pi:draft.plays.length % PALETTE.length, ko:'새 놀이', en:'', ko2:'', en2:'',
+      alarm:{on:false, time:'09:00', ko:'', en:''}});
     setTabId='plays';
   }else if(kind==='affirm'){
     draft.affirms.push({ko:'새 문구', en:''});
@@ -3528,6 +4632,7 @@ function saveSettings(){
   state.leave = hhmm(draft.leave, state.leave);
   state.wakeLock = !!draft.wakeLock;
   state.sound = !!draft.sound;
+  state.tts = !!draft.tts;
   state.routines = sanitizeRoutines(draft.routines);
   state.plays = sanitizePlays(draft.plays);
   state.affirms = sanitizeAffirms(draft.affirms);
@@ -3546,9 +4651,9 @@ function saveSettings(){
 function exportState(withImages){
   const o = {
     v:2, app:'carbot-morning', at:new Date().toISOString(),
-    name:state.name, place:state.place, lang:state.lang, sound:state.sound, wake:state.wake, leave:state.leave,
+    name:state.name, place:state.place, lang:state.lang, sound:state.sound, tts:state.tts, wake:state.wake, leave:state.leave,
     wakeLock:state.wakeLock, dayKey:state.dayKey, done:state.done, play:state.play, ev:state.ev, prep:state.prep,
-    awarded:state.awarded, chips:state.chips, dex:state.dex, summons:state.summons, streak:state.streak, lastFull:state.lastFull,
+    awarded:state.awarded, chips:state.chips, chipDay:state.chipDay, dex:state.dex, summons:state.summons, streak:state.streak, lastFull:state.lastFull,
     supplies:state.supplies, routines:state.routines, plays:state.plays, affirms:state.affirms, events:state.events
   };
   if(withImages) o.images = images;
@@ -3643,6 +4748,7 @@ function bindSettings(){
     if(!f || !draft) return;
     setPath(draft, f, e.target.value);
     if(f==='wake' || f==='leave') syncTimeSum();
+    if(/\.alarm\.(time|lead)$/.test(f)) syncAlarmWhenLabels();
   });
 
   body.addEventListener('change', e=>{
@@ -3709,6 +4815,7 @@ function bindSettings(){
 
     const sw = b.getAttribute('data-sw');
     if(sw){
+      const box = b.closest('.alarm-box');
       if(sw==='backupImages'){
         backupIncludeImages = !backupIncludeImages;
         b.classList.toggle('on', backupIncludeImages);
@@ -3722,9 +4829,13 @@ function bindSettings(){
       setPath(draft, sw, !cur);
       b.classList.toggle('on', !cur);
       b.setAttribute('aria-checked', String(!cur));
+      if(box) box.classList.toggle('on', !cur);
       sfxClick();
       return;
     }
+
+    if(b.id==='btnNotifPerm'){ requestNotify(); return; }
+    if(b.id==='btnAlarmTest'){ sfxClick(); testAlarm(); return; }
 
     const tagAdd = b.getAttribute('data-tag-add');
     if(tagAdd!=null){ addTag(tagAdd); return; }
@@ -3974,9 +5085,38 @@ function wire(){
   $('#summonOverlay').addEventListener('click', e=>{
     if(e.target === $('#summonOverlay') && !summoning) closeSummon();
   });
+
+  /* carbot roll-out alarm overlay */
+  $('#alarmDone').addEventListener('click', ()=>{ alarmComplete(); });
+  $('#alarmLater').addEventListener('click', ()=>{ sfxClick(); closeAlarm(); });
+  $('#alarmOverlay').addEventListener('click', e=>{ if(e.target === $('#alarmOverlay')) closeAlarm(); });
+
+  /* dex filters · search · paging */
+  const dHost = $('#dexFilters');
+  if(dHost) dHost.addEventListener('click', e=>{
+    const b = e.target.closest('[data-dex-filter]');
+    if(!b) return;
+    dexFilter = b.getAttribute('data-dex-filter') || 'all';
+    dexLimit = 36;
+    renderDexFilters(); renderDex(); sfxClick();
+  });
+  if($('#dexSeries')) $('#dexSeries').addEventListener('change', e=>{
+    dexSeries = e.target.value || '';
+    dexLimit = 36; renderDex(); sfxClick();
+  });
+  if($('#dexSearch')) $('#dexSearch').addEventListener('input', e=>{
+    dexQuery = e.target.value || '';
+    dexLimit = 36;
+    clearTimeout(dexSearchTimer); dexSearchTimer = setTimeout(renderDex, 170);
+  });
+  if($('#dexMore')) $('#dexMore').addEventListener('click', ()=>{
+    dexLimit += 36; renderDex(); sfxClick();
+  });
+
   document.addEventListener('keydown', e=>{
     if(e.key!=='Escape') return;
-    if(!$('#summonOverlay').hidden) closeSummon();
+    if(!$('#alarmOverlay').hidden) closeAlarm();
+    else if(!$('#summonOverlay').hidden) closeSummon();
     else if(!$('#settingsModal').hidden) closeSettings();
   });
 
@@ -4003,6 +5143,7 @@ function wire(){
 function tick(){
   if(ensureDay()){ renderAll(); }
   renderClock();
+  checkAlarms();
 }
 function brandMark(){
   return '<svg viewBox="0 0 64 64" aria-hidden="true">'
@@ -4045,8 +5186,14 @@ function boot(){
   $('#clockMascot').innerHTML = carbotSVG(CARBOTS[0], 34);
   loadImages();
   loadState();
+  /* 기본 데이터에도 항목별 알람 필드를 채운다(기존 v1/v2 기록도 안전하게 병합) */
+  state.routines = sanitizeRoutines(state.routines);
+  state.plays = sanitizePlays(state.plays);
   ensureDay();
+  adoptChipDay();
+  loadFired();
   applyStatic();
+  renderDexFilters();
   $$('.tab').forEach(t=> t.setAttribute('aria-selected', String(t.dataset.tab==='dash')));
   wire();
   renderAll();
@@ -4055,6 +5202,8 @@ function boot(){
   loadWeather(false);
   setInterval(()=>loadWeather(false), 10*60*1000);
   if(state.wakeLock) applyWakeLock(true);
+  /* 읽기 전용 요약 — 화면에는 쓰이지 않고, 점검·테스트에만 쓴다 */
+  window.__carbot = {count:CARBOTS.length, ids:CARBOTS.map(c=>c.id), state:state, version:2};
 }
 function sfxNoop(){ /* keeps audio context creation inside user gesture when possible */ }
 
