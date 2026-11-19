@@ -1702,7 +1702,7 @@ function sanitizeRoutines(arr){
     if(seen[id]) id = uid('r');
     seen[id]=1;
     const ko = txt(r.ko, '루틴 '+(i+1), 24);
-    return {id:id, ko:ko, en:txt(r.en, ko, 40), art:sanitizeArt(r.art)};
+    return {id:id, ko:ko, en:txt(r.en, '', 40), art:sanitizeArt(r.art)};
   });
 }
 function sanitizePlays(arr){
@@ -1714,7 +1714,7 @@ function sanitizePlays(arr){
     seen[id]=1;
     const ko = txt(p.ko, '놀이 '+(i+1), 40);
     const pi = Number.isInteger(p.pi) ? clamp(p.pi,0,PALETTE.length-1) : (i%PALETTE.length);
-    return {id:id, ic:txt(p.ic,'✨',4), pi:pi, ko:ko, en:txt(p.en, ko, 60),
+    return {id:id, ic:txt(p.ic,'✨',4), pi:pi, ko:ko, en:txt(p.en, '', 60),
             ko2:txt(p.ko2,'',50), en2:txt(p.en2,'',70)};
   });
 }
@@ -1740,7 +1740,7 @@ function sanitizeEvents(arr){
     const ko = txt(e.ko, '새 일정', 30);
     return {
       id:id, time:hhmm(e.time,'16:00'),
-      ko:ko, en:txt(e.en, ko, 40),
+      ko:ko, en:txt(e.en, '', 40),
       icon:txt(e.icon,'📌',4), cat:txt(e.cat,'etc',10),
       rep:{type:type, days:days.length?days:[1], date:date},
       reward:e.reward!==false, on:e.on!==false
@@ -1754,6 +1754,8 @@ function save(){
 }
 
 function L(o){ return state.lang==='ko' ? o.ko : o.en; }
+/* user data: fall back to the other language instead of showing a blank */
+function pick(ko, en){ return state.lang==='ko' ? (ko || en || '') : (en || ko || ''); }
 
 /* day rollover: reset only today's routine / play / prep / event checks */
 function ensureDay(){
@@ -2600,8 +2602,8 @@ function renderRoutines(){
       +   '<span class="r-stamp">'+L({ko:'완료!',en:'DONE!'})+'</span>'
       + '</div>'
       + '<div class="r-body">'
-      +   '<h3 class="r-title">'+esc(L({ko:r.ko,en:r.en}))+'</h3>'
-      +   '<p class="r-sub">'+esc(state.lang==='ko' ? r.en : r.ko)+'</p>'
+      +   '<h3 class="r-title">'+esc(pick(r.ko, r.en))+'</h3>'
+      +   '<p class="r-sub">'+esc(pick(r.en, r.ko))+'</p>'
       +   '<div class="r-foot"><span class="r-reward">🧊 +1</span><span class="r-done">✓</span></div>'
       + '</div></article>';
   }).join('');
@@ -2669,8 +2671,8 @@ function renderPlays(){
     const done = !!state.play[p.id];
     return '<div class="'+(big?'play-card':'prow')+(done?' sel':'')+'" data-id="'+esc(p.id)+'" role="button" tabindex="0" aria-pressed="'+done+'">'
       + '<span class="p-ic" style="background:'+palG(p.pi)+'">'+esc(p.ic)+'</span>'
-      + '<div class="p-txt"><div class="p-title">'+esc(L({ko:p.ko,en:p.en}))+'</div>'
-      + '<div class="p-sub">'+esc(L({ko:p.ko2,en:p.en2}))+'</div></div>'
+      + '<div class="p-txt"><div class="p-title">'+esc(pick(p.ko, p.en))+'</div>'
+      + '<div class="p-sub">'+esc(pick(p.ko2, p.en2))+'</div></div>'
       + '<span class="p-box">✓</span></div>';
   };
   const today = $('#todayPlay');
@@ -2793,7 +2795,7 @@ function nextHTML(list){
           ? (diff===1?'내일':WEEK_KO[d.getDay()]+'요일')
           : (diff===1?'Tomorrow':WEEK_EN_LONG[d.getDay()]);
         return '<div class="ev-nx"><span class="d">'+esc(dayLbl)+'</span><span class="t">'+esc(fmtTimeStr(x.e.time))+'</span>'
-          + '<span>'+esc(x.e.icon)+'</span><b>'+esc(L({ko:x.e.ko,en:x.e.en}))+'</b></div>';
+          + '<span>'+esc(x.e.icon)+'</span><b>'+esc(pick(x.e.ko, x.e.en))+'</b></div>';
       }).join('')
     + '</div>';
 }
@@ -2820,7 +2822,7 @@ function renderEvents(){
     return '<div class="ev'+(done?' sel':'')+'" data-ev="'+esc(e.id)+'" role="button" tabindex="0" aria-pressed="'+done+'">'
       + '<span class="ev-time">'+esc(fmtTimeStr(e.time))+'</span>'
       + '<span class="ev-ic" aria-hidden="true">'+esc(e.icon)+'</span>'
-      + '<div class="ev-t"><div class="ev-title">'+esc(L({ko:e.ko,en:e.en}))+'</div>'
+      + '<div class="ev-t"><div class="ev-title">'+esc(pick(e.ko, e.en))+'</div>'
       +   '<div class="ev-sub">'+esc(catLabel(e.cat))+' · '+esc(repLabel(e))+'</div></div>'
       + (e.reward!==false ? '<span class="ev-reward">🧊+1</span>' : '')
       + '<span class="ev-box" aria-hidden="true">✓</span></div>';
@@ -3400,7 +3402,7 @@ function bodyPhotos(){
 function photoGrid(target){
   const cur = images[target] || {};
   const items = target==='routine'
-    ? state.routines.map(r=>({id:r.id, label:L({ko:r.ko,en:r.en}), art:routineArtHTML(r)}))
+    ? state.routines.map(r=>({id:r.id, label:pick(r.ko, r.en), art:routineArtHTML(r)}))
     : CARBOTS.map(c=>({id:c.id, label:L({ko:c.ko,en:c.en}), art:carbotSVG(c,120)}));
   const title = target==='routine' ? L({ko:'루틴 카드',en:'Routine cards'}) : L({ko:'도감 12종 카봇',en:'Dex · 12 Carbots'});
   return '<div class="fs-title" style="margin-top:8px">'+title+'</div>'
@@ -3445,17 +3447,17 @@ function updateBackupSize(){
 function addNew(kind){
   if(!draft) return;
   if(kind==='event'){
-    draft.events.push({id:uid('e'), time:'16:00', ko:'새 일정', en:'New event', icon:'📌', cat:'etc',
+    draft.events.push({id:uid('e'), time:'16:00', ko:'새 일정', en:'', icon:'📌', cat:'etc',
       rep:{type:'daily', days:[1], date:''}, reward:true, on:true});
     setTabId='events';
   }else if(kind==='routine'){
-    draft.routines.push({id:uid('r'), ko:'새 루틴', en:'New step', art:{type:'emoji', v:'⭐'}});
+    draft.routines.push({id:uid('r'), ko:'새 루틴', en:'', art:{type:'emoji', v:'⭐'}});
     setTabId='routines';
   }else if(kind==='play'){
-    draft.plays.push({id:uid('p'), ic:'✨', pi:draft.plays.length % PALETTE.length, ko:'새 놀이', en:'New play', ko2:'', en2:''});
+    draft.plays.push({id:uid('p'), ic:'✨', pi:draft.plays.length % PALETTE.length, ko:'새 놀이', en:'', ko2:'', en2:''});
     setTabId='plays';
   }else if(kind==='affirm'){
-    draft.affirms.push({ko:'새 문구', en:'New line'});
+    draft.affirms.push({ko:'새 문구', en:''});
     setTabId='affirms';
   }
   uiPick = null;
