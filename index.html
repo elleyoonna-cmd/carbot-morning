@@ -5303,6 +5303,7 @@ function summon(){
 }
 
 let summonTimers = [];
+let summonCloseSeq = 0;
 function summonTimeout(fn, ms){
   const id = setTimeout(()=>{ summonTimers = summonTimers.filter(x=> x!==id); fn(); }, ms);
   summonTimers.push(id);
@@ -5332,6 +5333,7 @@ function revealSummon(c, kind, isNew){
   summoning = true;
   currentSummon = c;
   clearSummonTimers();
+  summonCloseSeq++;   /* 닫힘 타이머가 새 소환을 가리지 않게 */
 
   const ov = $('#summonOverlay');
   ov.hidden = false;
@@ -5425,10 +5427,15 @@ function revealSummon(c, kind, isNew){
 function closeSummon(){
   clearSummonTimers();
   summoning = false;
+  const seq = ++summonCloseSeq;
   const ov = $('#summonOverlay');
   const chip = ov.querySelector('.ov-chip'); if(chip) chip.remove();
   ov.classList.remove('show','big');
-  setTimeout(()=>{ ov.hidden = true; ov.classList.remove('lit','tunnel-on','flash','revealed','special','big'); }, 260);
+  setTimeout(()=>{
+    if(seq !== summonCloseSeq) return;   /* 그 사이 새 소환이 열렸으면 그대로 둠 */
+    ov.hidden = true;
+    ov.classList.remove('lit','tunnel-on','flash','revealed','special','big');
+  }, 260);
   if($('#ovWatch')) $('#ovWatch').innerHTML = watchSVG();
   renderWatch(); renderRewards();
 }
