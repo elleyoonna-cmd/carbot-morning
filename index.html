@@ -152,6 +152,22 @@ html[lang="en"] .brand-title{white-space:normal}
 .btn.sq{width:46px; padding:10px}
 .btn.sq .bi{font-size:17px}
 
+/* ============ live sync badge ============ */
+.btn.sync{font-size:12.5px; padding:10px 11px; gap:6px}
+.btn.sync .bl{font-weight:900; letter-spacing:-.01em}
+.btn.sync.on{background:linear-gradient(180deg,#e8fbf1,#d3f6e4); color:#0b7a4d; box-shadow:inset 0 0 0 1px rgba(46,201,138,.42)}
+.btn.sync.off{background:linear-gradient(180deg,#fff6e7,#ffe9c4); color:#8a5200; box-shadow:inset 0 0 0 1px rgba(240,168,0,.42)}
+.btn.sync.wait{background:linear-gradient(180deg,#f2f6ff,#e6eefd); color:#3b5a92}
+.btn.sync.idle{color:#8494ad}
+.sync-box{display:flex; flex-direction:column; gap:9px; padding:12px 13px; border-radius:16px;
+  background:linear-gradient(180deg,#f7fbff,#eef6ff); box-shadow:inset 0 0 0 1px rgba(47,108,230,.18)}
+.sync-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.sync-row .btn{min-height:38px; padding:8px 12px; font-size:12.5px}
+.sync-room{flex:1 1 170px; min-width:0; padding:10px 12px; border-radius:12px; border:1.5px solid var(--line2);
+  background:#fff; font-size:13px; font-weight:850; letter-spacing:.01em; font-variant-numeric:tabular-nums}
+.sync-room:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(47,108,230,.12)}
+.sync-state{font-size:12.5px; font-weight:850; color:var(--ink2); line-height:1.4}
+
 /* ============ cards ============ */
 .card{
   position:relative; background:var(--card); border-radius:var(--r-lg);
@@ -1251,6 +1267,9 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
       </button>
       <button class="btn sq" id="btnFull" aria-label="전체화면" title="전체화면">
         <span class="bi" aria-hidden="true">⛶</span>
+      </button>
+      <button class="btn sync idle" id="btnSync" aria-label="실시간 연동 상태" title="실시간 연동">
+        <span class="bi" id="syncIcon" aria-hidden="true">⚪</span><span class="bl" id="syncLabel">로컬만</span>
       </button>
       <button class="btn sq" id="btnSettings" aria-label="설정" title="설정">
         <span class="bi" aria-hidden="true">⚙️</span>
@@ -2777,7 +2796,7 @@ function alarmChipHTML(hhmmStr, offMin){
 
 function defaults(){
   return {
-    v:2, lang:'ko', sound:true, tts:true, wake:'08:20', leave:'08:55', wakeLock:false, preview:false,
+    v:2, lang:'ko', sound:true, tts:true, wake:'08:20', leave:'08:55', wakeLock:false, preview:false, updatedAt:0,
     name:{ko:'건우', en:'Connor'}, place:{ko:'용호동', en:'Yongho-dong'},
     dayKey:'', done:{}, play:{}, ev:{}, prep:{}, awarded:{r:[],p:[],e:[]},
     chips:0, chipDay:'', dex:{}, summons:0, streak:0, lastFull:'',
@@ -2824,6 +2843,7 @@ function loadState(){
     const raw = localStorage.getItem(KEY) || localStorage.getItem(OLD_KEY);
     if(!raw) return;
     sanitize(JSON.parse(raw));
+    syncHasLocal = true;   /* 이 기기에 기록이 이미 있으면 클라우드와 비교해 판단한다 */
   }catch(e){ /* corrupted storage: keep defaults */ }
 }
 
@@ -2837,6 +2857,7 @@ function sanitize(o){
   state.leave = hhmm(o.leave, state.leave);
   if(o.name && typeof o.name==='object') state.name={ko:txt(o.name.ko,'건우',20), en:txt(o.name.en,'Connor',20)};
   if(o.place && typeof o.place==='object') state.place={ko:txt(o.place.ko,'용호동',20), en:txt(o.place.en,'Yongho-dong',20)};
+  if(Number.isFinite(o.updatedAt)) state.updatedAt = Math.max(0, Math.floor(o.updatedAt));
   if(typeof o.dayKey==='string') state.dayKey=o.dayKey;
   if(o.done && typeof o.done==='object') state.done=o.done;
   if(o.play && typeof o.play==='object') state.play=o.play;
@@ -2987,8 +3008,10 @@ function sanitizeEvents(arr){
 }
 let saveTimer=null;
 function save(){
+  if(!syncApplying) state.updatedAt = Date.now();   /* 이 기기에서 바뀐 시각 (클라우드 동기화 기준) */
   clearTimeout(saveTimer);
   saveTimer = setTimeout(()=>{ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }, 120);
+  syncSchedulePush();
 }
 
 function L(o){ return state.lang==='ko' ? o.ko : o.en; }
@@ -5441,6 +5464,239 @@ function closeSummon(){
 }
 
 /* =====================================================================
+   12z. cloud sync — Firebase Realtime Database (기기 자동 실시간 연동)
+   · 열기만 하면 기본 가족 방에 자동 연결 (?room=... 또는 설정에서 변경)
+   · 바뀔 때마다 올리고(updatedAt), 다른 기기 기록이 더 새로우면 그대로 받아 화면을 다시 그린다
+   · 인터넷·SDK가 없으면 localStorage만으로 그대로 동작(🟠 오프라인), 되면 자동 재연결
+   ===================================================================== */
+const SYNC_DEFAULT_ROOM = 'connor-family-main';
+const SYNC_ROOM_KEY = 'carbot-morning-room';
+const SYNC_DEV_KEY = 'carbot-morning-device';
+const SYNC_SDK_BASE = 'https://www.gstatic.com/firebasejs/10.12.2/';
+const SYNC_FB = {
+  apiKey: 'AIzaSyD5kFkKzuifItRsbsBYigSiI1cDMJmMsF8',
+  authDomain: 'carbot-morning.firebaseapp.com',
+  databaseURL: 'https://carbot-morning-default-rtdb.asia-southeast1.firebasedatabase.app',
+  projectId: 'carbot-morning',
+  storageBucket: 'carbot-morning.firebasestorage.app',
+  messagingSenderId: '875948846755',
+  appId: '1:875948846755:web:f051b8e0442398fa601916'
+};
+/* 기기별 화면 설정(lang·wakeLock·preview·timer)은 기기에 두고, 나머지 기록은 모두 공유한다 */
+const SYNC_KEYS = ['name','place','wake','leave','sound','tts','dayKey','done','play','ev','prep','awarded',
+  'chips','chipDay','dex','summons','streak','lastFull','energyCores','specialTickets','specialSummons',
+  'playMastery','playAward','supplies','routines','plays','affirms','events'];
+
+let syncRoom = '', syncDevice = '', syncMode = 'none', syncStatus = 'local';
+let syncRef = null, syncApplying = false, syncPrimed = false, syncHasLocal = false;
+let syncPushT = null, syncPollT = null, syncRetryT = null, syncDb = null;
+
+function syncRoomSafe(v){
+  const s = String(v==null?'':v).trim().replace(/[^A-Za-z0-9_-]/g, '-').slice(0,48);
+  return /^[A-Za-z0-9_-]{3,48}$/.test(s) ? s : '';
+}
+function syncLoadRoom(){
+  let r = '';
+  try{ r = syncRoomSafe(new URLSearchParams(location.search).get('room')); }catch(e){}
+  if(!r){ try{ r = syncRoomSafe(localStorage.getItem(SYNC_ROOM_KEY)); }catch(e){} }
+  return r || SYNC_DEFAULT_ROOM;
+}
+function syncDeviceId(){
+  try{
+    let d = localStorage.getItem(SYNC_DEV_KEY);
+    if(!d || !/^dev-[A-Za-z0-9]{4,20}$/.test(d)){
+      d = 'dev-' + Math.random().toString(36).slice(2, 10);
+      localStorage.setItem(SYNC_DEV_KEY, d);
+    }
+    return d;
+  }catch(e){ return 'dev-temp'; }
+}
+function syncPayload(){
+  const data = {};
+  SYNC_KEYS.forEach(k=>{ if(state[k] !== undefined) data[k] = state[k]; });
+  return { updatedAt: state.updatedAt || 0, by: syncDevice, at: Date.now(), data: data };
+}
+function syncLabel(){
+  const s = syncStatus;
+  return s==='online' ? L({ko:'실시간 연동',en:'Live sync'})
+       : s==='connecting' ? L({ko:'연결 중',en:'Connecting'})
+       : s==='offline' ? L({ko:'오프라인',en:'Offline'})
+       : L({ko:'로컬만',en:'Local only'});
+}
+function syncIcon(){
+  return syncStatus==='online' ? '🟢' : syncStatus==='connecting' ? '🟡' : syncStatus==='offline' ? '🟠' : '⚪';
+}
+function syncSetStatus(s){
+  syncStatus = s;
+  const btn = $('#btnSync'), ic = $('#syncIcon'), lbl = $('#syncLabel');
+  if(btn){
+    btn.className = 'btn sync ' + (s==='online'?'on':s==='offline'?'off':s==='connecting'?'wait':'idle');
+    btn.setAttribute('title', syncIcon()+' '+syncLabel()+' · '+syncRoom);
+    btn.setAttribute('aria-label', syncIcon()+' '+syncLabel());
+  }
+  if(ic) ic.textContent = syncIcon();
+  if(lbl) lbl.textContent = syncLabel();
+  const st = $('#syncStateText');
+  if(st){
+    const t = s==='online' ? L({ko:'🟢 실시간 연동 중 — 이 방의 모든 기기가 새로고침 없이 함께 바뀌어요.',en:'🟢 Live — every device in this room updates without a refresh.'})
+      : s==='connecting' ? L({ko:'🟡 연결 중이에요. 잠시만 기다려 주세요.',en:'🟡 Connecting. One moment.'})
+      : s==='offline' ? L({ko:'🟠 오프라인 — 이 기기 기록은 그대로 남고, 인터넷이 되면 자동으로 다시 맞춰요.',en:'🟠 Offline — this device keeps its own record and re-syncs when the internet returns.'})
+      : L({ko:'⚪ 로컬만 — 이 주소에서는 클라우드 연동을 쓰지 않아요(배포 주소에서 열면 자동 연결).',en:'⚪ Local only — cloud sync is off on this address (it connects on the published site).'});
+    st.textContent = t;
+  }
+}
+function syncApplyRemote(remote, force){
+  if(!remote || typeof remote !== 'object') return false;
+  const at = Number(remote.updatedAt) || 0;
+  if(!force && !(at > (state.updatedAt || 0))) return false;
+  const data = (remote.data && typeof remote.data === 'object') ? remote.data : null;
+  if(!data) return false;
+  const wasLang = state.lang, wasTimer = state.timer, wasWake = state.wakeLock, wasPreview = state.preview;
+  syncApplying = true;
+  let ok = false;
+  try{
+    ok = sanitize(data) !== false;
+    if(ok){
+      state.updatedAt = at;
+      syncHasLocal = true;
+      state.lang = wasLang; state.timer = wasTimer; state.wakeLock = wasWake; state.preview = wasPreview;
+      try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+      applyStatic(); renderAll();
+    }
+  }catch(e){ ok = false; }
+  syncApplying = false;
+  return ok;
+}
+function syncOnRemote(val){
+  const remote = (val && typeof val === 'object') ? val : null;
+  if(syncStatus !== 'online') syncSetStatus('online');
+  if(!syncPrimed){
+    syncPrimed = true;
+    const rat = remote ? (Number(remote.updatedAt) || 0) : 0;
+    if(!remote || !rat || !remote.data){ syncPushNow(); return; }        /* 빈 방 → 이 기기 기록을 올린다 */
+    if(!syncHasLocal){ syncApplyRemote(remote, true); return; }          /* 새 기기 → 클라우드 기록을 먼저 받는다 */
+    if(rat > (state.updatedAt || 0)){ syncApplyRemote(remote); return; } /* 클라우드가 더 새로움 → 받는다 */
+    syncPushNow();                                                       /* 이 기기가 더 새로움 → 올린다 */
+    return;
+  }
+  if(remote && (Number(remote.updatedAt) || 0) > (state.updatedAt || 0)) syncApplyRemote(remote);
+}
+function syncSchedulePush(){
+  if(!syncPrimed || syncApplying || !syncRoom) return;
+  clearTimeout(syncPushT);
+  syncPushT = setTimeout(syncPushNow, 450);
+}
+function syncPushNow(){
+  if(!syncRoom) return;
+  const payload = syncPayload();
+  const done = (ok)=>{
+    if(ok){ if(syncStatus !== 'online') syncSetStatus('online'); }
+    else { syncSetStatus('offline'); if(syncMode === 'sdk') syncStartREST(); }
+  };
+  if(syncMode === 'sdk' && syncRef && window.firebase && window.firebase.database){
+    try{ syncRef.set(payload).then(()=>done(true)).catch(()=>done(false)); }catch(e){ done(false); }
+    return;
+  }
+  if(syncMode === 'rest'){
+    syncRestPut(payload).then(()=>done(true)).catch(()=>done(false));
+  }
+}
+function syncRestURL(){
+  return SYNC_FB.databaseURL + '/rooms/' + encodeURIComponent(syncRoom) + '.json';
+}
+async function syncRestGet(){
+  const r = await fetch(syncRestURL(), {cache:'no-store'});
+  if(!r.ok) throw new Error('http '+r.status);
+  const t = await r.text();
+  return t && t.trim() ? JSON.parse(t) : null;
+}
+async function syncRestPut(payload){
+  const r = await fetch(syncRestURL(), {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+  if(!r.ok) throw new Error('http '+r.status);
+  return true;
+}
+async function syncPollOnce(){
+  if(!syncRoom) return;
+  try{ const v = await syncRestGet(); syncOnRemote(v); }
+  catch(e){ if(syncStatus !== 'offline') syncSetStatus('offline'); }
+}
+function syncStartREST(){
+  if(!syncRoom) return;
+  syncMode = 'rest';
+  if(syncStatus === 'online') syncSetStatus('connecting');
+  clearInterval(syncPollT);
+  syncPollOnce();
+  syncPollT = setInterval(syncPollOnce, 7000);
+}
+function syncLoadScript(src){
+  return new Promise((resolve, reject)=>{
+    const el = document.createElement('script');
+    el.src = src; el.async = true;
+    const t = setTimeout(()=>{ reject(new Error('timeout')); }, 9000);
+    el.onload = ()=>{ clearTimeout(t); resolve(true); };
+    el.onerror = ()=>{ clearTimeout(t); reject(new Error('load')); };
+    document.head.appendChild(el);
+  });
+}
+async function syncStartSDK(){
+  if(!window.firebase) await syncLoadScript(SYNC_SDK_BASE + 'firebase-app-compat.js');
+  if(!(window.firebase && window.firebase.database)) await syncLoadScript(SYNC_SDK_BASE + 'firebase-database-compat.js');
+  if(!(window.firebase && window.firebase.initializeApp && window.firebase.database)) throw new Error('no sdk');
+  let app;
+  try{ app = window.firebase.app('carbot-morning'); }
+  catch(e){ app = window.firebase.initializeApp(SYNC_FB, 'carbot-morning'); }
+  syncDb = window.firebase.database(app);
+  syncMode = 'sdk';
+  syncRef = syncDb.ref('rooms/' + syncRoom);
+  try{
+    syncDb.ref('.info/connected').on('value', ss=>{
+      if(ss && ss.val() === false && syncPrimed) syncSetStatus('offline');
+    });
+  }catch(e){}
+  syncRef.on('value', snap=> syncOnRemote(snap.val()), ()=>{ syncSetStatus('offline'); syncStartREST(); });
+}
+function syncStop(){
+  clearTimeout(syncPushT); clearInterval(syncPollT); clearTimeout(syncRetryT);
+  try{ if(syncRef) syncRef.off(); }catch(e){}
+  syncRef = null; syncMode = 'none'; syncPrimed = false;
+}
+function syncConnect(){
+  syncStop();
+  if(!syncRoom){ syncSetStatus('local'); return; }
+  syncSetStatus('connecting');
+  syncStartSDK().catch(()=> syncStartREST());
+}
+function syncSetRoom(id, opts){
+  const r = syncRoomSafe(id);
+  if(!r){
+    toast(L({ko:'방 이름은 영문·숫자·- _ 로 3자 이상이어야 해요',en:'Room name needs 3+ letters, numbers, - or _'}), '⚠️');
+    return false;
+  }
+  const changed = r !== syncRoom;
+  syncRoom = r;
+  try{ localStorage.setItem(SYNC_ROOM_KEY, r); }catch(e){}
+  if(changed){
+    syncConnect();
+    toast(L({ko:'연결 방: '+r,en:'Room: '+r}), '🔗');
+  }
+  if(opts && opts.upload){
+    syncPrimed = true;
+    syncPushNow();
+    toast(L({ko:'이 기기 기록을 클라우드에 올렸어요',en:'Uploaded this device’s data'}), '⬆️');
+  }
+  return true;
+}
+function syncInit(){
+  syncDevice = syncDeviceId();
+  const localOnly = !(location.protocol === 'http:' || location.protocol === 'https:');
+  if(localOnly){ syncRoom = syncLoadRoom(); syncSetStatus('local'); return; }
+  syncRoom = syncLoadRoom();
+  syncConnect();
+  window.addEventListener('online', ()=>{ if(syncStatus === 'offline') syncConnect(); });
+  window.addEventListener('offline', ()=> syncSetStatus('offline'));
+}
+
+/* =====================================================================
    13. counts
    ===================================================================== */
 function updateCounts(){
@@ -5522,6 +5778,7 @@ function applyStatic(){
   $('#btnFull').setAttribute('aria-label', L({ko:'전체화면',en:'Full screen'}));
   $('#btnSettings').setAttribute('aria-label', L({ko:'설정',en:'Settings'}));
   $('#wxRefresh').setAttribute('aria-label', L({ko:'날씨 새로고침',en:'Refresh weather'}));
+  if($('#syncLabel')) syncSetStatus(syncStatus);
   if($('#tmBot')) renderTimer();
   $$('select, input, textarea').forEach(el=>{});
 }
@@ -6559,8 +6816,30 @@ function photoGrid(target){
 }
 
 /* ---------- backup ---------- */
-function bodyBackup(){
+function bodySyncSection(){
+  const room = syncRoom || syncLoadRoom();
+  const localOnly = !(location.protocol === 'http:' || location.protocol === 'https:');
   return '<div class="field-set">'
+   + '<div class="fs-title">🔗 '+L({ko:'기기 실시간 연동',en:'Live device sync'})+'</div>'
+   + '<p class="fs-hint">'+L({ko:'태블릿·엄마 폰·아빠 폰이 같은 방에 자동으로 연결돼요. 설정과 아이 기록이 바뀌면 새로고침 없이 다른 기기에도 바로 나타나요.',en:'The tablet and both phones join the same room automatically. Settings and progress show up on the other devices without a refresh.'})+'</p>'
+   + '<div class="sync-box">'
+   +   '<div class="sync-state" id="syncStateText">'+syncIcon()+' '+esc(syncLabel())+'</div>'
+   +   '<div class="sync-row">'
+   +     '<input class="sync-room" id="syncRoomInput" value="'+escapeAttr(room)+'" spellcheck="false" aria-label="'+L({ko:'연결 방 이름',en:'Room name'})+'"'+(localOnly?' readonly':'')+'>'
+   +     '<button type="button" class="btn" id="btnSyncApply">'+L({ko:'이 방으로 연결',en:'Connect'})+'</button>'
+   +   '</div>'
+   +   '<div class="sync-row">'
+   +     '<button type="button" class="btn" id="btnSyncNow">⬆ '+L({ko:'지금 올리기',en:'Push now'})+'</button>'
+   +     '<button type="button" class="btn" id="btnSyncCopy">📎 '+L({ko:'방 이름 복사',en:'Copy room'})+'</button>'
+   +   '</div>'
+   +   '<p class="fs-hint" style="margin:0">'+L({ko:'방 이름을 아는 사람은 이 기록을 볼 수 있어요. 가족만 아는 이름을 쓰세요. 방을 바꾸면 모든 기기를 같은 이름으로 맞춰 주세요.',en:'Anyone who knows the room name can see this data — keep it family-only. If you change it, set the same name on every device.'})+'</p>'
+   + '</div>'
+   + (localOnly ? '<p class="fs-hint">'+L({ko:'지금은 파일로 열린 화면이라 클라우드 연동을 쓰지 않아요. 배포 주소(https://elleyoonna-cmd.github.io/carbot-morning/)에서 열면 자동으로 연결돼요.',en:'This page is opened as a file, so cloud sync stays off. Open the published address to connect automatically.'})+'</p>' : '')
+   + '</div>';
+}
+function bodyBackup(){
+  return bodySyncSection()
+   + '<div class="field-set">'
    + '<div class="fs-title">'+L({ko:'백업 · 불러오기',en:'Backup & restore'})+'</div>'
    + '<p class="fs-hint">'+L({ko:'이름·루틴·놀이·일정·이벤트·준비물·확언·도감 기록이 모두 담겨요. 코드를 복사해 다른 기기에 붙여넣고 ‘불러오기’를 누르면 그대로 옮겨져요.',en:'Name, routines, play, events, supplies, affirmations and the dex are all inside. Copy the code, paste it on another device, then press Restore.'})+'</p>'
    + switchRow(L({ko:'카봇 사진도 함께 담기',en:'Include my photos'}),
@@ -6945,6 +7224,26 @@ function bindSettings(){
       return;
     }
 
+    if(b.id==='btnSyncApply'){
+      const inp = $('#syncRoomInput');
+      const v = inp ? inp.value : syncRoom;
+      if(syncSetRoom(v)){ sfxDing(); if($('#syncStateText')) syncSetStatus(syncStatus); }
+      return;
+    }
+    if(b.id==='btnSyncNow'){
+      if(!syncPrimed) syncPrimed = true;
+      syncPushNow();
+      toast(L({ko:'이 기기 기록을 클라우드에 올렸어요',en:'Pushed this device’s data'}), '⬆️');
+      sfxClick(); return;
+    }
+    if(b.id==='btnSyncCopy'){
+      const room = syncRoom || syncLoadRoom();
+      try{
+        navigator.clipboard.writeText(room).then(()=> toast(L({ko:'방 이름 복사: '+room,en:'Room copied: '+room}), '📎'))
+          .catch(()=> toast(room, '📎'));
+      }catch(e){ toast(room, '📎'); }
+      return;
+    }
     if(b.id==='btnCopyBackup'){
       const t = $('#backupCode');
       if(!t) return;
@@ -7079,6 +7378,7 @@ function wire(){
   });
   $('#btnFull').addEventListener('click', ()=>{ toggleFullscreen(); sfxClick(); });
   $('#btnSettings').addEventListener('click', ()=>{ openSettings(); sfxClick(); });
+  if($('#btnSync')) $('#btnSync').addEventListener('click', ()=>{ syncSetStatus(syncStatus); openSettings('backup'); sfxClick(); });
 
   /* ---------- carbot timer ---------- */
   const tmPanel = $('#panel-timer');
@@ -7372,6 +7672,7 @@ function boot(){
   wireTranslate();
   renderAll();
   sfxNoop();
+  try{ syncInit(); }catch(e){ syncSetStatus('offline'); }
   setInterval(tick, 1000);
   loadWeather(false);
   setInterval(()=>loadWeather(false), 10*60*1000);
@@ -7379,6 +7680,8 @@ function boot(){
   /* 읽기 전용 요약 — 화면에는 쓰이지 않고, 점검·테스트에만 쓴다 */
   window.__carbot = {count:CARBOTS.length, ids:CARBOTS.map(c=>c.id), state:state, version:2,
     masterGrade:masterGrade, specialPool:specialPool, CORES_PER_TICKET:CORES_PER_TICKET,
+    sync:()=>({room:syncRoom, status:syncStatus, mode:syncMode, primed:syncPrimed, updatedAt:state.updatedAt, device:syncDevice}),
+    syncSetRoom:(r,o)=>syncSetRoom(r,o), syncPush:()=>{ if(!syncPrimed) syncPrimed=true; syncPushNow(); },
     tr:{dict:koEnDict, sync:koEnSync, translate:translateKoToEn, cache:TR.cache, romanize:romanizeKo}};
 }
 function sfxNoop(){ /* keeps audio context creation inside user gesture when possible */ }
