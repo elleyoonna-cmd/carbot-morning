@@ -5516,6 +5516,51 @@ function syncPayload(){
   SYNC_KEYS.forEach(k=>{ if(state[k] !== undefined) data[k] = state[k]; });
   return { updatedAt: state.updatedAt || 0, by: syncDevice, at: Date.now(), data: data };
 }
+/* ── '실제 기록' 판별 ──────────────────────────────────────────────
+   새 기기가 갓 연 빈 초기 상태(또는 그 초기값이 담긴 클라우드)를 그대로 올리면
+   다른 기기의 진짜 기록이 지워진다. 그래서 올리기·받기 전에 기록이 있는지 본다. */
+function syncUserSig(o){
+  const arr = a => Array.isArray(a) ? a : [];
+  const sup = s => { const out = {}; for(let d=0; d<7; d++) out[d] = arr(s && s[d]).map(x=> (x && x.ko) || ''); return out; };
+  return JSON.stringify({
+    name: (o.name && o.name.ko) || '', place: (o.place && o.place.ko) || '',
+    wake: o.wake || '', leave: o.leave || '',
+    routines: arr(o.routines).map(r=> (r && r.id) + ':' + ((r && r.ko) || '')),
+    plays: arr(o.plays).map(p=> (p && p.id) + ':' + ((p && p.ko) || '')),
+    affirms: arr(o.affirms).map(a=> (a && a.ko) || ''),
+    supplies: sup(o.supplies)
+  });
+}
+let SYNC_DEFAULT_SIG = '';
+function syncDefaultSig(){
+  if(!SYNC_DEFAULT_SIG) SYNC_DEFAULT_SIG = syncUserSig(defaults());
+  return SYNC_DEFAULT_SIG;
+}
+function syncHasMeaningfulData(o){
+  const s = (o && typeof o === 'object') ? o : state;
+  const pos = v => Number(v) > 0;
+  if(pos(s.chips) || pos(s.summons) || pos(s.streak) || pos(s.energyCores) || pos(s.specialTickets) || pos(s.specialSummons)) return true;
+  const keys = m => (m && typeof m === 'object') ? Object.keys(m).length : 0;
+  if(keys(s.dex) || keys(s.done) || keys(s.play) || keys(s.ev) || keys(s.prep) || keys(s.playMastery) || keys(s.playAward)) return true;
+  if(Array.isArray(s.events) && s.events.length) return true;
+  if(s.awarded && ((s.awarded.r || []).length || (s.awarded.p || []).length || (s.awarded.e || []).length)) return true;
+  if(s.lastFull) return true;
+  try{ if(syncUserSig(s) !== syncDefaultSig()) return true; }catch(e){}
+  return false;   /* 설정·루틴·놀이·준비물·확언까지 모두 기본값 → 기록 없음 */
+}
+function syncPersistNow(){
+  try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+}
+/* ⬆️ 지금 올리기: updatedAt 을 지금으로 갱신하고 저장한 뒤 올린다(다른 기기가 즉시 받아간다) */
+function syncUploadNow(){
+  if(!syncRoom) return false;
+  syncPrimed = true;
+  state.updatedAt = Date.now();
+  clearTimeout(syncPushT);
+  syncPersistNow();
+  syncPushNow();
+  return true;
+}
 function syncLabel(){
   const s = syncStatus;
   return s==='online' ? L({ko:'실시간 연동',en:'Live sync'})
@@ -5570,16 +5615,30 @@ function syncApplyRemote(remote, force){
 function syncOnRemote(val){
   const remote = (val && typeof val === 'object') ? val : null;
   if(syncStatus !== 'online') syncSetStatus('online');
+  const rat = remote ? (Number(remote.updatedAt) || 0) : 0;
+  const rdata = (remote && remote.data && typeof remote.data === 'object') ? remote.data : null;
+  const remoteHasData = !!(rdata && syncHasMeaningfulData(rdata));
+  const localHasData = syncHasMeaningfulData(state);
   if(!syncPrimed){
     syncPrimed = true;
-    const rat = remote ? (Number(remote.updatedAt) || 0) : 0;
-    if(!remote || !rat || !remote.data){ syncPushNow(); return; }        /* 빈 방 → 이 기기 기록을 올린다 */
-    if(!syncHasLocal){ syncApplyRemote(remote, true); return; }          /* 새 기기 → 클라우드 기록을 먼저 받는다 */
-    if(rat > (state.updatedAt || 0)){ syncApplyRemote(remote); return; } /* 클라우드가 더 새로움 → 받는다 */
-    syncPushNow();                                                       /* 이 기기가 더 새로움 → 올린다 */
+    if(remoteHasData){
+      if(!localHasData){ syncApplyRemote(remote, true); return; }          /* 기록 없는 새 기기 → 클라우드 기록을 먼저 받는다 */
+      if(!rat){ syncUploadNow(); return; }                                  /* 시각 없는 옛 업로드 → 이 기기 기록에 새 시각을 매긴다 */
+      if(rat > (state.updatedAt || 0)){ syncApplyRemote(remote); return; } /* 클라우드가 더 새로움 → 받는다 */
+      syncPushNow();                                                       /* 이 기기가 더 새로움 → 올린다 */
+      return;
+    }
+    /* 클라우드가 비었거나 초기값뿐 → 초기값을 올려 다른 기기 기록을 지우지 않는다 */
+    if(localHasData){ syncUploadNow(); }   /* 이 기기에 진짜 기록이 있으면 지키고 올린다(updatedAt 갱신) */
+    return;                               /* 이 기기에도 기록이 없으면 아무것도 올리지 않는다 */
+  }
+  if(!rdata) return;                      /* 방이 비었다 — 이 기기 기록은 그대로 둔다 */
+  if(!remoteHasData){
+    /* 다른 기기가 초기값을 올려도 절대 덮어쓰지 않고, 기록 있는 이 기기가 다시 올린다 */
+    if(localHasData) syncUploadNow();
     return;
   }
-  if(remote && (Number(remote.updatedAt) || 0) > (state.updatedAt || 0)) syncApplyRemote(remote);
+  if(rat > (state.updatedAt || 0)) syncApplyRemote(remote);
 }
 function syncSchedulePush(){
   if(!syncPrimed || syncApplying || !syncRoom) return;
@@ -5680,8 +5739,7 @@ function syncSetRoom(id, opts){
     toast(L({ko:'연결 방: '+r,en:'Room: '+r}), '🔗');
   }
   if(opts && opts.upload){
-    syncPrimed = true;
-    syncPushNow();
+    syncUploadNow();
     toast(L({ko:'이 기기 기록을 클라우드에 올렸어요',en:'Uploaded this device’s data'}), '⬆️');
   }
   return true;
@@ -7231,8 +7289,7 @@ function bindSettings(){
       return;
     }
     if(b.id==='btnSyncNow'){
-      if(!syncPrimed) syncPrimed = true;
-      syncPushNow();
+      syncUploadNow();   /* updatedAt 갱신 + 저장 + 전송 → 다른 기기가 즉시 받아간다 */
       toast(L({ko:'이 기기 기록을 클라우드에 올렸어요',en:'Pushed this device’s data'}), '⬆️');
       sfxClick(); return;
     }
@@ -7681,6 +7738,7 @@ function boot(){
   window.__carbot = {count:CARBOTS.length, ids:CARBOTS.map(c=>c.id), state:state, version:2,
     masterGrade:masterGrade, specialPool:specialPool, CORES_PER_TICKET:CORES_PER_TICKET,
     sync:()=>({room:syncRoom, status:syncStatus, mode:syncMode, primed:syncPrimed, updatedAt:state.updatedAt, device:syncDevice}),
+    syncHasData:(o)=>syncHasMeaningfulData(o), syncUpload:()=>syncUploadNow(),
     syncSetRoom:(r,o)=>syncSetRoom(r,o), syncPush:()=>{ if(!syncPrimed) syncPrimed=true; syncPushNow(); },
     tr:{dict:koEnDict, sync:koEnSync, translate:translateKoToEn, cache:TR.cache, romanize:romanizeKo}};
 }
