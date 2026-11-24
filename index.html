@@ -1571,7 +1571,7 @@ select.ed-select{appearance:none; background-image:linear-gradient(45deg,transpa
     <div class="card panel" style="margin-top:14px">
       <div class="sec-head">
         <h2 class="sec-title" style="font-size:17px"><span aria-hidden="true">🎨</span><span id="playListTitleTxt">오늘의 놀이·학습 4가지</span></h2>
-        <span class="sec-sub" data-i18n="playListSub">짧게, 즐겁게! 끝내면 카봇칩 +1</span>
+        <span class="sec-sub" data-i18n="playListSub">짧게, 즐겁게! 끝내면 에너지 코어 +1</span>
         <div class="sec-tools">
           <button class="edit-link" id="editPlayListBtn"><span class="ei" aria-hidden="true">✏️</span><span data-i18n="editBtn">편집</span></button>
         </div>
@@ -2800,7 +2800,7 @@ const STR = {
   how3t:{ko:'카봇 시계에 칩 넣기',en:'Slide a chip into the watch'},
   how3s:{ko:'⌚ 탭에서 카봇을 소환해요',en:'Summon a Carbot in the ⌚ tab'},
   playListTitle:{ko:'오늘의 놀이·학습 4가지',en:"Today's 4 play & learn ideas"},
-  playListSub:{ko:'짧게, 즐겁게! 끝내면 카봇칩 +1',en:'Short and fun! +1 chip when done'},
+  playListSub:{ko:'짧게, 즐겁게! 끝내면 에너지 코어 +1',en:'Short and fun! +1 energy core when done'},
   watchPageTitle:{ko:'카봇 시계·도감',en:'Carbot Watch & Dex'},
   watchPageSub:{ko:'카봇칩을 시계에 끼우면 카봇이 소환돼요!',en:'Slide a chip into the watch to summon a Carbot!'},
   trayTitle:{ko:'내 카봇칩(큐브팩)',en:'My Carbot chips (cube packs)'},
@@ -4276,10 +4276,17 @@ function syncDailyChip(award){
   }
   return false;
 }
-/* 앱을 열 때: 이미 다 끝낸 상태면 오늘 지급으로만 기록(추가 지급 없음) */
+/* 앱을 열 때: 이미 다 끝낸 상태면 오늘 지급으로만 기록(추가 지급 없음)
+   · 클라우드 연동 기기에서는 첫 동기화가 끝난 뒤에 판단한다.
+     동기화 전에 채워 버리면 다른 기기에서 받은 오늘의 칩을 놓치고,
+     이 기기의 옛 상태(칩 0)가 그대로 올라가 가족 기록의 칩을 지운다. */
 function adoptChipDay(){
+  /* 첫 동기화가 끝나기 전(연결 중)에는 판단하지 않는다. 동기화 전에 채워 버리면
+     이 기기의 옛 기록(칩 0)이 그대로 올라가 가족 기록의 칩을 지운다. */
+  if(syncRoom && !syncPrimed && syncStatus !== 'local' && syncStatus !== 'offline') return false;
   const today = dkey(new Date());
-  if(routinesAllDone() && state.chipDay !== today){ state.chipDay = today; weekMark(today, true); save(); }
+  if(routinesAllDone() && state.chipDay !== today){ state.chipDay = today; weekMark(today, true); save(); return true; }
+  return false;
 }
 
 /* ---------- 놀이·학습 보상: ⚡ 에너지 코어 & 🏅 마스터 뱃지 ----------
@@ -5839,6 +5846,8 @@ let syncRef = null, syncApplying = false, syncPrimed = false, syncHasLocal = fal
 let syncPushT = null, syncPollT = null, syncRetryT = null, syncDb = null;
 let syncChildRefs = [];   /* rooms/{room}/updatedAt · data 만 따로 본다(사진 노드까지 통째로 받지 않도록) */
 let syncEmitT = null, syncLastRemoteSig = '';   /* 자식 이벤트를 묶어 처리 · 같은 시각에 본문만 바뀌는 경우 보정 */
+let syncLastRemoteData = null;                  /* 마지막으로 본 클라우드 기록 — 올리기 전 칩 보호 판단에만 쓴다 */
+let syncNoHealUntil = 0;                        /* 백업 불러오기 같은 의도된 복원 직후에는 칩을 되살리지 않는다 */
 
 function syncRoomSafe(v){
   const s = String(v==null?'':v).trim().replace(/[^A-Za-z0-9_-]/g, '-').slice(0,48);
@@ -5947,34 +5956,160 @@ function syncSetStatus(s){
     st.textContent = t;
   }
 }
+/* ── 기록 병합(덮어쓰기 방지) ───────────────────────────────────────────────
+   다른 기기가 옛 상태나 빈 보상 기록을 올려도 이 기기의 보상 기록은 줄지 않는다.
+   · 도감·주간도감·놀이 숙련도: 항목별 큰 값 · 놀이 지급 날짜: 항목별 최신 날짜
+   · 소환·스페셜소환·주간합체·연속: 큰 값 · 주간 완주일: 날짜 합집합(최대 7칸)
+   · 칩: 원격이 구상태(소환 기록이 뒤처지거나 오늘 칩을 받기 전 상태)면 이 기기의 더 많은 칩을 지킨다.
+     같은/최신 상태에서 시계에 끼워 소환해 summons 가 늘고 chips 가 줄어든 정상 감소는 그대로 받는다. */
+function syncMergeCounts(local, remote){
+  const out = {};
+  [remote, local].forEach(src=>{
+    if(!src || typeof src !== 'object') return;
+    Object.keys(src).forEach(k=>{
+      const n = Math.floor(Number(src[k]));
+      if(!isFinite(n) || n <= 0) return;
+      out[k] = Math.max(out[k] || 0, n);
+    });
+  });
+  return out;
+}
+function syncMergeDays(local, remote){
+  const out = {};
+  [remote, local].forEach(src=>{
+    if(!src || typeof src !== 'object') return;
+    Object.keys(src).forEach(k=>{
+      const v = src[k];
+      if(typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return;
+      if(!out[k] || v > out[k]) out[k] = v;
+    });
+  });
+  return out;
+}
+function syncMergeWeekDays(local, remote, localCombines, remoteCombines){
+  const isDay = d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d);
+  const L = (Array.isArray(local) ? local : []).filter(isDay);
+  const R = (Array.isArray(remote) ? remote : []).filter(isDay);
+  const lc = Math.max(0, Math.floor(Number(localCombines) || 0));
+  const rc = Math.max(0, Math.floor(Number(remoteCombines) || 0));
+  if(rc > lc) return R.slice(-WEEKLY_NEED);   /* 다른 기기가 방금 합체 → 비워진 게이지를 따른다 */
+  if(lc > rc) return L.slice(-WEEKLY_NEED);   /* 이 기기가 방금 합체 → 이 기기 게이지를 지킨다 */
+  const seen = {}, out = [];
+  L.concat(R).forEach(d=>{ if(!seen[d]){ seen[d] = 1; out.push(d); } });
+  out.sort();
+  return out.slice(-WEEKLY_NEED);
+}
+function syncMergeChips(local, remote, today){
+  const n = v => Math.max(0, Math.floor(Number(v) || 0));
+  const lc = n(local.chips), rc = n(remote.chips);
+  if(n(remote.summons) < n(local.summons) || n(remote.specialSummons) < n(local.specialSummons))
+    return Math.max(lc, rc);                                   /* 원격이 소환 기록에서 뒤처진 구상태 */
+  if(local.chipDay === today && remote.chipDay !== today && rc < lc)
+    return lc;                                                 /* 오늘 칩을 이미 받은 기기 보호 */
+  return rc;                                                   /* 정상(소환으로 줄어든 칩 포함) */
+}
+function syncMergeChipDay(local, remote){
+  const isDay = d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d);
+  const l = isDay(local) ? local : '', r = isDay(remote) ? remote : '';
+  return (l && r) ? (l > r ? l : r) : (l || r);
+}
+/* 올리기 직전 칩 접검: 소환도 없고 오늘 칩 상태도 그대로인데 칩만 줄었으면
+   이 기기의 옛 기록이 가족 기록의 칩을 지우려는 것이므로 클라우드의 더 많은 칩을 지킨다. */
+function syncHealChips(){
+  const r = syncLastRemoteData;
+  if(!r || Date.now() < syncNoHealUntil) return false;
+  const n = v => Math.max(0, Math.floor(Number(v) || 0));
+  if(n(state.chips) >= n(r.chips)) return false;
+  if(n(state.summons) > n(r.summons) || n(state.specialSummons) > n(r.specialSummons)) return false;   /* 정상 소모 */
+  if(state.chipDay !== r.chipDay) return false;                                                        /* 오늘 칩 지급/회수 */
+  state.chips = n(r.chips);
+  syncPersistNow();
+  return true;
+}
+function syncMergeRemoteData(data){
+  const merged = Object.assign({}, data);
+  const cur = (state && typeof state === 'object') ? state : {};
+  const today = dkey(new Date());
+  merged.dex = syncMergeCounts(cur.dex, data.dex);
+  merged.weekDex = syncMergeCounts(cur.weekDex, data.weekDex);
+  merged.playMastery = syncMergeCounts(cur.playMastery, data.playMastery);
+  merged.playAward = syncMergeDays(cur.playAward, data.playAward);
+  merged.weekDays = syncMergeWeekDays(cur.weekDays, data.weekDays, cur.weekCombines, data.weekCombines);
+  merged.summons = Math.max(0, Math.floor(Number(cur.summons) || 0), Math.floor(Number(data.summons) || 0));
+  merged.specialSummons = Math.max(0, Math.floor(Number(cur.specialSummons) || 0), Math.floor(Number(data.specialSummons) || 0));
+  merged.weekCombines = Math.max(0, Math.floor(Number(cur.weekCombines) || 0), Math.floor(Number(data.weekCombines) || 0));
+  merged.streak = Math.max(0, Math.floor(Number(cur.streak) || 0), Math.floor(Number(data.streak) || 0));
+  merged.chips = syncMergeChips(cur, data, today);
+  merged.chipDay = syncMergeChipDay(cur.chipDay, data.chipDay);
+  return merged;
+}
+/* 병합이 원격보다 많은 기록을 지켰는지 — 지켰으면 그 기록으로 클라우드도 고쳐 올린다(한 번만) */
+function syncMergeNeedsPush(remote, merged){
+  if(!remote || typeof remote !== 'object') return false;
+  const num = k => Math.max(0, Math.floor(Number(remote[k]) || 0)) !== Math.max(0, Math.floor(Number(merged[k]) || 0));
+  if(num('chips') || num('summons') || num('specialSummons') || num('weekCombines') || num('streak')) return true;
+  const norm = v => {
+    if(v == null) return '';
+    if(typeof v === 'object'){
+      if(Array.isArray(v)) return v.length ? JSON.stringify(v) : '';
+      const ks = Object.keys(v);
+      if(!ks.length) return '';
+      const o = {}; ks.sort().forEach(k=>{ o[k] = v[k]; });
+      return JSON.stringify(o);
+    }
+    return JSON.stringify(v);
+  };
+  if(norm(remote.chipDay) !== norm(merged.chipDay)) return true;
+  return ['dex','weekDex','playMastery','playAward','weekDays'].some(k=> norm(remote[k]) !== norm(merged[k]));
+}
+/* 이 기기 기록이 더 새로워 보여도, 첫 접속에서 본 클라우드 기록과 병합한 뒤에 올린다
+   (칩·도감을 모르는 옛 기록 기기가 가족 기록을 지우는 것을 막는다) */
+function syncAbsorbRemote(rdata){
+  if(!rdata || typeof rdata !== 'object') return false;
+  const merged = syncMergeRemoteData(rdata);
+  syncApplying = true;
+  let ok = false;
+  try{
+    ok = sanitize(merged) !== false;
+    if(ok){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} applyStatic(); renderAll(); }
+  }catch(e){ ok = false; }
+  syncApplying = false;
+  return ok;
+}
 function syncApplyRemote(remote, force){
   if(!remote || typeof remote !== 'object') return false;
   const at = Number(remote.updatedAt) || 0;
   if(!force && !(at > (state.updatedAt || 0))) return false;
   const data = (remote.data && typeof remote.data === 'object') ? remote.data : null;
   if(!data) return false;
+  const merged = syncMergeRemoteData(data);   /* 받을 때 보상 기록을 병합해 절대 줄지 않게 한다 */
+  const needsPush = syncMergeNeedsPush(data, merged);
   const wasLang = state.lang, wasTimer = state.timer, wasWake = state.wakeLock, wasPreview = state.preview;
   syncApplying = true;
   let ok = false;
   try{
-    ok = sanitize(data) !== false;
+    ok = sanitize(merged) !== false;
     if(ok){
       state.updatedAt = at;
       syncHasLocal = true;
       state.lang = wasLang; state.timer = wasTimer; state.wakeLock = wasWake; state.preview = wasPreview;
+      if(needsPush) state.updatedAt = Date.now();   /* 지킨 기록을 다시 올릴 때는 새 시각을 매긴다 */
       try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
       applyStatic(); renderAll();
       try{ photoSyncFromState(); }catch(e){}
     }
   }catch(e){ ok = false; }
   syncApplying = false;
+  if(ok && needsPush) syncSchedulePush();
   return ok;
 }
-function syncOnRemote(val){
+function syncOnRemote(val){ syncOnRemoteApply(val); if(syncPrimed && !syncApplying) adoptChipDay(); }
+function syncOnRemoteApply(val){
   const remote = (val && typeof val === 'object') ? val : null;
   if(syncStatus !== 'online') syncSetStatus('online');
   const rat = remote ? (Number(remote.updatedAt) || 0) : 0;
   const rdata = (remote && remote.data && typeof remote.data === 'object') ? remote.data : null;
+  if(rdata) syncLastRemoteData = rdata;
   /* 사진 시각(photoAt)은 기록보다 먼저 합쳐 둔다 — 이 기기가 기록을 먼저 올려도 사진 목록을 잃지 않게 */
   try{ photoMergeFromRemote(rdata); }catch(e){}
   /* updatedAt 과 data 자식 이벤트가 따로 도착한다. 같은 시각인데 본문이 다르면(방금 올린 내용을 늦게 받은 경우) 그것도 적용한다. */
@@ -5989,7 +6124,8 @@ function syncOnRemote(val){
       if(!localHasData){ syncApplyRemote(remote, true); return; }          /* 기록 없는 새 기기 → 클라우드 기록을 먼저 받는다 */
       if(!rat){ syncUploadNow(); return; }                                  /* 시각 없는 옛 업로드 → 이 기기 기록에 새 시각을 매긴다 */
       if(rat > (state.updatedAt || 0) || sameStampNew){ syncApplyRemote(remote, sameStampNew); return; } /* 클라우드가 더 새로움 → 받는다 */
-      syncPushNow();                                                       /* 이 기기가 더 새로움 → 올린다 */
+      syncAbsorbRemote(rdata);                                             /* 이 기기가 더 새로워도 클라우드 기록과 합친다 */
+      syncUploadNow();                                                     /* 합친 기록을 올린다 */
       return;
     }
     /* 클라우드가 비었거나 초기값뿐 → 초기값을 올려 다른 기기 기록을 지우지 않는다 */
@@ -6011,6 +6147,7 @@ function syncSchedulePush(){
 }
 function syncPushNow(){
   if(!syncRoom) return;
+  syncHealChips();   /* 올리기 직전: 까닭 없이 줄어든 칩을 옛 기록으로 올려 지우지 않도록 */
   const payload = syncPayload();
   const done = (ok)=>{
     if(ok){ if(syncStatus !== 'online') syncSetStatus('online'); }
@@ -7833,6 +7970,7 @@ function restoreState(raw){
   try{ o = JSON.parse(raw); }catch(e){ toast(L({ko:'코드를 읽을 수 없어요',en:'That code could not be read'}), '⚠️'); return false; }
   if(!o || typeof o!=='object'){ toast(L({ko:'코드가 올바르지 않아요',en:'That code is not valid'}), '⚠️'); return false; }
   sanitize(o);
+  syncNoHealUntil = Date.now() + 3000;   /* 불러온 기록 그대로를 올리도록 칩 되살리기를 잠시 멈춘다 */
   if(o.images && typeof o.images==='object'){
     images = {
       routine: sanitizeImgMap(o.images.routine || {}),
@@ -8477,6 +8615,7 @@ function wire(){
    ===================================================================== */
 function tick(){
   if(ensureDay()){ renderAll(); }
+  adoptChipDay();   /* 로컬 전용·오프라인이거나 첫 동기화가 끝난 뒤에만 실제로 동작한다 */
   renderClock();
   checkAlarms();
   timerTick();
@@ -8531,7 +8670,6 @@ function boot(){
   /* 한글만 저장된 영어 칸을 사전·캐시로 즉시 채운다 */
   ensureEnglish();
   ensureDay();
-  adoptChipDay();
   loadFired();
   registerSW();
   applyStatic();
@@ -8542,6 +8680,7 @@ function boot(){
   renderAll();
   sfxNoop();
   try{ syncInit(); }catch(e){ syncSetStatus('offline'); }
+  adoptChipDay();   /* 로컬 전용이면 지금, 연동 기기면 첫 동기화가 끝난 뒤에 판단한다 */
   setInterval(tick, 1000);
   loadWeather(false);
   setInterval(()=>loadWeather(false), 10*60*1000);
